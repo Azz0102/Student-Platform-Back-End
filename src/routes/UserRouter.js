@@ -1,13 +1,14 @@
+"use strict";
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/UserController');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const userController = require("../controllers/user.controller");
+const { authMiddleware } = require("../middleware/auth.middleware");
 
 // const { authMiddleware, authGetDetailsMiddleware } = require('../middleware/authMiddleware');
 
-router.post('/sign-up', authMiddleware, userController.createUser);
-router.post('/sign-in', userController.loginUser);
+router.post("/sign-up", authMiddleware, userController.createUser);
+router.post("/sign-in", userController.loginUser);
 // router.put('/update-user/:id', userController.updateUser);
 // router.delete('/delete-user/:id', authMiddleware, userController.deleteUser);
 // router.get('/getAll', authMiddleware, userController.getAllUser);
