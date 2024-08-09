@@ -18,19 +18,9 @@ module.exports = {
                     key: 'id'
                 }
             },
-            userName: {
+            name: {
                 type: Sequelize.STRING(150),
                 allowNull: true
-            },
-            mobile: {
-                type: Sequelize.STRING(15),
-                allowNull: true,
-                defaultValue: null
-            },
-            email: {
-                type: Sequelize.STRING(50),
-                allowNull: true,
-                defaultValue: null
             },
             passwordHash: {
                 type: Sequelize.STRING(60),

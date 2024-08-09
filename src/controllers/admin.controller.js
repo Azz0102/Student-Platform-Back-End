@@ -1,15 +1,38 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
-const { schedulingClassSession } = require("../services/admin.service");
 
-const schedulingClassSession = async (req, res, next) => {
+const {
+    schedulingClassSession,
+    signUp,
+    signUpMultipleUsers
+
+} = require("../services/admin.service");
+
+const schedulingClassSessionController = async (req, res, next) => {
     new SuccessResponse({
         message: "Scheduled classes",
         metadata: await schedulingClassSession(req.body),
     }).send(res);
 };
 
+const signUpController = async (req, res, next) => {
+    new CREATED({
+        message: "Registered OK!",
+        metadata: await signUp(req.body),
+    }).send(res);
+};
+
+const signUpMultipleUsersController = async (req, res, next) => {
+    new CREATED({
+        message: "Registered OK!",
+        metadata: await signUpMultipleUsers(req.body),
+    }).send(res);
+};
+
 module.exports = {
-    schedulingClassSession,
+    schedulingClassSessionController,
+    signUpController,
+    signUpMultipleUsersController
+
 };

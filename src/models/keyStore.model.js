@@ -1,14 +1,14 @@
 "use strict";
 const { Model, DataTypes, Sequelize } = require("sequelize");
 module.exports = (sequelize) => {
-    class User extends Model {
+    class KeyStore extends Model {
         static associate(models) {
             // Define associations here if needed
-            User.belongsTo(models.Role, { foreignKey: "roleId" });
+            // KeyStore.belongsTo(models.Role, { foreignKey: "roleId" });
         }
     }
 
-    User.init(
+    KeyStore.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -17,40 +17,39 @@ module.exports = (sequelize) => {
                 unique: true,
                 allowNull: false,
             },
-            roleId: {
+            userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "roles", // Tên bảng role trong cơ sở dữ liệu
+                    model: "users", // Tên bảng role trong cơ sở dữ liệu
                     key: "id",
                 },
-                field: "roleId",
+                field: "userId",
             },
-            name: {
-                type: DataTypes.STRING(150),
-                allowNull: true,
-                field: "name",
-            },
-            passwordHash: {
-                type: DataTypes.STRING(60),
+            publicKey: {
+                type: DataTypes.TEXT,
                 allowNull: false,
-                field: "passwordHash",
+                field: "publicKey",
             },
-            lastLogin: {
-                type: DataTypes.DATE,
-                allowNull: true,
-                defaultValue: null,
-                field: "lastLogin",
+            privateKey: {
+                type: DataTypes.TEXT,
+                allowNull: false,
+                field: "privateKey",
             },
+            refreshToken: {
+                type: DataTypes.TEXT,
+                allowNull: false,
+                field: "refreshToken",
+            }
         },
         {
             sequelize,
-            modelName: "User",
-            tableName: "users",
+            modelName: "KeyStore",
+            tableName: "KeyStores",
             timestamps: true, // Sử dụng `createdAt` và `updatedAt` tự động
             underscored: true, // Chuyển đổi tên trường sang snake_case
         }
     );
 
-    return User;
+    return KeyStore;
 };
