@@ -31,16 +31,6 @@ module.exports = (sequelize) => {
                 allowNull: true,
                 field: "name",
             },
-            mobile: {
-                type: DataTypes.STRING(15),
-                allowNull: true,
-                defaultValue: null,
-            },
-            email: {
-                type: DataTypes.STRING(50),
-                allowNull: true,
-                defaultValue: null,
-            },
             passwordHash: {
                 type: DataTypes.STRING(60),
                 allowNull: false,

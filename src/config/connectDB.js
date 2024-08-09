@@ -10,13 +10,11 @@ const sequelize = new Sequelize(
     config.password,
     {
         host: "localhost", // Địa chỉ máy chủ MySQL
-        port: 8811,
+        port: 3306,
         dialect: "mysql", // Chỉ định rằng cơ sở dữ liệu là MySQL
         logging: console.log, // Có thể bật logging để xem các truy vấn SQL (tùy chọn)
     }
 );
-
-const Role = require("../models/User")(sequelize);
 
 // Kiểm tra kết nối
 async function connectDB() {

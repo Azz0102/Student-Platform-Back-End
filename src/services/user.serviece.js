@@ -6,10 +6,6 @@ const bcrypt = require("bcrypt");
 const KeyTokenService = require("./keyToken.service");
 const { getInfoData } = require("../utils");
 
-const {
-    generalAccessToken,
-    generalRefreshToken,
-} = require("../services/jwt.service");
 
 
 const {

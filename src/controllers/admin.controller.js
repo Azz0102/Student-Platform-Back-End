@@ -9,7 +9,7 @@ const {
 
 } = require("../services/admin.service");
 
-const schedulingClassSession = async (req, res, next) => {
+const schedulingClassSessionController = async (req, res, next) => {
     new SuccessResponse({
         message: "created role",
         metadata: await schedulingClassSession(),
@@ -31,7 +31,7 @@ const signUpMultipleUsersController = async (req, res, next) => {
 };
 
 module.exports = {
-    schedulingClassSession,
+    schedulingClassSessionController,
     signUpController,
     signUpMultipleUsersController
 

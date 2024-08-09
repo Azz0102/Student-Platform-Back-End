@@ -34,7 +34,7 @@ module.exports = (sequelize) => {
             privateKey: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-                defaultValue: privateKey,
+                field: "privateKey",
             },
             refreshToken: {
                 type: DataTypes.TEXT,
