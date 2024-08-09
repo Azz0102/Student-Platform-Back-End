@@ -26,10 +26,10 @@ module.exports = (sequelize) => {
                 },
                 field: "roleId",
             },
-            userName: {
+            name: {
                 type: DataTypes.STRING(150),
                 allowNull: true,
-                field: "userName",
+                field: "name",
             },
             mobile: {
                 type: DataTypes.STRING(15),
