@@ -1,47 +1,49 @@
 const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
-    class Classroom extends Model {
+    class Tag extends Model {
         static associate(models) {
-            Classroom.belongsTo(models.Amphitheater, {
-                foreignKey: "amphitheaterId",
+            Tag.belongsToMany(models.UserNote, {
+                through: "NoteTag",
+                foreignKey: "tagId",
+                otherKey: "noteId",
             });
         }
     }
 
-    Classroom.init(
+    Tag.init(
         {
             id: {
                 type: DataTypes.INTEGER,
-                autoIncrement: true,
                 primaryKey: true,
+                autoIncrement: true,
                 allowNull: false,
-                unique: true,
             },
-            amphitheaterId: {
+            name: {
+                type: DataTypes.STRING(255),
+                allowNull: false,
+            },
+            userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "amphitheaters",
+                    model: "users", // Name of the users table
                     key: "id",
                 },
             },
-            name: {
-                type: DataTypes.STRING(150),
+            isPermanent: {
+                type: DataTypes.BOOLEAN,
                 allowNull: false,
-            },
-            capacity: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
+                defaultValue: false,
             },
         },
         {
             sequelize,
-            modelName: "Classroom",
-            tableName: "classrooms",
+            modelName: "Tag",
+            tableName: "tags",
             timestamps: true,
         }
     );
 
-    return Classroom;
+    return Tag;
 };

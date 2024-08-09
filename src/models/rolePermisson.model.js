@@ -25,6 +25,7 @@ module.exports = (sequelize) => {
                     model: "roles",
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
             permissionId: {
                 type: DataTypes.INTEGER,
@@ -33,6 +34,7 @@ module.exports = (sequelize) => {
                     model: "permissions",
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
             resourceId: {
                 type: DataTypes.INTEGER,
@@ -41,6 +43,7 @@ module.exports = (sequelize) => {
                     model: "resources",
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
             attributes: {
                 type: DataTypes.STRING(100),

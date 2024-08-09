@@ -2,7 +2,12 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class Enrollment extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Enrollment.belongsTo(models.User, { foreignKey: "userId" });
+            Enrollment.belongsTo(models.ClassSession, {
+                foreignKey: "classSessionId",
+            });
+        }
     }
 
     Enrollment.init(

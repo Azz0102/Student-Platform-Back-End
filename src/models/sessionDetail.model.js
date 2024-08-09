@@ -45,7 +45,7 @@ module.exports = (sequelize) => {
             sessionType: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
-                comment: "e.g., Theory, Practice",
+                comment: "Theory, Practice",
             },
             capacity: {
                 type: DataTypes.INTEGER,

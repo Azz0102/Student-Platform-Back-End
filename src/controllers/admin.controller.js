@@ -5,8 +5,8 @@ const { schedulingClassSession } = require("../services/admin.service");
 
 const schedulingClassSession = async (req, res, next) => {
     new SuccessResponse({
-        message: "created role",
-        metadata: await schedulingClassSession(),
+        message: "Scheduled classes",
+        metadata: await schedulingClassSession(req.body),
     }).send(res);
 };
 

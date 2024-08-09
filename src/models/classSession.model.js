@@ -2,7 +2,9 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class ClassSession extends Model {
-        static associate(models) {}
+        static associate(models) {
+            
+        }
     }
 
     ClassSession.init(

@@ -2,6 +2,7 @@
 
 const { Op } = require("sequelize");
 const db = require("../models");
+const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 /**
  * new resource
@@ -11,6 +12,7 @@ const db = require("../models");
  */
 
 const createResource = async ({
+    userId,
     name = "classroom",
     slug = "p00001",
     description = "",
@@ -24,7 +26,7 @@ const createResource = async ({
         });
 
         if (existingResource) {
-            throw new Error(
+            throw new BadRequestError(
                 "Resource with the same name or slug already exists."
             );
         }
@@ -60,7 +62,51 @@ const resourceList = async ({
     }
 };
 
+const updateResource = async ({
+    userId,
+    resourceId,
+    name,
+    slug,
+    description,
+}) => {
+    try {
+        // 1. Check resource exists
+        const resource = await db.Resource.findByPk(resourceId);
+        if (!resource) {
+            throw new NotFoundError("Resource not found");
+        }
+
+        // 2. Update fields if they are provided
+        if (name) resource.name = name;
+        if (slug) resource.slug = slug;
+        if (description) resource.description = description;
+
+        // 3. Save the updated resource
+        await resource.save();
+
+        return resource;
+    } catch (error) {
+        return error;
+    }
+};
+
+const deleteResource = async ({ userId, resourceId }) => {
+    try {
+        // 1. Check resource exists
+        const resource = await db.Resource.findByPk(resourceId);
+        if (!resource) {
+            throw new NotFoundError("Resource not found");
+        }
+
+        // 2. Delete the resource
+        await resource.destroy();
+    } catch (error) {
+        return error;
+    }
+};
+
 const createRole = async ({
+    userId,
     name = "admin",
     slug = "s00001",
     description = "admin role",
@@ -119,7 +165,7 @@ const createRole = async ({
 };
 
 const roleList = async ({
-    userId = 0, //admin
+    userId, //admin
     limit = 30,
     offset = 0,
     search = "",
@@ -170,9 +216,54 @@ const roleList = async ({
     }
 };
 
+const updateRole = async ({ userId, roleId, name, slug, description }) => {
+    try {
+        // 1. Check if the role exists
+
+        const role = await db.Role.findByPk(roleId);
+        if (!role) {
+            throw new NotFoundError("Role not found");
+        }
+
+        // 2. Update only the fields that are provided
+
+        if (name) resource.name = name;
+        if (slug) resource.slug = slug;
+        if (description) resource.description = description;
+
+        // 3. Save the updated role
+        await role.save();
+
+        // 4. Return the updated role
+        return role;
+    } catch (error) {
+        return error;
+    }
+};
+
+const deleteRole = async ({ userId, roleId }) => {
+    try {
+        // 1. Check if the role exists
+
+        const role = await db.Role.findByPk(roleId);
+        if (!role) {
+            throw new NotFoundError("Role not found");
+        }
+
+        // 2. Delete the resource
+        await role.destroy();
+        return role;
+    } catch (error) {
+        return error;
+    }
+};
 module.exports = {
     createResource,
     resourceList,
+    deleteResource,
+    updateResource,
     createRole,
     roleList,
+    updateRole,
+    deleteRole,
 };

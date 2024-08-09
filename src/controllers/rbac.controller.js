@@ -3,9 +3,13 @@
 const { SuccessResponse } = require("../core/success.response");
 const {
     createResource,
+    resourceList,
+    deleteResource,
+    updateResource,
     createRole,
     roleList,
-    resourceList,
+    updateRole,
+    deleteRole,
 } = require("../services/rbac.service");
 
 /**
@@ -43,4 +47,40 @@ const listResources = async (req, res, next) => {
     }).send(res);
 };
 
-module.exports = { newRole, newResource, listResources, listRoles };
+const roleUpdate = async (req, res, next) => {
+    new SuccessResponse({
+        message: "updated role",
+        metadata: await updateRole(req.body),
+    }).send(res);
+};
+
+const resourceUpdate = async (req, res, next) => {
+    new SuccessResponse({
+        message: "updated resource",
+        metadata: await updateResource(req.body),
+    }).send(res);
+};
+
+const roleDelete = async (req, res, next) => {
+    new SuccessResponse({
+        message: "deleted role",
+        metadata: await deleteRole({ roleId: req.query.roleId }),
+    }).send(res);
+};
+
+const resourceDelete = async (req, res, next) => {
+    new SuccessResponse({
+        message: "deleted resource",
+        metadata: await deleteResource({ resourceId: req.query.resourceId }),
+    }).send(res);
+};
+module.exports = {
+    newRole,
+    newResource,
+    listResources,
+    listRoles,
+    roleUpdate,
+    resourceUpdate,
+    roleDelete,
+    resourceDelete,
+};

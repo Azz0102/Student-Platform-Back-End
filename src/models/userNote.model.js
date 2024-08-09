@@ -2,7 +2,13 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class UserNote extends Model {
-        static associate(models) {}
+        static associate(models) {
+            UserNote.belongsToMany(models.Tag, {
+                through: "NoteTag",
+                foreignKey: "noteId",
+                otherKey: "tagId",
+            });
+        }
     }
 
     UserNote.init(
@@ -22,15 +28,11 @@ module.exports = (sequelize) => {
                     key: "id",
                 },
             },
-            classSessionId: {
-                type: DataTypes.INTEGER,
+            name: {
+                type: DataTypes.STRING(150),
                 allowNull: false,
-                references: {
-                    model: "class_sessions",
-                    key: "id",
-                },
             },
-            notes: {
+            content: {
                 type: DataTypes.TEXT,
                 allowNull: false,
             },

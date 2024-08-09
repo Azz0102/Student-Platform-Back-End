@@ -1,5 +1,6 @@
 "use strict";
 
+const { BadRequestError } = require("../core/error.response");
 const GeneticAlgorithm = require("../helpers/schedulingAlgorithm");
 
 const schedulingClassSession = async () => {
@@ -8,7 +9,7 @@ const schedulingClassSession = async () => {
 
         return schedule;
     } catch (error) {
-        throw new Error("Failed to schedule class session");
+        throw new BadRequestError("Failed to schedule class session");
     }
 };
 

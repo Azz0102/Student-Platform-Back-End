@@ -1,42 +1,39 @@
 const { Model, DataTypes } = require("sequelize");
-// Adjust the path as needed
+
 module.exports = (sequelize) => {
-    class NewsSubject extends Model {
+    class NotiUser extends Model {
         static associate(models) {}
     }
 
-    NewsSubject.init(
+    NotiUser.init(
         {
-            newsId: {
+            userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "news",
+                    model: "users", // Assuming 'users' table exists
                     key: "id",
                 },
             },
-            subjectId: {
+            notiId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "subjects",
+                    model: "notification",
                     key: "id",
                 },
             },
         },
         {
             sequelize,
-            modelName: "NewsSubject",
-            tableName: "news_subjects",
-            indexes: [
-                {
-                    unique: true,
-                    fields: ["newsId", "subjectId"],
-                },
-            ],
+            modelName: "NotiUser",
+            tableName: "noti_user",
             timestamps: true,
+            indexes: [
+                { unique: true, fields: ["userId", "notiId"] }, // Unique index to prevent duplicates
+            ],
         }
     );
 
-    return NewsSubject;
+    return NotiUser;
 };

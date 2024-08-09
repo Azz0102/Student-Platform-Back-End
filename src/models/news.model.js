@@ -2,7 +2,12 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class News extends Model {
-        static associate(models) {}
+        static associate(models) {
+            News.hasMany(models.NewsClassSession, {
+                foreignKey: "newsId",
+                onDelete: "CASCADE",
+            });
+        }
     }
 
     News.init(

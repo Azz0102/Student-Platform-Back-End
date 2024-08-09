@@ -2,7 +2,9 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class Amphitheater extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Amphitheater.hasMany(models.Classroom);
+        }
     }
 
     Amphitheater.init(

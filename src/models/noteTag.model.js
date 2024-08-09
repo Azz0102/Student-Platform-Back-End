@@ -1,37 +1,41 @@
 const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
-    class NewsClassSession extends Model {
-        static associate(models) {}
+    class NoteTag extends Model {
+        static associate(models) {
+            NoteTag.belongsTo(models.Tag, { foreignKey: "tagId" });
+            NoteTag.belongsTo(models.UserNote, { foreignKey: "noteId" });
+        }
     }
 
-    NewsClassSession.init(
+    NoteTag.init(
         {
-            newsId: {
+            noteId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "news",
+                    model: "user_notes",
                     key: "id",
                 },
                 onDelete: "CASCADE",
             },
-            classSessionId: {
+            tagId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "class_sessions",
+                    model: "tags",
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
         },
         {
             sequelize,
-            modelName: "NewsClassSession",
-            tableName: "news_class_sessions",
-            timestamps: true,
+            modelName: "NoteTag",
+            tableName: "note_tags",
+            timestamps: true, // No need for timestamps in a junction table
         }
     );
 
-    return NewsClassSession;
+    return NoteTag;
 };
