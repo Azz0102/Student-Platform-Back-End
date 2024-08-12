@@ -10,7 +10,6 @@ const {
 } = require("../controllers/note.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
-const { authMiddleware } = require("../middleware/auth.middleware");
 
 router.post("", grantAccess("createOwn", "note"), asyncHandler(newNote));
 router.get("", grantAccess("readOwn", "note"), asyncHandler(noteList));

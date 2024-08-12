@@ -1,10 +1,10 @@
 "use strict";
-const { Model, DataTypes, Sequelize } = require("sequelize");
-module.exports = (sequelize) => {
+const { Model } = require("sequelize");
+module.exports = (sequelize, DataTypes) => {
     class KeyStore extends Model {
         static associate(models) {
             // Define associations here if needed
-            // KeyStore.belongsTo(models.Role, { foreignKey: "roleId" });
+            KeyStore.belongsTo(models.User, { foreignKey: "userId" });
         }
     }
 
@@ -24,30 +24,34 @@ module.exports = (sequelize) => {
                     model: "users", // Tên bảng role trong cơ sở dữ liệu
                     key: "id",
                 },
-                field: "userId",
+                // field: "userId",
             },
             publicKey: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-                field: "publicKey",
+                // field: "publicKey",
             },
             privateKey: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-                field: "privateKey",
+                // field: "privateKey",
             },
             refreshToken: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-                field: "refreshToken",
-            }
+                // field: "refreshToken",
+            },
+            device: {
+                type: DataTypes.ENUM("web", "mobile"),
+                allowNull: false,
+            },
         },
         {
             sequelize,
             modelName: "KeyStore",
-            tableName: "KeyStores",
+            tableName: "keystores",
             timestamps: true, // Sử dụng `createdAt` và `updatedAt` tự động
-            underscored: true, // Chuyển đổi tên trường sang snake_case
+            // underscored: true, // Chuyển đổi tên trường sang snake_case
         }
     );
 

@@ -2,11 +2,11 @@
 
 const db = require("../models");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const { createTokenPair } = require("../auth/authUtils");
 
 const KeyTokenService = require("./keyToken.service");
 const { getInfoData } = require("../utils");
-
-
 
 const {
     BadRequestError,
@@ -14,12 +14,11 @@ const {
     ForbiddenError,
 } = require("../core/error.response");
 
-class UserServiece {
-
+class UserService {
     /*
         check this token used?
     */
-    static handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
+    handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
         const { id, name } = user;
 
         if (keyStore.refreshToken !== refreshToken) {
@@ -43,13 +42,16 @@ class UserServiece {
         );
 
         // update token
-        await keyStore.update({
-            refreshToken: tokens.refreshToken
-        }, {
-            where: {
-                // điều kiện để chọn tài liệu/cột để cập nhật
+        await keyStore.update(
+            {
+                refreshToken: tokens.refreshToken,
+            },
+            {
+                where: {
+                    // điều kiện để chọn tài liệu/cột để cập nhật
+                },
             }
-        });
+        );
 
         return {
             user,
@@ -57,9 +59,11 @@ class UserServiece {
         };
     };
 
-
-    static logout = async (keyStore) => {
-        const delKey = await KeyTokenService.removeKeyById(keyStore.id);
+    logout = async ({ keyStore }) => {
+        const findKey = await db.KeyStore.findOne({
+            where: { refreshToken: keyStore },
+        });
+        const delKey = await KeyTokenService.removeKeyById(findKey.id);
         console.log({ delKey });
         return delKey;
     };
@@ -70,7 +74,7 @@ class UserServiece {
         4 - generate tokens
         5 - get data return login 
     */
-    static login = async ({ name, password }) => {
+    login = async ({ name, password }) => {
         // 1.
         const checkUser = await db.User.findOne({
             where: {
@@ -84,7 +88,8 @@ class UserServiece {
             password,
             checkUser.passwordHash
         );
-        if (!comparePassword) throw new AuthFailureError("Authentication error");
+        if (!comparePassword)
+            throw new AuthFailureError("Authentication error");
 
         // 3.
         const privateKey = crypto.randomBytes(64).toString("hex");
@@ -111,10 +116,9 @@ class UserServiece {
                 fields: ["id", "name"],
                 object: checkUser,
             }),
-            access_token,
+            tokens,
         };
     };
-
 }
 
-module.exports = new UserServiece();
+module.exports = new UserService();

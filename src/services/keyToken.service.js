@@ -1,6 +1,6 @@
 "use strict";
+const db = require("../models");
 
-const keytokenModel = require("../models/keyStore.model");
 class KeyTokenService {
     static createKeyToken = async ({
         userId,
@@ -9,24 +9,13 @@ class KeyTokenService {
         refreshToken,
     }) => {
         try {
-            // level 0
-            // const tokens = await keytokenModel.create({
-            //     user: userId,
-            //     publicKey,
-            //     privateKey,
-            // });
-
-            // return tokens ? tokens : null;
-
-            // level xxx
-
-            const [tokens, created] = await keytokenModel.findOrCreate({
+            const [tokens, created] = await db.KeyStore.findOrCreate({
                 where: { userId: userId },
                 defaults: {
                     publicKey: publicKey,
                     privateKey: privateKey,
                     refreshToken: refreshToken,
-                }
+                },
             });
 
             if (!created) {
@@ -44,26 +33,26 @@ class KeyTokenService {
     };
 
     static findByUserId = async (userId) => {
-        return await keytokenModel.findOne({
-            where: { userId: userId }
+        return await db.KeyStore.findOne({
+            where: { userId: userId },
         });
     };
 
     static removeKeyById = async (id) => {
-        return await keytokenModel.destroy({
-            where: { id: id }
+        return await db.KeyStore.destroy({
+            where: { id: id },
         });
     };
 
     static deleteKeyById = async (userId) => {
-        return await keytokenModel.destroy({
-            where: { userId: userId }
+        return await db.KeyStore.destroy({
+            where: { userId: userId },
         });
     };
 
     static findByRefreshToken = async (refreshToken) => {
-        return await keytokenModel.findOne({
-            where: { refreshToken: refreshToken }
+        return await db.KeyStore.findOne({
+            where: { refreshToken: refreshToken },
         });
     };
 }

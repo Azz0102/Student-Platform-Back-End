@@ -1,12 +1,11 @@
 "use strict";
 
-const { SuccessResponse } = require("../core/success.response");
+const { SuccessResponse, CREATED } = require("../core/success.response");
 
 const {
     schedulingClassSession,
     signUp,
-    signUpMultipleUsers
-
+    signUpMultipleUsers,
 } = require("../services/admin.service");
 
 const schedulingClassSessionController = async (req, res, next) => {
@@ -33,6 +32,5 @@ const signUpMultipleUsersController = async (req, res, next) => {
 module.exports = {
     schedulingClassSessionController,
     signUpController,
-    signUpMultipleUsersController
-
+    signUpMultipleUsersController,
 };

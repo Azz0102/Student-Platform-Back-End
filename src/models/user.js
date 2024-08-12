@@ -1,6 +1,6 @@
 "use strict";
-const { Model, DataTypes, Sequelize } = require("sequelize");
-module.exports = (sequelize) => {
+const { Model } = require("sequelize");
+module.exports = (sequelize, DataTypes) => {
     class User extends Model {
         static associate(models) {
             // Define associations here if needed
@@ -24,23 +24,23 @@ module.exports = (sequelize) => {
                     model: "roles", // Tên bảng role trong cơ sở dữ liệu
                     key: "id",
                 },
-                field: "roleId",
+                // field: "roleId",
             },
             name: {
                 type: DataTypes.STRING(150),
                 allowNull: true,
-                field: "name",
+                // field: "name",
             },
             passwordHash: {
                 type: DataTypes.STRING(60),
                 allowNull: false,
-                field: "passwordHash",
+                // field: "passwordHash",
             },
             lastLogin: {
                 type: DataTypes.DATE,
                 allowNull: true,
                 defaultValue: null,
-                field: "lastLogin",
+                // field: "lastLogin",
             },
         },
         {
@@ -48,7 +48,7 @@ module.exports = (sequelize) => {
             modelName: "User",
             tableName: "users",
             timestamps: true, // Sử dụng `createdAt` và `updatedAt` tự động
-            underscored: true, // Chuyển đổi tên trường sang snake_case
+            // underscored: true, // Chuyển đổi tên trường sang snake_case
         }
     );
 

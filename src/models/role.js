@@ -1,8 +1,8 @@
 "use strict";
 
-const { Model, DataTypes } = require("sequelize");
+const { Model } = require("sequelize");
 
-module.exports = (sequelize) => {
+module.exports = (sequelize, DataTypes) => {
     class Role extends Model {
         static associate(models) {
             // Define associations here if needed
@@ -48,7 +48,7 @@ module.exports = (sequelize) => {
             modelName: "Role",
             tableName: "roles",
             timestamps: true,
-            underscored: true,
+            // underscored: true,
         }
     );
 

@@ -1,24 +1,23 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
-const UserServiece = require("../services/user.serviece");
+const UserService = require("../services/user.service");
 
 const login = async (req, res, next) => {
     new SuccessResponse({
         message: "Login Success!",
-        metadata: await UserServiece.login(req.body),
+        metadata: await UserService.login(req.body),
     }).send(res);
 };
 
 const logout = async (req, res, next) => {
     new SuccessResponse({
         message: "Logout success!",
-        metadata: await UserServiece.logout(req.keyStore),
+        metadata: await UserService.logout(req.body),
     }).send(res);
 };
 
 module.exports = {
     login,
     logout,
-
-}
+};

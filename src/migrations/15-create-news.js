@@ -2,54 +2,52 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("KeyStores", {
+        await queryInterface.createTable("news", {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
-                unique: true,
                 allowNull: false,
+                unique: true,
             },
-            userId: {
+            user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "users", // Tên bảng mà bạn tham chiếu đến (chú ý chữ 'U' viết hoa)
+                    model: "users",
                     key: "id",
                 },
-                onUpdate: "CASCADE",
                 onDelete: "CASCADE",
-                field: "userId",
+                onUpdate: "CASCADE",
             },
-            publicKey: {
+            name: {
+                type: Sequelize.STRING(255),
+                allowNull: false,
+            },
+            content: {
                 type: Sequelize.TEXT,
                 allowNull: false,
-                field: "publicKey",
+                comment: "Content is in Markdown format",
             },
-            privateKey: {
-                type: Sequelize.TEXT,
+            is_general_school_news: {
+                type: Sequelize.BOOLEAN,
                 allowNull: false,
-                field: "privateKey",
+                defaultValue: false,
             },
-            refreshToken: {
-                type: Sequelize.TEXT,
-                allowNull: false,
-                field: "refreshToken",
-            },
-            createdAt: {
+            created_at: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+                defaultValue: Sequelize.fn("NOW"),
             },
-            updatedAt: {
+            updated_at: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-            }
+                defaultValue: Sequelize.fn("NOW"),
+            },
         });
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("KeyStores");
+        await queryInterface.dropTable("news");
     },
 };

@@ -1,45 +1,50 @@
-'use strict';
+"use strict";
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('users', {
+        await queryInterface.createTable("users", {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
                 unique: true,
-                allowNull: false
+                allowNull: false,
             },
             roleId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'roles', // Tên bảng role mà `roleId` tham chiếu đến
-                    key: 'id'
-                }
+                    model: "roles", // Tên bảng role mà `roleId` tham chiếu đến
+                    key: "id",
+                },
             },
             name: {
                 type: Sequelize.STRING(150),
-                allowNull: true
+                allowNull: true,
             },
             passwordHash: {
                 type: Sequelize.STRING(60),
-                allowNull: false
+                allowNull: false,
             },
             lastLogin: {
                 type: Sequelize.DATE,
                 allowNull: true,
-                defaultValue: null
+                defaultValue: null,
             },
-            created_at: {
+            createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-            }
+                defaultValue: Sequelize.NOW,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
         });
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('users');
-    }
+        await queryInterface.dropTable("users");
+    },
 };

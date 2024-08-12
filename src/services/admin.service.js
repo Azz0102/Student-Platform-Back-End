@@ -2,6 +2,12 @@
 
 const { BadRequestError } = require("../core/error.response");
 const GeneticAlgorithm = require("../helpers/schedulingAlgorithm");
+const { getInfoData } = require("../utils/index");
+const db = require("../models");
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const KeyTokenService = require("../services/keyToken.service");
+const { createTokenPair } = require("../auth/authUtils");
 
 const schedulingClassSession = async () => {
     try {
@@ -15,20 +21,20 @@ const schedulingClassSession = async () => {
 
 const signUp = async ({ name, password = 1, roleId = 2 }) => {
     try {
-        // step1: check email exists?
+        // step1: check name exists?
 
         const checkUser = await db.User.findOne({
             where: {
                 name,
             },
         });
-        if (!checkUser) throw new BadRequestError("Error: Shop already exists");
+        if (checkUser) throw new BadRequestError("Error: User already exists");
 
         const passwordHash = await bcrypt.hash(password, 10);
         const newUser = await db.User.create({
             name,
             passwordHash,
-            roleId
+            roleId,
         });
 
         if (newUser) {
@@ -36,15 +42,6 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             const publicKey = crypto.randomBytes(64).toString("hex");
 
             console.log({ privateKey, publicKey }); // save collection KeyStore
-            const keyStore = await KeyTokenService.createKeyToken({
-                userId: newUser.id,
-                publicKey,
-                privateKey,
-            });
-
-            if (!keyStore) {
-                throw new BadRequestError("Error: KeyStore Error");
-            }
 
             // create token pair
             const tokens = await createTokenPair(
@@ -55,6 +52,16 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
 
             console.log("Create token success::", tokens);
 
+            const keyStore = await KeyTokenService.createKeyToken({
+                userId: newUser.id,
+                publicKey,
+                privateKey,
+                refreshToken: tokens.refreshToken,
+            });
+
+            if (!keyStore) {
+                throw new BadRequestError("Error: KeyStore Error");
+            }
             return {
                 code: 201,
                 metadata: {
@@ -71,12 +78,7 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             metadata: null,
         };
     } catch (error) {
-        return {
-            // code: "xxx",
-            // message: error.message,
-            // status: "error",
-            error
-        };
+        return error.message;
     }
 };
 
@@ -102,5 +104,5 @@ const signUpMultipleUsers = async ({ usersArray }) => {
 module.exports = {
     schedulingClassSession,
     signUp,
-    signUpMultipleUsers
+    signUpMultipleUsers,
 };

@@ -11,7 +11,6 @@ const {
 } = require("../controllers/news.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
-const { authMiddleware } = require("../middleware/auth.middleware");
 
 router.post("", grantAccess("createAny", "news"), asyncHandler(newNews));
 router.get("", grantAccess("readAny", "news"), asyncHandler(newsList));
