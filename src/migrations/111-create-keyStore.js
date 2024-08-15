@@ -49,6 +49,7 @@ module.exports = {
             device: {
                 type: Sequelize.ENUM("web", "mobile"),
                 allowNull: false,
+                defaultValue: "web",
             },
         });
     },
