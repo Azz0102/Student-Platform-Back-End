@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
             device: {
                 type: DataTypes.ENUM("web", "mobile"),
                 allowNull: false,
+                defaultValue: "web",
             },
         },
         {
