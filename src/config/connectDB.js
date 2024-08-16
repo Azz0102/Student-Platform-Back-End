@@ -10,7 +10,7 @@ const sequelize = new Sequelize(
     config.password,
     {
         host: "localhost", // Địa chỉ máy chủ MySQL
-        port: 3306,
+        port: 8811,
         dialect: "mysql", // Chỉ định rằng cơ sở dữ liệu là MySQL
         logging: console.log, // Có thể bật logging để xem các truy vấn SQL (tùy chọn)
     }
@@ -21,8 +21,6 @@ async function connectDB() {
     try {
         await sequelize.authenticate();
         console.log("Connection has been established successfully.");
-        // const r = await Role.findAll();
-        // console.log(r);
     } catch (error) {
         console.error("Unable to connect to the database:", error);
     }
