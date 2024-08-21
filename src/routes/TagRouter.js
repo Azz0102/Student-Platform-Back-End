@@ -7,7 +7,7 @@ const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
 
 router.post("", grantAccess("createOwn", "tag"), asyncHandler(newTag));
-router.get("", grantAccess("readOwn", "tag"), asyncHandler(tagList));
-router.delete("", grantAccess("deleteOwn", "tag"), asyncHandler(tagDelete));
+router.get("/:id", grantAccess("readOwn", "tag"), asyncHandler(tagList));
+router.delete("/:id", grantAccess("deleteOwn", "tag"), asyncHandler(tagDelete));
 
 module.exports = router;

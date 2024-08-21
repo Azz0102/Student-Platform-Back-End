@@ -16,7 +16,7 @@ const newNote = async (req, res, next) => {
 const noteList = async (req, res, next) => {
     new SuccessResponse({
         message: "get list note",
-        metadata: await listNote(req.body),
+        metadata: await listNote({ userId: req.params.id }),
     }).send(res);
 };
 
@@ -30,7 +30,7 @@ const noteUpdate = async (req, res, next) => {
 const noteDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "updated note",
-        metadata: await deleteNote({ noteId: req.query.noteId }),
+        metadata: await deleteNote({ noteId: req.params.id }),
     }).send(res);
 };
 
