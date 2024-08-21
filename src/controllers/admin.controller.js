@@ -7,6 +7,7 @@ const {
     signUp,
     signUpMultipleUsers,
 } = require("../services/admin.service");
+const { publishMessage } = require("../services/notification.service");
 
 const schedulingClassSessionController = async (req, res, next) => {
     new SuccessResponse({
@@ -29,8 +30,16 @@ const signUpMultipleUsersController = async (req, res, next) => {
     }).send(res);
 };
 
+const publish = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Published message!",
+        metadata: await publishMessage(req.body),
+    }).send(res);
+};
+
 module.exports = {
     schedulingClassSessionController,
     signUpController,
     signUpMultipleUsersController,
+    publish,
 };

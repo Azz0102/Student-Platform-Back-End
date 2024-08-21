@@ -44,4 +44,8 @@ const runProducer = async () => {
     }
 };
 
-runProducer().catch(console.error);
+module.exports = {
+    runProducer,
+};
+
+// runProducer().catch(console.error);

@@ -7,10 +7,10 @@ const { createTokenPair } = require("../auth/authUtils");
 
 const KeyTokenService = require("./keyToken.service");
 const { getInfoData } = require("../utils");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 const {
     BadRequestError,
@@ -19,10 +19,10 @@ const {
     NotFoundError,
 } = require("../core/error.response");
 const { values } = require("lodash");
-
+const { informNS } = require("./socket.service");
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: "smtp.gmail.com",
     port: 587,
     auth: {
         user: process.env.USERNAME_EMAIL,
@@ -89,7 +89,10 @@ class UserService {
             where: { refreshToken: keyStore },
         });
         const delKey = await KeyTokenService.removeKeyById(findKey.id);
-        console.log({ delKey });
+
+        global.socket.emit("offline", {
+            userId: findKey.userId,
+        });
         return delKey;
     };
     /*
@@ -135,6 +138,12 @@ class UserService {
             userId,
         });
 
+        // await db.Subscription.create({})
+
+        informNS({
+            username: "20020672",
+            userId: userId,
+        });
         // 5.
         return {
             user: getInfoData({
@@ -146,15 +155,14 @@ class UserService {
     };
 
     verification = async ({ name }) => {
-
         const verificationCode = Math.round(1000 + Math.random() * 9000);
 
         try {
             const data = {
-                from: `"Support EventHub Appplication" <${process.env.USERNAME_EMAIL}>`,
+                from: `"Support EventHub Application" <${process.env.USERNAME_EMAIL}>`,
                 to: `${name}@vnu.edu.vn`,
-                subject: 'Verification email code',
-                text: 'Your code to verification email',
+                subject: "Verification email code",
+                text: "Your code to verification email",
                 html: `<h1>${verificationCode}</h1>`,
             };
 
@@ -175,14 +183,13 @@ class UserService {
                 data: {
                     code: verificationCode,
                 },
-            }
+            };
         } catch (error) {
             return error;
         }
     };
 
     forgotPassword = async ({ name, code }) => {
-
         const user = await db.User.findOne({
             where: {
                 name,
@@ -207,21 +214,19 @@ class UserService {
         if (expireDate > Date.now()) {
             throw new NotFoundError("Code has expired");
         }
-
     };
 
     handleSendMail = async (val) => {
         try {
             await transporter.sendMail(val);
 
-            return 'OK';
+            return "OK";
         } catch (error) {
             return error;
         }
     };
 
     updatePassword = async ({ refreshToken, data }) => {
-
         const { name, password } = data;
 
         const checkUser = await db.User.findOne({
@@ -235,16 +240,16 @@ class UserService {
             where: {
                 userId: checkUser.id,
             },
-        })
+        });
 
         if (keyStore.refreshToken !== refreshToken) {
-            throw new BadRequestError("You not have permisson")
+            throw new BadRequestError("You not have permisson");
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
         checkUser.passwordHash = passwordHash;
         await checkUser.save();
-    }
+    };
 
     updateForgotPassword = async ({ name, password, code }) => {
         const checkUser = await db.User.findOne({
@@ -253,7 +258,6 @@ class UserService {
             },
         });
         if (!checkUser) throw new BadRequestError("User not registered");
-
 
         const checkCode = await db.Code.findOne({
             where: {
@@ -273,8 +277,7 @@ class UserService {
         const passwordHash = await bcrypt.hash(password, 10);
         checkUser.passwordHash = passwordHash;
         await checkUser.save();
-    }
-
+    };
 }
 
 module.exports = new UserService();

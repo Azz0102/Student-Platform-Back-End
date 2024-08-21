@@ -4,6 +4,7 @@ const AdminRouter = require("./AdminRouter");
 const NoteRouter = require("./NoteRouter");
 const TagRouter = require("./TagRouter");
 const NewsRouter = require("./NewsRouter");
+const ChannelRouter = require("./ChannelRouter");
 
 const routes = (app) => {
     app.use("/api/user", UserRouter);
@@ -12,6 +13,7 @@ const routes = (app) => {
     app.use("/api/note", NoteRouter);
     app.use("/api/tag", TagRouter);
     app.use("/api/news", NewsRouter);
+    app.use("/api/channel", ChannelRouter);
 };
 
 module.exports = routes;

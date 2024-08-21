@@ -5,12 +5,11 @@ const router = express.Router();
 const {
     schedulingClassSession,
     signUpController,
-    signUpMultipleUsersController
-
+    signUpMultipleUsersController,
+    publish,
 } = require("../controllers/admin.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
-
 
 router.get(
     "/scheduling",
@@ -21,5 +20,6 @@ router.get(
 );
 router.post("/sign-up", asyncHandler(signUpController));
 router.post("/sign-up-multiple", asyncHandler(signUpMultipleUsersController));
+router.post("/noti", asyncHandler(publish));
 
 module.exports = router;

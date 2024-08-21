@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
 const app = express();
+const { runProducer } = require("./message_queue/rabbitmq/producerDLX");
 
 require("dotenv").config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 connectDB();
+// runProducer();
 
 routes(app);
 
