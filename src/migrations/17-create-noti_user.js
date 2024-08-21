@@ -21,6 +21,11 @@ module.exports = {
                 },
                 onDelete: "CASCADE", // Optional: If a notification is deleted, the relation is also deleted
             },
+            isRead: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             created_at: {
                 type: Sequelize.DATE,
                 allowNull: false,

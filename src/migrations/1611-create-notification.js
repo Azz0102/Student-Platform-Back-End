@@ -36,11 +36,6 @@ module.exports = {
                 type: Sequelize.JSON,
                 defaultValue: {},
             },
-            isRead: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: false,
-            },
             created_at: {
                 type: Sequelize.DATE,
                 allowNull: false,

@@ -2,9 +2,7 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class ClassSession extends Model {
-        static associate(models) {
-            
-        }
+        static associate(models) {}
     }
 
     ClassSession.init(
@@ -21,6 +19,14 @@ module.exports = (sequelize) => {
                 allowNull: false,
                 references: {
                     model: "subjects",
+                    key: "id",
+                },
+            },
+            semesterId: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references: {
+                    model: "semester",
                     key: "id",
                 },
             },
