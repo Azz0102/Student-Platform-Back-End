@@ -211,7 +211,7 @@ class UserService {
             throw new NotFoundError("Wrong code");
         }
 
-        if (expireDate > Date.now()) {
+        if (expireDate.getTime() > Date.now()) {
             throw new NotFoundError("Code has expired");
         }
     };
