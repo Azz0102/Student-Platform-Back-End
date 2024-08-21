@@ -40,11 +40,6 @@ module.exports = (sequelize) => {
                 type: DataTypes.JSON,
                 defaultValue: {},
             },
-            isRead: {
-                type: DataTypes.BOOLEAN,
-                allowNull: false,
-                defaultValue: false,
-            },
         },
         {
             sequelize,

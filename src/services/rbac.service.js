@@ -164,12 +164,7 @@ const createRole = async ({
     }
 };
 
-const roleList = async ({
-    userId, //admin
-    limit = 30,
-    offset = 0,
-    search = "",
-}) => {
+const roleList = async ({ limit = 30, offset = 0, search = "" }) => {
     try {
         // Query to fetch roles, associated permissions, and resources
         const roles = await db.Role.findAll({
@@ -204,7 +199,7 @@ const roleList = async ({
             role.RolePermissions.map((rp) => ({
                 role: role.name,
                 resource: rp.Resource.name,
-                action: rp.Permission.title,
+                action: rp.Permission.name,
                 attributes: rp.attributes,
             }))
         );

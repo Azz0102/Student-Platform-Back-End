@@ -25,7 +25,7 @@ const newsList = async (req, res, next) => {
 const newsListByUser = async (req, res, next) => {
     new SuccessResponse({
         message: "get list news",
-        metadata: await getListNewsByUser(req.body),
+        metadata: await getListNewsByUser({ userId: req.params.id }),
     }).send(res);
 };
 
@@ -39,7 +39,7 @@ const newsUpdate = async (req, res, next) => {
 const newsDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "get list news",
-        metadata: await deleteNews({ newsId: req.query.newsId }),
+        metadata: await deleteNews({ newsId: req.params.id }),
     }).send(res);
 };
 

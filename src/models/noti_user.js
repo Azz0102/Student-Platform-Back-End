@@ -23,6 +23,11 @@ module.exports = (sequelize) => {
                     key: "id",
                 },
             },
+            isRead: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
         },
         {
             sequelize,

@@ -124,9 +124,9 @@ class UserService {
         const publicKey = crypto.randomBytes(64).toString("hex");
 
         // 4.
-        const { id: userId } = checkUser;
+        const { id: userId, roleId } = checkUser;
         const tokens = await createTokenPair(
-            { userId, name },
+            { userId, name, roleId },
             publicKey,
             privateKey
         );

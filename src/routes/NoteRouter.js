@@ -12,8 +12,12 @@ const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
 
 router.post("", grantAccess("createOwn", "note"), asyncHandler(newNote));
-router.get("", grantAccess("readOwn", "note"), asyncHandler(noteList));
+router.get("/:id", grantAccess("readOwn", "note"), asyncHandler(noteList));
 router.patch("", grantAccess("updateOwn", "note"), asyncHandler(noteUpdate));
-router.delete("", grantAccess("deleteOwn", "note"), asyncHandler(noteDelete));
+router.delete(
+    "/:id",
+    grantAccess("deleteOwn", "note"),
+    asyncHandler(noteDelete)
+);
 
 module.exports = router;

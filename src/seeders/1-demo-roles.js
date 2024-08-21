@@ -4,7 +4,7 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.bulkInsert("roles", [
             {
-                title: "Admin",
+                name: "admin",
                 slug: "admin",
                 description: "Administrator with full access",
                 active: true,
@@ -13,7 +13,7 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
-                title: "User",
+                name: "user",
                 slug: "user",
                 description: "Regular user with limited access",
                 active: true,
