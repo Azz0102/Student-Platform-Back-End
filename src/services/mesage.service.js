@@ -1,7 +1,6 @@
 "use strict";
 
 const db = require("../models");
-const dayjs = require("dayjs");
 const { updateConversation } = require("./conversation.service");
 
 const {
@@ -48,8 +47,7 @@ exports.getChatByConversationId = async ({ conversationId }) => {
       include: [
         {
           model: db.User,
-          as: 'sender', // Alias phải khớp với alias trong mô hình của bạn
-          attributes: ['name'], // Chọn các thuộc tính cần thiết từ mô hình User
+          attributes: ['name'],
         },
       ],
     });
@@ -60,25 +58,6 @@ exports.getChatByConversationId = async ({ conversationId }) => {
   }
 };
 
-// Update a chat by ID
-exports.updateChat = async ({ messageId, message }) => {
-  try {
-
-    const [affectedRows, updatedChat] = await db.Message.update(
-      { message, timestamp: dayjs().toISOString() },
-      {
-        where: { messageId },
-        returning: true,
-      }
-    );
-    if (affectedRows === 0) {
-      throw new NotFoundError("updateChat");
-    }
-    return updatedChat[0];
-  } catch (error) {
-    return error;
-  }
-};
 
 // Delete a chat by ID
 exports.deleteChat = async ({ messageId }) => {

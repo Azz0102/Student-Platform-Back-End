@@ -14,6 +14,11 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
 app.use(cors());
+const path = require("path");
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "/view/serverRunning.html"));
+});
 
 // Connect to DB
 
@@ -34,9 +39,8 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
     const statusCode = error.status || 500;
-    const resMessage = `${error.status} - ${
-        Date.now() - error.now
-    }ms - Response: ${JSON.stringify(error)}`;
+    const resMessage = `${error.status} - ${Date.now() - error.now
+        }ms - Response: ${JSON.stringify(error)}`;
 
     // myLogger.error(resMessage, [
     //     req.path,

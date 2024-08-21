@@ -2,39 +2,22 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("subscriptions", {
-            id: {
+        await queryInterface.createTable("conversations", {
+            conversationId: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
                 allowNull: false,
-                unique: true,
             },
-            keyStoreId: {
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "keystores",
+                    model: "class_sessions", // Tên bảng `class_sessions` đã tồn tại trong cơ sở dữ liệu
                     key: "id",
                 },
+                onDelete: "CASCADE", // Xóa conversation khi class session bị xóa
                 onUpdate: "CASCADE",
-                onDelete: "CASCADE",
-            },
-            endpoint: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            expirationTime: {
-                type: Sequelize.BIGINT,
-                allowNull: true,
-            },
-            auth: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            p256dh: {
-                type: Sequelize.STRING,
-                allowNull: false,
             },
             createdAt: {
                 type: Sequelize.DATE,
@@ -50,6 +33,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("subscriptions");
+        await queryInterface.dropTable("conversations");
     },
 };

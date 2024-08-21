@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
             Message.belongsTo(models.Conversation, { foreignKey: "conversationId" });
 
             // 1 Message belongs to 1 User
-            Message.belongsTo(models.User, { foreignKey: "userId", as: 'sender' });
+            Message.belongsTo(models.User, { foreignKey: "userId" });
         }
     }
 
