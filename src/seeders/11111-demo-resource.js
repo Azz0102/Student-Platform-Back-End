@@ -73,6 +73,13 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                name: "tag",
+                slug: "Tag",
+                description: "Tag resource",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ]);
     },
 

@@ -70,6 +70,7 @@ const listNotiByUser = async ({ userId = 1, type = "All" }) => {
 };
 
 const publishMessage = async ({ exchangeName, bindingKey, message }) => {
+    const channelName = 'coke_studio'
     amqp.connect("amqp://guest:12345@localhost", async (err, conn) => {
         if (err) {
             console.log(err);

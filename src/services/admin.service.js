@@ -1,7 +1,7 @@
 "use strict";
 
 const { BadRequestError } = require("../core/error.response");
-const GeneticAlgorithm = require("../helpers/schedulingAlgorithm");
+const Scheduler = require("../helpers/schedulingAlgorithm");
 const { getInfoData } = require("../utils/index");
 const db = require("../models");
 const bcrypt = require("bcrypt");
@@ -9,14 +9,39 @@ const crypto = require("crypto");
 const KeyTokenService = require("../services/keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 
-const schedulingClassSession = async () => {
+const schedulingClassSession = async ({
+    sessionDetails,
+    classrooms,
+    constantSessionsFixedTimeLocation,
+    constantSessionsFixedLocation,
+    constantSessionsFixedTime,
+    noConflictingClassSessions,
+}) => {
     try {
-        const schedule = GeneticAlgorithm.run();
+        const scheduler = new Scheduler(
+            sessionDetails,
+            classrooms,
+            constantSessionsFixedTimeLocation,
+            constantSessionsFixedLocation,
+            constantSessionsFixedTime,
+            noConflictingClassSessions
+        );
+
+        const { schedule, unscheduledSessions } = scheduler.generateSchedule();
+
+        if (unscheduledSessions.length !== 0) {
+            throw ConflictRequestError("Cannot schedule");
+        }
 
         return schedule;
     } catch (error) {
         throw new BadRequestError("Failed to schedule class session");
     }
+};
+
+const saveSchedule = async ({ data }) => {
+    try {
+    } catch (error) {}
 };
 
 const signUp = async ({ name, password = 1, roleId = 2 }) => {
@@ -105,4 +130,5 @@ module.exports = {
     schedulingClassSession,
     signUp,
     signUpMultipleUsers,
+    saveSchedule,
 };

@@ -33,10 +33,15 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: false,
             },
-            timestamp: {
+            createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+                defaultValue: Sequelize.fn("NOW"),
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn("NOW"),
             },
         });
     },

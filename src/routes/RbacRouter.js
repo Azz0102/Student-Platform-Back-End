@@ -14,6 +14,9 @@ const {
 } = require("../controllers/rbac.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
+const { authenticationV2 } = require("../auth/authUtils");
+
+router.use(authenticationV2);
 
 router.post("/role", grantAccess("createAny", "role"), asyncHandler(newRole));
 router.get("/roles", grantAccess("readAny", "role"), asyncHandler(listRoles));

@@ -8,52 +8,49 @@ const amqp = require("amqplib/callback_api");
 const subscribe = ({ username, channel, data }) => {
     amqp.connect("amqp://guest:12345@localhost", (err, conn) => {
         conn.createChannel(async (err, ch) => {
-            ch.assertExchange(channel, "fanout", { durable: true });
-            ch.assertQueue(username, { durable: true });
-            ch.bindQueue(username, channel, channel);
-            // channel
-            //     .subscribe(req)
-            //     .then(() => {
-            //         console.log(
-            //             req.username +
-            //                 " is successfully subscribed to the channel req.channel"
-            //         );
-            //     })
-            //     .catch((err) => {
-            //         debugger;
-            //     });
-
-            const user = await db.User.findOne({ where: { name: username } });
-
-            const channel = await db.Channel.findOne({
-                where: {
-                    name: channel,
+            const notificationExchangeDLX = "notificationExDLX" + username;
+            const notificationRoutingKeyDLX =
+                "notificationRoutingKeyDLX" + username;
+            await ch.assertExchange(channel, "fanout", { durable: true });
+            const queueResult = await ch.assertQueue(username, {
+                durable: true,
+                exclusive: false, // allow many connections to queue
+                arguments: {
+                    "x-dead-letter-exchange": notificationExchangeDLX,
+                    "x-dead-letter-routing-key": notificationRoutingKeyDLX,
                 },
             });
+            await ch.bindQueue(queueResult.queue, channel, channel);
 
-            const channelUser = await db.ChannelUser.create({
-                userId: user.id,
-                channelId: channel.id,
-            });
+            const user = await db.User.findOne({ where: { name: username } });
 
             const keyStore = await db.KeyStore.findOne({
                 where: { userId: user.id },
             });
 
-            const subscription = await db.Subscription.create({
-                keyStoreId: keyStore.id,
-                endpoint: data.endpoint,
-                expirationTime: 60,
-                auth: data.keys["auth"],
-                p256dh: data.keys["p256dh"],
+            const findChannel = await db.Channel.findOne({
+                where: { name: channel },
             });
+
+            const ChannelUser = await db.ChannelUser.create({
+                userId: user.id,
+                channelId: findChannel.id,
+            });
+
+            // const subscription = await db.Subscription.create({
+            //     keyStoreId: keyStore.id,
+            //     endpoint: data.endpoint,
+            //     expirationTime: 60,
+            //     auth: data.keys["auth"],
+            //     p256dh: data.keys["p256dh"],
+            // });
 
             console.log(
                 username +
                     ` is successfully subscribed to the channel ${channel}`
             );
 
-            return subscription;
+            return ChannelUser;
         });
     });
 };

@@ -1,208 +1,291 @@
 "use strict";
 
-module.exports = class GeneticAlgorithm {
+const times = [
+    "7am",
+    "8am",
+    "9am",
+    "10am",
+    "11am",
+    "12pm",
+    "1pm",
+    "2pm",
+    "3pm",
+    "4pm",
+    "5pm",
+    "6pm",
+    "7pm",
+    "8pm",
+];
+
+const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+];
+class Session {
+    constructor(detail, classroom, teacher) {
+        this.detail = detail;
+        this.classroom = classroom;
+        this.teacher = teacher;
+        this.startSlot = null; // This will represent the starting time slot
+    }
+}
+module.exports = class Scheduler {
     constructor(
         sessionDetails,
         classrooms,
-        teachers,
         constantSessionsFixedTimeLocation,
         constantSessionsFixedLocation,
         constantSessionsFixedTime,
-        noConflictingClassSessions,
-        populationSize,
-        generations,
-        mutationRate
+        noConflictingClassSessions
     ) {
-        this.sessionDetails = sessionDetails;
+        this.sessions = sessionDetails.map(
+            (s) => new Session(s.detail, s.classroom, s.teacher)
+        );
         this.classrooms = classrooms;
-        this.teachers = teachers;
         this.constantSessionsFixedTimeLocation =
-            constantSessionsFixedTimeLocation;
-        this.constantSessionsFixedLocation = constantSessionsFixedLocation;
-        this.constantSessionsFixedTime = constantSessionsFixedTime;
+            constantSessionsFixedTimeLocation.map(
+                (s) => new Session(s.detail, s.classroom, s.teacher)
+            );
+        this.constantSessionsFixedLocation = constantSessionsFixedLocation.map(
+            (s) => new Session(s.detail, s.classroom, s.teacher)
+        );
+        this.constantSessionsFixedTime = constantSessionsFixedTime.map(
+            (s) => new Session(s.detail, s.classroom, s.teacher)
+        );
         this.noConflictingClassSessions = noConflictingClassSessions;
-        this.populationSize = populationSize;
-        this.generations = generations;
-        this.mutationRate = mutationRate;
+        this.graph = {};
+        this.timeSlots = times;
+        this.daysOfWeek = days;
+        this.schedule = this.initializeSchedule();
+        this.unscheduledSessions = [];
     }
 
-    createRandomSchedule() {
-        const schedule = [];
-        for (const session of this.sessionDetails) {
-            const classroom = this.classrooms.find(
-                (c) => c.type === session.detail.sessionType
-            );
-            const teacher = this.teachers.find(
-                (t) => t.name === session.teacher.name
-            );
-            const startTime = this.getRandomTime();
-            const dayOfWeek = this.getRandomDayOfWeek();
-            const newSession = {
-                detail: {
-                    ...session.detail,
-                    startTime,
-                    dayOfWeek,
-                },
-                classroom,
-                teacher,
-            };
-            schedule.push(newSession);
+    initializeSchedule() {
+        const schedule = {};
+        for (let day of this.daysOfWeek) {
+            schedule[day] = {};
+            for (let slot of this.timeSlots) {
+                schedule[day][slot] = {};
+                for (let classroom of this.classrooms) {
+                    schedule[day][slot][classroom.name] = null;
+                }
+            }
         }
         return schedule;
     }
 
-    getRandomTime() {
-        const times = [
-            "7am",
-            "8am",
-            "9am",
-            "10am",
-            "11am",
-            "12pm",
-            "1pm",
-            "2pm",
-            "3pm",
-            "4pm",
-            "5pm",
-            "6pm",
+    buildGraph() {
+        const allSessions = [
+            ...this.sessions,
+            ...this.constantSessionsFixedLocation,
+            ...this.constantSessionsFixedTime,
         ];
-        return times[Math.floor(Math.random() * times.length)];
-    }
-
-    getRandomDayOfWeek() {
-        const days = [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-        ];
-        return days[Math.floor(Math.random() * days.length)];
-    }
-
-    checkConflicts(schedule) {
-        const conflicts = [];
-
-        // Check for conflicts with constant sessions
-        for (const session of this.constantSessionsFixedTimeLocation) {
-            const conflictingSessions = schedule.filter(
-                (s) =>
-                    s.detail.classSessionName ===
-                        session.detail.classSessionName &&
-                    s.detail.startTime === session.detail.startTime &&
-                    s.detail.dayOfWeek === session.detail.dayOfWeek &&
-                    s.classroom.name !== session.classroom.name
-            );
-            if (conflictingSessions.length > 0) {
-                conflicts.push(
-                    `Fixed time and location conflict for ${session.detail.classSessionName}`
-                );
-            }
+        for (let session of allSessions) {
+            this.graph[session.detail.classSessionName] = [];
         }
-
-        for (const session of this.constantSessionsFixedLocation) {
-            const conflictingSessions = schedule.filter(
-                (s) =>
-                    s.detail.classSessionName ===
-                        session.detail.classSessionName &&
-                    s.classroom.name !== session.classroom.name
-            );
-            if (conflictingSessions.length > 0) {
-                conflicts.push(
-                    `Fixed location conflict for ${session.detail.classSessionName}`
-                );
-            }
-        }
-
-        for (const session of this.constantSessionsFixedTime) {
-            const conflictingSessions = schedule.filter(
-                (s) =>
-                    s.detail.classSessionName ===
-                        session.detail.classSessionName &&
-                    s.detail.startTime === session.detail.startTime &&
-                    s.detail.dayOfWeek !== session.detail.dayOfWeek
-            );
-            if (conflictingSessions.length > 0) {
-                conflicts.push(
-                    `Fixed time conflict for ${session.detail.classSessionName}`
-                );
-            }
-        }
-
-        // Check for conflicts between sessions
-        for (const session of schedule) {
-            const overlap = schedule.filter(
-                (s) =>
-                    s !== session &&
-                    s.detail.dayOfWeek === session.detail.dayOfWeek &&
-                    s.detail.startTime === session.detail.startTime &&
-                    s.classroom.name === session.classroom.name
-            );
-            if (overlap.length > 0) {
-                conflicts.push(
-                    `Classroom overlap for ${session.detail.classSessionName}`
-                );
-            }
-
-            const teacherOverlap = schedule.filter(
-                (s) =>
-                    s !== session &&
-                    s.detail.dayOfWeek === session.detail.dayOfWeek &&
-                    s.detail.startTime === session.detail.startTime &&
-                    s.teacher.name === session.teacher.name
-            );
-            if (teacherOverlap.length > 0) {
-                conflicts.push(
-                    `Teacher overlap for ${session.detail.classSessionName}`
-                );
-            }
-        }
-
-        return conflicts;
-    }
-
-    schedule() {
-        let population = Array.from({ length: this.populationSize }, () =>
-            this.createRandomSchedule()
-        );
-        let bestSchedule = null;
-        let bestScore = Infinity;
-
-        for (let generation = 0; generation < this.generations; generation++) {
-            for (const individual of population) {
-                const conflicts = this.checkConflicts(individual);
-                const score = conflicts.length;
-                if (score < bestScore) {
-                    bestScore = score;
-                    bestSchedule = individual;
+        for (let i = 0; i < allSessions.length; i++) {
+            for (let j = i + 1; j < allSessions.length; j++) {
+                if (this.areConflicting(allSessions[i], allSessions[j])) {
+                    this.graph[allSessions[i].detail.classSessionName].push(
+                        allSessions[j].detail.classSessionName
+                    );
+                    this.graph[allSessions[j].detail.classSessionName].push(
+                        allSessions[i].detail.classSessionName
+                    );
                 }
             }
-
-            if (bestScore === 0) {
-                break; // Found a valid schedule
-            }
-
-            population = this.evolve(population);
         }
-
-        if (bestScore > 0) {
-            return {
-                error: "Cannot find a valid schedule",
-                details: this.checkConflicts(bestSchedule),
-            };
-        }
-
-        return { schedule: bestSchedule };
     }
 
-    evolve(population) {
-        // Simple evolution strategy: randomly mutate existing schedules
-        return population.map((individual) => {
-            if (Math.random() < this.mutationRate) {
-                return this.createRandomSchedule();
+    areConflicting(session1, session2) {
+        // Check if sessions are in the same no-conflict group
+        for (let group of this.noConflictingClassSessions) {
+            if (
+                group.includes(session1.detail.classSessionName) &&
+                group.includes(session2.detail.classSessionName)
+            ) {
+                return true;
             }
-            return individual;
-        });
+        }
+        // Check if sessions have the same teacher
+        return session1.teacher.name === session2.teacher.name;
+    }
+
+    colorGraph() {
+        const allSessions = [
+            ...this.sessions,
+            ...this.constantSessionsFixedLocation,
+            ...this.constantSessionsFixedTime,
+        ];
+        allSessions.sort(
+            (a, b) =>
+                this.graph[b.detail.classSessionName].length -
+                this.graph[a.detail.classSessionName].length
+        );
+
+        for (let session of allSessions) {
+            if (session.detail.startTime) {
+                session.startSlot = this.timeSlots.indexOf(
+                    session.detail.startTime
+                );
+            } else {
+                let availableSlot = this.findAvailableSlot(session);
+                if (availableSlot !== -1) {
+                    session.startSlot = availableSlot;
+                }
+            }
+        }
+    }
+
+    findAvailableSlot(session) {
+        for (let day of this.daysOfWeek) {
+            for (
+                let i = 0;
+                i < this.timeSlots.length - session.detail.numOfHour + 1;
+                i++
+            ) {
+                if (
+                    this.isSlotAvailable(session, day, i) &&
+                    this.endsBeforeOrAt8PM(i, session.detail.numOfHour)
+                ) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    endsBeforeOrAt8PM(startSlot, duration) {
+        return startSlot + duration <= this.timeSlots.indexOf("8pm");
+    }
+
+    isSlotAvailable(session, day, startSlot) {
+        // Check if the required number of consecutive slots are available
+        for (let i = 0; i < session.detail.numOfHour; i++) {
+            if (startSlot + i >= this.timeSlots.length) return false;
+
+            const currentSlot = this.timeSlots[startSlot + i];
+
+            // Check if any conflicting session is scheduled in this slot
+            for (let conflictingSessionName of this.graph[
+                session.detail.classSessionName
+            ]) {
+                const conflictingSession =
+                    this.sessions.find(
+                        (s) =>
+                            s.detail.classSessionName === conflictingSessionName
+                    ) ||
+                    this.constantSessionsFixedLocation.find(
+                        (s) =>
+                            s.detail.classSessionName === conflictingSessionName
+                    ) ||
+                    this.constantSessionsFixedTime.find(
+                        (s) =>
+                            s.detail.classSessionName === conflictingSessionName
+                    );
+
+                if (
+                    conflictingSession &&
+                    conflictingSession.detail.dayOfWeek === day
+                ) {
+                    const conflictStart = this.timeSlots.indexOf(
+                        conflictingSession.detail.startTime
+                    );
+                    const conflictEnd =
+                        conflictStart + conflictingSession.detail.numOfHour;
+                    if (
+                        startSlot + i >= conflictStart &&
+                        startSlot + i < conflictEnd
+                    ) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    assignClassrooms() {
+        const allSessions = [
+            ...this.sessions,
+            ...this.constantSessionsFixedLocation,
+            ...this.constantSessionsFixedTime,
+        ];
+        for (let session of allSessions) {
+            if (session.classroom) continue;
+
+            let scheduled = false;
+            for (let day of this.daysOfWeek) {
+                const availableClassroom = this.findAvailableClassroom(
+                    session,
+                    day
+                );
+                if (availableClassroom) {
+                    session.classroom = availableClassroom;
+                    session.detail.dayOfWeek = day;
+                    this.scheduleSession(session, day);
+                    scheduled = true;
+                    break;
+                }
+            }
+            if (!scheduled) {
+                this.unscheduledSessions.push(session);
+            }
+        }
+    }
+
+    findAvailableClassroom(session, day) {
+        return this.classrooms.find(
+            (classroom) =>
+                classroom.type === session.detail.sessionType &&
+                classroom.capacity >= session.detail.capacity &&
+                this.isClassroomAvailable(classroom, session, day)
+        );
+    }
+
+    isClassroomAvailable(classroom, session, day) {
+        for (let i = 0; i < session.detail.numOfHour; i++) {
+            const slot = this.timeSlots[session.startSlot + i];
+            if (this.schedule[day][slot][classroom.name] !== null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    scheduleSession(session, day) {
+        for (let i = 0; i < session.detail.numOfHour; i++) {
+            const slot = this.timeSlots[session.startSlot + i];
+            this.schedule[day][slot][session.classroom.name] = session;
+        }
+    }
+
+    generateSchedule() {
+        this.buildGraph();
+        this.colorGraph();
+        this.assignClassrooms();
+
+        // Schedule constant sessions with fixed time and location
+        for (let session of this.constantSessionsFixedTimeLocation) {
+            if (
+                this.endsBeforeOrAt8PM(
+                    this.timeSlots.indexOf(session.detail.startTime),
+                    session.detail.numOfHour
+                )
+            ) {
+                this.scheduleSession(session, session.detail.dayOfWeek);
+            } else {
+                this.unscheduledSessions.push(session);
+            }
+        }
+
+        return {
+            schedule: this.schedule,
+            unscheduledSessions: this.unscheduledSessions,
+        };
     }
 };

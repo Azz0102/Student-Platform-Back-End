@@ -6,6 +6,7 @@ const {
     schedulingClassSession,
     signUp,
     signUpMultipleUsers,
+    saveSchedule,
 } = require("../services/admin.service");
 const { publishMessage } = require("../services/notification.service");
 
@@ -13,6 +14,13 @@ const schedulingClassSessionController = async (req, res, next) => {
     new SuccessResponse({
         message: "Scheduled classes",
         metadata: await schedulingClassSession(req.body),
+    }).send(res);
+};
+
+const savedSchedule = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Save schedule successfully",
+        metadata: await saveSchedule(req.body),
     }).send(res);
 };
 
@@ -42,4 +50,5 @@ module.exports = {
     signUpController,
     signUpMultipleUsersController,
     publish,
+    savedSchedule,
 };
