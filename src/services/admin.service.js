@@ -87,6 +87,7 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             if (!keyStore) {
                 throw new BadRequestError("Error: KeyStore Error");
             }
+
             return {
                 code: 201,
                 metadata: {

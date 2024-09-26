@@ -24,18 +24,6 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            expirationTime: {
-                type: Sequelize.BIGINT,
-                allowNull: true,
-            },
-            auth: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            p256dh: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

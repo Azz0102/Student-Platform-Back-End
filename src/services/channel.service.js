@@ -37,13 +37,10 @@ const subscribe = ({ username, channel, data }) => {
                 channelId: findChannel.id,
             });
 
-            // const subscription = await db.Subscription.create({
-            //     keyStoreId: keyStore.id,
-            //     endpoint: data.endpoint,
-            //     expirationTime: 60,
-            //     auth: data.keys["auth"],
-            //     p256dh: data.keys["p256dh"],
-            // });
+            const subscription = await db.Subscription.create({
+                keyStoreId: keyStore.id,
+                endpoint: data.token,
+            });
 
             console.log(
                 username +

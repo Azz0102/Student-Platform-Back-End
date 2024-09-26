@@ -70,41 +70,41 @@ const listNotiByUser = async ({ userId = 1, type = "All" }) => {
 };
 
 const publishMessage = async ({ exchangeName, bindingKey, message }) => {
-    const channelName = 'coke_studio'
+    // const channelName = 'coke_studio'
     amqp.connect("amqp://guest:12345@localhost", async (err, conn) => {
         if (err) {
             console.log(err);
         }
 
-        const data = await db.User.findAll({
-            attributes: ["name"], // Select only the username from User model
-            include: [
-                {
-                    model: db.ChannelUser, // Join with the ChannelUser table
-                    attributes: [], // We don't need any fields from the pivot table
-                    include: [
-                        {
-                            model: db.Channel,
-                            attributes: [], // We don't need any fields from the Channel table itself
-                            where: { name: channelName }, // Filter by channel name
-                        },
-                    ],
-                },
-                {
-                    model: db.Subscription, // Include subscriptions
-                    attributes: [
-                        "endpoint",
-                        "expirationTime",
-                        "auth",
-                        "p256dh",
-                    ], // Select subscription fields
-                },
-            ],
-        });
+        // const data = await db.User.findAll({
+        //     attributes: ["name"], // Select only the username from User model
+        //     include: [
+        //         {
+        //             model: db.ChannelUser, // Join with the ChannelUser table
+        //             attributes: [], // We don't need any fields from the pivot table
+        //             include: [
+        //                 {
+        //                     model: db.Channel,
+        //                     attributes: [], // We don't need any fields from the Channel table itself
+        //                     where: { name: channelName }, // Filter by channel name
+        //                 },
+        //             ],
+        //         },
+        //         {
+        //             model: db.Subscription, // Include subscriptions
+        //             attributes: [
+        //                 "endpoint",
+        //                 "expirationTime",
+        //                 "auth",
+        //                 "p256dh",
+        //             ], // Select subscription fields
+        //         },
+        //     ],
+        // });
 
         const newMessage = {
             message,
-            data,
+            // data,
         };
 
         conn.createChannel((err, ch) => {

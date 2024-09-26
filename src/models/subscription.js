@@ -27,18 +27,6 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            expirationTime: {
-                type: DataTypes.BIGINT, // Use BIGINT for larger integer values
-                allowNull: true, // Optional field, so allowNull is true
-            },
-            auth: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            p256dh: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
         },
         {
             sequelize,

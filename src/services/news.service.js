@@ -3,6 +3,7 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
+const { publishMessage } = require("./notification.service");
 
 const createNews = async ({
     userId,
@@ -24,6 +25,7 @@ const createNews = async ({
             name,
             isGeneralSchoolNews,
         });
+
         // Create associations with class sessions if provided
         if (classSessionIds.length > 0) {
             const newsClassSessions = classSessionIds.map((classSessionId) => ({
@@ -32,6 +34,15 @@ const createNews = async ({
             }));
             await db.NewsClassSession.bulkCreate(newsClassSessions);
         }
+
+        // get all subscription
+
+        await publishMessage({
+            exchangeName: "coke_studio",
+            bindingKey: "coke_studio",
+            message: content, // { content, title, subscription}
+        });
+
         return news;
     } catch (error) {
         return error;
