@@ -1,5 +1,10 @@
 const { SuccessResponse } = require("../core/success.response");
-const { createTag, listTags, deleteTag } = require("../services/tag.service");
+const {
+    createTag,
+    listTags,
+    deleteTag,
+    updateTag,
+} = require("../services/tag.service");
 
 const newTag = async (req, res, next) => {
     new SuccessResponse({
@@ -20,8 +25,16 @@ const tagDelete = async (req, res, next) => {
     }).send(res);
 };
 
+const tagUpdate = async (req, res, next) => {
+    new SuccessResponse({
+        message: "updated tag",
+        metadata: await updateTag(req.body),
+    }).send(res);
+};
+
 module.exports = {
     newTag,
     tagList,
     tagDelete,
+    tagUpdate
 };
