@@ -138,6 +138,12 @@ class UserService {
             userId,
         });
 
+        // Cập nhật lastLogin với thời điểm hiện tại
+        await db.User.update(
+            { lastLogin: new Date() },
+            { where: { id: userId } }  // Điều kiện để xác định người dùng
+        );
+
         // await db.Subscription.create({})
 
         informNS({
@@ -189,95 +195,128 @@ class UserService {
         }
     };
 
-    forgotPassword = async ({ name, code }) => {
+    // forgotPassword = async ({ name, code }) => {
+    //     const user = await db.User.findOne({
+    //         where: {
+    //             name,
+    //         },
+    //     });
+
+    //     const checkCode = await db.Code.findOne({
+    //         where: {
+    //             userId: user.id,
+    //         },
+    //     });
+
+    //     if (!checkCode) {
+    //         throw new NotFoundError("Code not found");
+    //     }
+
+    //     const { val, expireDate } = checkCode;
+    //     if (val !== code) {
+    //         throw new NotFoundError("Wrong code");
+    //     }
+
+    //     if (expireDate.getTime() > Date.now()) {
+    //         throw new NotFoundError("Code has expired");
+    //     }
+    // };
+
+    forgotPassword = async ({ name }) => {
         const user = await db.User.findOne({
             where: {
                 name,
             },
         });
 
-        const checkCode = await db.Code.findOne({
-            where: {
-                userId: user.id,
-            },
+        if (!user) {
+            throw new NotFoundError("User not found");
+        };
+
+        const resetToken = crypto.randomBytes(20).toString('hex');
+
+        await user.update({
+            reset_token: resetToken, // Cập nhật cột 'reset_token'
         });
 
-        if (!checkCode) {
-            throw new NotFoundError("Code not found");
-        }
+        // const resetLink = `${process.env.USERNAME_EMAIL}/reset-password/${resetToken}`;
+        const resetLink = `http://localhost:3001/api/user/reset-password/${resetToken}`;
 
-        const { val, expireDate } = checkCode;
-        if (val !== code) {
-            throw new NotFoundError("Wrong code");
-        }
+        // Cấu hình nội dung email
+        const mailOptions = {
+            from: 'your-email@gmail.com',
+            to: `${name}@vnu.edu.vn`,
+            subject: 'Reset your password',
+            text: `Click this link to reset your password: ${resetLink}`,
+        };
 
-        if (expireDate.getTime() > Date.now()) {
-            throw new NotFoundError("Code has expired");
-        }
+        await handleSendMail(mailOptions);
     };
 
-    handleSendMail = async (val) => {
-        try {
-            await transporter.sendMail(val);
+    resetPassword = async ({ token }) => {
 
-            return "OK";
-        } catch (error) {
-            return error;
+        // Kiểm tra token trong cơ sở dữ liệu
+        const user = await db.User.findOne({
+            where: { reset_token: token }
+        });
+
+        if (!user) {
+            throw new NotFoundError("User not found");
         }
+
+        // Trả về thông tin người dùng hoặc một giá trị khác nếu cần thiết
+        return user;
     };
 
-    updatePassword = async ({ refreshToken, data }) => {
-        const { name, password } = data;
+    resetPasswordToken = async ({ resetToken, newPassword }) => {
 
-        const checkUser = await db.User.findOne({
-            where: {
-                name,
-            },
-        });
-        if (!checkUser) throw new BadRequestError("User not registered");
+        console.log("token", resetToken);
+        // Tìm người dùng với resetToken
+        const user = await db.User.findOne({ where: { reset_token: resetToken } });
 
-        const keyStore = await db.KeyStore.findOne({
-            where: {
-                userId: checkUser.id,
-            },
-        });
-
-        if (keyStore.refreshToken !== refreshToken) {
-            throw new BadRequestError("You not have permisson");
+        if (!user) {
+            throw new NotFoundError("User not found");
         }
 
-        const passwordHash = await bcrypt.hash(password, 10);
-        checkUser.passwordHash = passwordHash;
-        await checkUser.save();
-    };
+        // Mã hóa mật khẩu mới
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    updateForgotPassword = async ({ name, password, code }) => {
-        const checkUser = await db.User.findOne({
-            where: {
-                name,
-            },
-        });
-        if (!checkUser) throw new BadRequestError("User not registered");
+        // Cập nhật mật khẩu và xóa resetToken
+        await db.User.update(
+            { passwordHash: hashedPassword, reset_token: null }, // Cập nhật thông tin
+            { where: { id: user.id } } // Điều kiện
+        );
+    }
 
-        const checkCode = await db.Code.findOne({
-            where: {
-                userId: checkUser.id,
-            },
-        });
+    // handleSendMail = async (val) => {
+    //     try {
+    //         await transporter.sendMail(val);
 
-        if (!checkCode) {
-            throw new NotFoundError("Code not found");
-        }
+    //         return "OK";
+    //     } catch (error) {
+    //         return error;
+    //     }
+    // };
 
-        const { val } = checkCode;
-        if (val !== code) {
-            throw new NotFoundError("Wrong code");
-        }
+    updatePassword = async ({ oldPassword, newPassword }) => {
 
-        const passwordHash = await bcrypt.hash(password, 10);
-        checkUser.passwordHash = passwordHash;
-        await checkUser.save();
-    };
+        const userId = req.user.id;
+        const user = await db.User.findByPk(userId);
+        if (!user) throw new BadRequestError("User not registered");
+
+        // Kiểm tra mật khẩu cũ
+        const isPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+        if (!isPasswordValid) throw new BadRequestError("Password not correct");
+
+        // Mã hóa mật khẩu mới
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Cập nhật mật khẩu
+        user.passwordHash = hashedPassword;
+        await db.User.save();
+
+    }
+
 }
 
 module.exports = new UserService();

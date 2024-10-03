@@ -42,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: null,
                 // field: "lastLogin",
             },
+            reset_token: {
+                type: DataTypes.STRING(100),
+                allowNull: true,              // Có thể null nếu không sử dụng reset mật khẩu
+                defaultValue: null,
+            },
         },
         {
             sequelize,

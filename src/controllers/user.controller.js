@@ -31,22 +31,26 @@ const forgotPassword = async (req, res, next) => {
     }).send(res);
 };
 
-const updateForgotPassword = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
     new SuccessResponse({
         message: "Verification success!",
-        metadata: await UserService.updateForgotPassword(req.body),
+        metadata: await UserService.resetPassword({
+            token: req.params
+        }),
+    }).send(res);
+};
+
+const resetPasswordToken = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Verification success!",
+        metadata: await UserService.resetPasswordToken(req.body),
     }).send(res);
 };
 
 const updatePassword = async (req, res, next) => {
-    console.log("ssss", req.headers);
-
     new SuccessResponse({
         message: "updatePassword success!",
-        metadata: await UserService.updatePassword({
-            refreshToken: req.headers.refreshtoken,
-            data: req.body
-        }),
+        metadata: await UserService.updatePassword(req.body),
     }).send(res);
 };
 
@@ -55,7 +59,8 @@ module.exports = {
     logout,
     verification,
     forgotPassword,
-    updateForgotPassword,
+    resetPassword,
+    resetPasswordToken,
     updatePassword,
 
 };
