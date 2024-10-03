@@ -16,6 +16,10 @@ app.use(compression());
 app.use(cors());
 const path = require("path");
 
+// Cấu hình thư mục views và template engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "/view/serverRunning.html"));
 });
