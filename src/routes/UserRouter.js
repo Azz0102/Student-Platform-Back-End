@@ -1,17 +1,24 @@
+"use strict";
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/UserController');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const userController = require("../controllers/user.controller");
+const { authenticationV2 } = require("../auth/authUtils");
+const { asyncHandler } = require("../helpers/asyncHandler");
 
-// const { authMiddleware, authGetDetailsMiddleware } = require('../middleware/authMiddleware');
+router.post("/login", asyncHandler(userController.login));
+router.post("/logout", asyncHandler(userController.logout));
+router.post("/verification", asyncHandler(userController.verification));
 
-router.post('/sign-up', authMiddleware, userController.createUser);
-router.post('/sign-in', userController.loginUser);
-// router.put('/update-user/:id', userController.updateUser);
-// router.delete('/delete-user/:id', authMiddleware, userController.deleteUser);
-// router.get('/getAll', authMiddleware, userController.getAllUser);
-// router.get('/get-details-user/:id', authGetDetailsMiddleware, userController.getDetailsUser);
-// router.post('/refresh-token', userController.refreshToken);
+
+router.post("/forgot-password", asyncHandler(userController.forgotPassword));
+router.get("/reset-password/:token", asyncHandler(userController.resetPassword));
+router.post("/reset-password", asyncHandler(userController.resetPasswordToken));
+
+
+
+router.use(authenticationV2);
+
+router.patch("/update-password", asyncHandler(userController.updatePassword));
 
 module.exports = router;

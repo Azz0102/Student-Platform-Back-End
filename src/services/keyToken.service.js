@@ -1,0 +1,60 @@
+"use strict";
+const db = require("../models");
+
+class KeyTokenService {
+    static createKeyToken = async ({
+        userId,
+        publicKey,
+        privateKey,
+        refreshToken,
+    }) => {
+        try {
+            const [tokens, created] = await db.KeyStore.findOrCreate({
+                where: { userId: userId },
+                defaults: {
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    refreshToken: refreshToken,
+                },
+            });
+
+            if (!created) {
+                await tokens.update({
+                    publicKey: publicKey,
+                    privateKey: privateKey,
+                    refreshToken: refreshToken,
+                });
+            }
+
+            return tokens ? tokens.publicKey : null;
+        } catch (error) {
+            return error;
+        }
+    };
+
+    static findByUserId = async (userId) => {
+        return await db.KeyStore.findOne({
+            where: { userId: userId },
+        });
+    };
+
+    static removeKeyById = async (id) => {
+        return await db.KeyStore.destroy({
+            where: { id: id },
+        });
+    };
+
+    static deleteKeyById = async (userId) => {
+        return await db.KeyStore.destroy({
+            where: { userId: userId },
+        });
+    };
+
+    static findByRefreshToken = async (refreshToken) => {
+        return await db.KeyStore.findOne({
+            where: { refreshToken: refreshToken },
+        });
+    };
+}
+
+module.exports = KeyTokenService;
