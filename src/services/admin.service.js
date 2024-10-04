@@ -89,20 +89,10 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             }
 
             return {
-                code: 201,
-                metadata: {
-                    user: getInfoData({
-                        fields: ["id", "name"],
-                        object: newUser,
-                    }),
-                    tokens,
-                },
+                tokens,
             };
         }
-        return {
-            code: 200,
-            metadata: null,
-        };
+        throw new BadRequestError("Signup error");
     } catch (error) {
         return error.message;
     }
