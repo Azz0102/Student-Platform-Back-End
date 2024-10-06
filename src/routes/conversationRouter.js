@@ -7,8 +7,8 @@ const conversationController = require("../controllers/conversation.controller")
 
 router.use(authenticationV2);
 
-router.post("/list", conversationController.getConversationByUserid);
-router.get("/:id", conversationController.getConversationById);
-router.post("/create", conversationController.createConversation);
+router.get("/user/:userId", conversationController.getConversationByUserid);// Lấy cuộc hội thoại theo UserId
+router.get("/:conversationId", conversationController.getConversationById);// Lấy một cuộc hội thoại theo ID
+router.post("/", conversationController.createConversation);// Tạo mới một cuộc hội thoại
 
 module.exports = router;

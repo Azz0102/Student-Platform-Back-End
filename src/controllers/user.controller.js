@@ -17,12 +17,12 @@ const logout = async (req, res, next) => {
     }).send(res);
 };
 
-const verification = async (req, res, next) => {
-    new SuccessResponse({
-        message: "Verification success!",
-        metadata: await UserService.verification(req.body),
-    }).send(res);
-};
+// const verification = async (req, res, next) => {
+//     new SuccessResponse({
+//         message: "Verification success!",
+//         metadata: await UserService.verification(req.body),
+//     }).send(res);
+// };
 
 const forgotPassword = async (req, res, next) => {
     new SuccessResponse({
@@ -57,7 +57,7 @@ const updatePassword = async (req, res, next) => {
 module.exports = {
     login,
     logout,
-    verification,
+    // verification,
     forgotPassword,
     resetPassword,
     resetPasswordToken,

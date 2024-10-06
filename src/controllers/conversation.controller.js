@@ -13,14 +13,14 @@ exports.createConversation = async (req, res, next) => {
 exports.getConversationById = async (req, res, next) => {
     new SuccessResponse({
         message: "Get Conversation By Id!",
-        metadata: await Conversation.getConversationById(req.body),
+        metadata: await Conversation.getConversationById(req.params),
     }).send(res);
 };
 
 exports.getConversationByUserid = async (req, res, next) => {
     new SuccessResponse({
         message: "Get Conversation By Userid !",
-        metadata: await Conversation.getConversationByUserid(req.body),
+        metadata: await Conversation.getConversationByUserid(req.params),
     }).send(res);
 };
 
