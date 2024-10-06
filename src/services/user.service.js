@@ -43,46 +43,46 @@ class UserService {
     /*
         check this token used?
     */
-    handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
-        const { id, name } = user;
+    // handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
+    //     const { id, name } = user;
 
-        if (keyStore.refreshToken !== refreshToken) {
-            throw new AuthFailureError("User not registered");
-        }
+    //     if (keyStore.refreshToken !== refreshToken) {
+    //         throw new AuthFailureError("User not registered");
+    //     }
 
-        const checkUser = await db.User.findOne({
-            where: {
-                name,
-            },
-        });
-        if (!checkUser) {
-            throw new AuthFailureError("User not registered 2");
-        }
+    //     const checkUser = await db.User.findOne({
+    //         where: {
+    //             name,
+    //         },
+    //     });
+    //     if (!checkUser) {
+    //         throw new AuthFailureError("User not registered 2");
+    //     }
 
-        // create new token pair
-        const tokens = await createTokenPair(
-            { id, name },
-            keyStore.publicKey,
-            keyStore.privateKey
-        );
+    //     // create new token pair
+    //     const tokens = await createTokenPair(
+    //         { id, name },
+    //         keyStore.publicKey,
+    //         keyStore.privateKey
+    //     );
 
-        // update token
-        await keyStore.update(
-            {
-                refreshToken: tokens.refreshToken,
-            },
-            {
-                where: {
-                    // điều kiện để chọn tài liệu/cột để cập nhật
-                },
-            }
-        );
+    //     // update token
+    //     await keyStore.update(
+    //         {
+    //             refreshToken: tokens.refreshToken,
+    //         },
+    //         {
+    //             where: {
+    //                 // điều kiện để chọn tài liệu/cột để cập nhật
+    //             },
+    //         }
+    //     );
 
-        return {
-            user,
-            tokens,
-        };
-    };
+    //     return {
+    //         user,
+    //         tokens,
+    //     };
+    // };
 
     logout = async ({ keyStore }) => {
         const findKey = await db.KeyStore.findOne({
@@ -160,40 +160,40 @@ class UserService {
         };
     };
 
-    verification = async ({ name }) => {
-        const verificationCode = Math.round(1000 + Math.random() * 9000);
+    // verification = async ({ name }) => {
+    //     const verificationCode = Math.round(1000 + Math.random() * 9000);
 
-        try {
-            const data = {
-                from: `"Support EventHub Application" <${process.env.USERNAME_EMAIL}>`,
-                to: `${name}@vnu.edu.vn`,
-                subject: "Verification email code",
-                text: "Your code to verification email",
-                html: `<h1>${verificationCode}</h1>`,
-            };
+    //     try {
+    //         const data = {
+    //             from: `"Support EventHub Application" <${process.env.USERNAME_EMAIL}>`,
+    //             to: `${name}@vnu.edu.vn`,
+    //             subject: "Verification email code",
+    //             text: "Your code to verification email",
+    //             html: `<h1>${verificationCode}</h1>`,
+    //         };
 
-            await handleSendMail(data);
+    //         await handleSendMail(data);
 
-            const user = await db.User.findOne({
-                where: {
-                    name,
-                },
-            });
+    //         const user = await db.User.findOne({
+    //             where: {
+    //                 name,
+    //             },
+    //         });
 
-            const checkCode = await db.Code.create({
-                userId: user.id,
-                value: verificationCode,
-            });
+    //         const checkCode = await db.Code.create({
+    //             userId: user.id,
+    //             value: verificationCode,
+    //         });
 
-            return {
-                data: {
-                    code: verificationCode,
-                },
-            };
-        } catch (error) {
-            return error;
-        }
-    };
+    //         return {
+    //             data: {
+    //                 code: verificationCode,
+    //             },
+    //         };
+    //     } catch (error) {
+    //         return error;
+    //     }
+    // };
 
     // forgotPassword = async ({ name, code }) => {
     //     const user = await db.User.findOne({

@@ -41,7 +41,7 @@ const schedulingClassSession = async ({
 
 const saveSchedule = async ({ data }) => {
     try {
-    } catch (error) {}
+    } catch (error) { }
 };
 
 const signUp = async ({ name, password = 1, roleId = 2 }) => {
@@ -99,22 +99,25 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
 };
 
 const signUpMultipleUsers = async ({ usersArray }) => {
-    const results = [];
-    for (const user of usersArray) {
-        const { name, password, roleId } = user;
+    try {
+        // Mã hóa mật khẩu cho từng người dùng
+        const userData = await Promise.all(usersArray.map(async (user) => {
+            const hashedPassword = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
+            return {
+                name: user.name,
+                password: hashedPassword,
+                roleId: user.roleId,
+            };
+        }));
 
-        try {
-            const result = await signUp({ name, password, roleId });
-            results.push({
-                user: name,
-                data: result,
-            });
-        } catch (error) {
-            return error;
-        }
+        // Sử dụng bulkCreate để thêm tất cả người dùng
+        const results = await db.User.bulkCreate(userData, { validate: true });
+
+        return results;
+    } catch (error) {
+        console.error(error);
+        throw new BadRequestError('Error while signing up multiple users');
     }
-
-    return results;
 };
 
 module.exports = {

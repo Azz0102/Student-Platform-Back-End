@@ -10,11 +10,11 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            from_date: {
+            fromDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },
-            end_date: {
+            endDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },
