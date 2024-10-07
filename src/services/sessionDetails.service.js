@@ -1,10 +1,19 @@
 "use strict";
-
+const { Op } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 // Tạo mới một SessionDetail
-const createSessionDetail = async ({ classSessionId, classroomId, startTime, numOfHour, dayOfWeek, sessionType, capacity, teacherId }) => {
+const createSessionDetail = async ({
+    classSessionId,
+    classroomId,
+    startTime,
+    numOfHour,
+    dayOfWeek,
+    sessionType,
+    capacity,
+    teacherId,
+}) => {
     try {
         // Kiểm tra xem classSession có tồn tại không
         const classSession = await db.ClassSession.findByPk(classSessionId);
@@ -46,7 +55,11 @@ const createSessionDetail = async ({ classSessionId, classroomId, startTime, num
 const listSessionDetails = async () => {
     try {
         const sessionDetails = await db.SessionDetails.findAll({
-            include: [{ model: db.ClassSession }, { model: db.Classroom }, { model: db.Teacher }],
+            include: [
+                { model: db.ClassSession },
+                { model: db.Classroom },
+                { model: db.Teacher },
+            ],
             order: [["startTime", "ASC"]],
         });
 
@@ -73,7 +86,17 @@ const deleteSessionDetail = async ({ sessionDetailId }) => {
 };
 
 // Cập nhật SessionDetail
-const updateSessionDetail = async ({ sessionDetailId, classSessionId, classroomId, startTime, numOfHour, dayOfWeek, sessionType, capacity, teacherId }) => {
+const updateSessionDetail = async ({
+    sessionDetailId,
+    classSessionId,
+    classroomId,
+    startTime,
+    numOfHour,
+    dayOfWeek,
+    sessionType,
+    capacity,
+    teacherId,
+}) => {
     try {
         // Tìm SessionDetail theo ID
         const sessionDetail = await db.SessionDetails.findByPk(sessionDetailId);
@@ -133,17 +156,23 @@ const createMultipleSessionDetails = async (sessionDetailArray) => {
             // Kiểm tra các thông tin cần thiết
             const classSession = await db.ClassSession.findByPk(classSessionId);
             if (!classSession) {
-                existingSessionDetails.push(`ClassSession ID ${classSessionId} not found.`);
+                existingSessionDetails.push(
+                    `ClassSession ID ${classSessionId} not found.`
+                );
             }
 
             const classroom = await db.Classroom.findByPk(classroomId);
             if (!classroom) {
-                existingSessionDetails.push(`Classroom ID ${classroomId} not found.`);
+                existingSessionDetails.push(
+                    `Classroom ID ${classroomId} not found.`
+                );
             }
 
             const teacher = await db.Teacher.findByPk(teacherId);
             if (!teacher) {
-                existingSessionDetails.push(`Teacher ID ${teacherId} not found.`);
+                existingSessionDetails.push(
+                    `Teacher ID ${teacherId} not found.`
+                );
             }
         }
 
@@ -152,7 +181,58 @@ const createMultipleSessionDetails = async (sessionDetailArray) => {
         }
 
         // Tạo mới hàng loạt SessionDetails
-        const sessionDetails = await db.SessionDetails.bulkCreate(sessionDetailArray, { validate: true });
+        const sessionDetails = await db.SessionDetails.bulkCreate(
+            sessionDetailArray,
+            { validate: true }
+        );
+
+        return sessionDetails;
+    } catch (error) {
+        return error;
+    }
+};
+
+const getAllUserSessionDetails = async ({ userId }) => {
+    try {
+        const sessionDetails = await db.Enrollment.findAll({
+            where: { userId }, // Filter by the user ID
+            include: [
+                {
+                    model: db.ClassSession,
+                    as: "classSession",
+                    attributes: ["id", "name"], // Select class session id and name
+                    include: [
+                        {
+                            model: db.SessionDetail,
+                            as: "sessionDetails",
+                            include: [
+                                {
+                                    model: db.Classroom,
+                                    as: "classroom",
+                                    attributes: ["id", "name"], // Select classroom id and name
+                                    include: [
+                                        {
+                                            model: db.Amphitheater,
+                                            as: "amphitheater", // Adjust alias
+                                            attributes: [
+                                                "name",
+                                                "id",
+                                                "location",
+                                            ],
+                                        },
+                                    ],
+                                },
+                                {
+                                    model: db.Semester,
+                                    as: "semester",
+                                    attributes: ["id", "fromDate", "endDate"], // Select semester details
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
 
         return sessionDetails;
     } catch (error) {
@@ -166,4 +246,5 @@ module.exports = {
     deleteSessionDetail,
     updateSessionDetail,
     createMultipleSessionDetails,
+    getAllUserSessionDetails,
 };

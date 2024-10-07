@@ -5,6 +5,7 @@ const {
     deleteSessionDetail,
     updateSessionDetail,
     createMultipleSessionDetails,
+    getAllUserSessionDetails,
 } = require("../services/sessionDetails.service");
 
 const newSessionDetail = async (req, res, next) => {
@@ -42,10 +43,18 @@ const newMultipleSessionDetails = async (req, res, next) => {
     }).send(res);
 };
 
+const getUserSessionDetails = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Deleted session detail",
+        metadata: await getAllUserSessionDetails(req.body),
+    }).send(res);
+};
+
 module.exports = {
     newSessionDetail,
     sessionDetailList,
     sessionDetailDelete,
     sessionDetailUpdate,
     newMultipleSessionDetails,
+    getUserSessionDetails
 };

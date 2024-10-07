@@ -7,11 +7,12 @@ const {
     amphitheaterUpdate,
     newMultipleAmphitheaters,
 } = require("../controllers/amphitheater.controller");
+const { asyncHandler } = require("../helpers/asyncHandler");
 
-router.post("/", newAmphitheater); // Tạo mới amphitheater
-router.get("/", amphitheaterList); // Liệt kê amphitheaters
-router.delete("/:id", amphitheaterDelete); // Xóa amphitheater
-router.put("/:id", amphitheaterUpdate); // Cập nhật amphitheater
-router.post("/bulk", newMultipleAmphitheaters); // Tạo mới hàng loạt amphitheaters
+router.post("/", asyncHandler(newAmphitheater)); // Tạo mới amphitheater
+router.get("/", asyncHandler(amphitheaterList)); // Liệt kê amphitheaters
+router.delete("/:id", asyncHandler(amphitheaterDelete)); // Xóa amphitheater
+router.put("/:id", asyncHandler(amphitheaterUpdate)); // Cập nhật amphitheater
+router.post("/bulk", asyncHandler(newMultipleAmphitheaters)); // Tạo mới hàng loạt amphitheaters
 
 module.exports = router;
