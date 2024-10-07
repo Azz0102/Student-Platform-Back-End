@@ -10,7 +10,7 @@ dotenv.config();
 const port = process.env.PORT || 3001;
 const portSocket = 5000;
 
-const { createServer } = require("http");
+const { createServer } = require("https");
 const { Server } = require("socket.io");
 const { createChat } = require("./src/services/mesage.service");
 
@@ -20,7 +20,7 @@ const options = {
 };
 
 
-const httpServer = createServer();
+const httpServer = createServer(options, app);
 
 const io = new Server(httpServer, {
     cors: {
@@ -32,12 +32,15 @@ io.on('connection', (socket) => {
     console.log('A user connected');
 
     socket.on('joinRoom', (room) => {
+        console.log("joined");
         socket.join(room);
         console.log(`User joined room: ${room}`);
     });
 
     socket.on('chatMessage', async (mesage, room) => {
-        const newChat = await createChat(message);
+
+        console.log(room);
+        // const newChat = await createChat(message);
         io.to(room).emit('chatMessage', mesage);
     });
 

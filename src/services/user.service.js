@@ -240,7 +240,7 @@ class UserService {
         });
 
         // const resetLink = `${process.env.USERNAME_EMAIL}/reset-password/${resetToken}`;
-        const resetLink = `http://localhost:3001/api/user/reset-password/${resetToken}`;
+        const resetLink = `https://localhost:3001/api/user/reset-password/${resetToken}`;
 
         // Cấu hình nội dung email
         const mailOptions = {
