@@ -1,3 +1,4 @@
+
 "use strict";
 
 module.exports = {
@@ -30,6 +31,11 @@ module.exports = {
                 type: Sequelize.DATE,
                 allowNull: true,
                 defaultValue: null,
+            },
+            reset_token: {
+                type: Sequelize.STRING(100), // Kiểu dữ liệu của cột
+                allowNull: true,              // Có thể null
+                defaultValue: null,           // Giá trị mặc định là null
             },
             createdAt: {
                 type: Sequelize.DATE,

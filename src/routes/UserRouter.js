@@ -13,7 +13,7 @@ router.post("/logout", asyncHandler(userController.logout));
 
 router.post("/forgot-password", asyncHandler(userController.forgotPassword));
 router.get("/reset-password/:token", asyncHandler(userController.resetPassword));
-router.post("/reset-password", asyncHandler(userController.resetPasswordToken));
+router.patch("/reset-password", asyncHandler(userController.resetPasswordToken));
 
 
 
