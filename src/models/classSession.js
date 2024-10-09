@@ -2,7 +2,11 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class ClassSession extends Model {
-        static associate(models) {}
+        static associate(models) {
+            ClassSession.belongsToMany(models.User, { through: models.Enrollment });
+            ClassSession.hasMany(models.Enrollment);
+            // ClassSession.hasOne(models.Conversation, { foreignKey: "classSessionId", onDelete: 'CASCADE' });
+        }
     }
 
     ClassSession.init(
@@ -11,6 +15,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
+            name: {
+                type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             },

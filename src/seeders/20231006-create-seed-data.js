@@ -50,6 +50,7 @@ module.exports = {
 
         await queryInterface.bulkInsert("class_sessions", [
             {
+                name: "INT_2021",
                 subjectId: subjectIds[0], // Mathematics
                 semesterId: semesterIds[0], // Semester 1
                 fromDate: new Date("2024-01-01"),
@@ -60,6 +61,7 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
+                name: "ENU_2020",
                 subjectId: subjectIds[1], // Physics
                 semesterId: semesterIds[1], // Semester 2
                 fromDate: new Date("2024-06-01"),
@@ -77,22 +79,9 @@ module.exports = {
 
         const classSessionIds = classSessions[0].map((session) => session.id);
 
-        await queryInterface.bulkInsert("conversations", [
-            {
-                classSessionId: classSessionIds[0], // First class session
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-            {
-                classSessionId: classSessionIds[1], // Second class session
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-        ]);
     },
 
     async down(queryInterface, Sequelize) {
-        await queryInterface.bulkDelete("conversations", null, {});
         await queryInterface.bulkDelete("class_sessions", null, {});
         await queryInterface.bulkDelete("semester", null, {});
         await queryInterface.bulkDelete("subjects", null, {});

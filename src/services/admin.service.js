@@ -98,20 +98,20 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
     }
 };
 
-const signUpMultipleUsers = async ({ usersArray }) => {
+const signUpMultipleUsers = async (usersArray) => {
     try {
         // Mã hóa mật khẩu cho từng người dùng
         const userData = await Promise.all(usersArray.map(async (user) => {
-            const hashedPassword = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
+            const passwordHash = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
             return {
                 name: user.name,
-                password: hashedPassword,
+                passwordHash,
                 roleId: user.roleId,
             };
         }));
 
         // Sử dụng bulkCreate để thêm tất cả người dùng
-        const results = await db.User.bulkCreate(userData, { validate: true });
+        const results = await db.User.bulkCreate(userData);
 
         return results;
     } catch (error) {

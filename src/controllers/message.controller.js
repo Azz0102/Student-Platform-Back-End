@@ -31,3 +31,10 @@ exports.deleteChat = async (req, res, next) => {
         metadata: await Mesage.deleteChat(req.body),
     }).send(res);
 };
+
+exports.getUserData = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Get Chat!",
+        metadata: await Mesage.getUserData({ userId: req.params.userId }),
+    }).send(res);
+};

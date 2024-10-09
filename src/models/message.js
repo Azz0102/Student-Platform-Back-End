@@ -4,11 +4,9 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Message extends Model {
         static associate(models) {
-            // 1 Message belongs to 1 Conversation
-            Message.belongsTo(models.Conversation, { foreignKey: "conversationId" });
 
             // 1 Message belongs to 1 User
-            Message.belongsTo(models.User, { foreignKey: "userId" });
+            Message.belongsTo(models.Enrollment, { foreignKey: "enrollmentId" });
         }
     }
 
@@ -20,19 +18,11 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 allowNull: false,
             },
-            conversationId: {
+            enrollmentId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "conversations",
-                    key: "conversationId",
-                },
-            },
-            userId: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "users",
+                    model: "enrollments",
                     key: "id",
                 },
             },
@@ -45,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 defaultValue: DataTypes.NOW,
             },
+            file: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValueL: false,
+            }
         },
         {
             sequelize,

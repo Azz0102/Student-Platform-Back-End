@@ -3,6 +3,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class User extends Model {
         static associate(models) {
+            User.belongsToMany(models.ClassSession, { through: models.Enrollment });
+            User.hasMany(models.Enrollment);
             // Define associations here if needed
             User.belongsTo(models.Role, { foreignKey: "roleId" });
         }
