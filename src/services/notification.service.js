@@ -7,25 +7,14 @@ const amqp = require("amqplib/callback_api");
 
 const pushNotiToSystem = async ({
     type = "NEWS-001",
-    receivedId = 1,
     senderId = 1,
-    options = {},
+    noti_content,
 }) => {
     try {
-        let noti_content;
-
-        if (type === "NEWS-001") {
-            noti_content = "Tin tức mới";
-        } else if (type === "TIME-001") {
-            noti_content = "Sắp đến giờ học, bạn còn @@@ phút";
-        }
-
         const newNoti = await db.Notification.create({
             noti_type: type,
             noti_content,
             noti_senderId: senderId,
-            noti_receivedId: receivedId,
-            noti_options: options,
         });
 
         return newNoti;
@@ -34,39 +23,34 @@ const pushNotiToSystem = async ({
     }
 };
 
-const listNotiByUser = async ({ userId = 1, type = "All" }) => {
+const listNotiByUser = async ({ userId = 1 }) => {
     // Build the WHERE condition
-    const whereCondition = { userId: userId };
-
-    if (type !== "All") {
-        whereCondition["noti_type"] = type;
-    }
-
-    return await db.Notification.findAll({
-        include: [
-            {
-                model: db.NotiUser,
-                where: whereCondition,
-                attributes: [],
-            },
-        ],
-        attributes: [
-            "noti_type",
-            "noti_senderId",
-            [col("NotiUser.userId"), "noti_receivedId"],
-            [
-                fn(
-                    "CONCAT",
-                    "Tin tức mới: ",
-                    fn("COALESCE", col("noti_options.content"), "")
-                ),
-                "noti_content",
+    try {
+        const notifications = await Notification.findAll({
+            include: [
+                {
+                    model: NotiUser,
+                    as: "notiUser", // Adjust alias if necessary
+                    where: { userId },
+                    attributes: ["isRead"], // Do not include NotiUser fields, just filter by userId
+                    required: true,
+                },
             ],
-            "createdAt",
-            "noti_options",
-        ],
-        raw: true, // To get plain JavaScript objects instead of Sequelize instances
-    });
+            attributes: [
+                "id",
+                "noti_type",
+                "noti_content",
+                "createdAt",
+                "updatedAt",
+            ],
+            order: [["createdAt", "DESC"]], // Order by newest notifications first
+        });
+
+        return notifications;
+    } catch (error) {
+        console.error("Error fetching user notifications: ", error);
+        throw error;
+    }
 };
 
 const publishMessage = async ({ exchangeName, bindingKey, message }) => {

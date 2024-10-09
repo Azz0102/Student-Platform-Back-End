@@ -45,7 +45,7 @@ const newMultipleSessionDetails = async (req, res, next) => {
 
 const getUserSessionDetails = async (req, res, next) => {
     new SuccessResponse({
-        message: "Deleted session detail",
+        message: "Get all user session detail",
         metadata: await getAllUserSessionDetails(req.body),
     }).send(res);
 };

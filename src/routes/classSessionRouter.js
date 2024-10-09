@@ -11,4 +11,9 @@ router.delete("/:id", asyncHandler(classSessionController.classSessionDelete)); 
 router.put("/:id", asyncHandler(classSessionController.classSessionUpdate)); // Cập nhật ClassSession
 router.post("/bulk", asyncHandler(classSessionController.newClassSessionsBulk)); // Tạo mới hàng loạt ClassSessions
 
+router.post(
+    "/user",
+    asyncHandler(classSessionController.userGetSpecificClassSession)
+);
+
 module.exports = router;

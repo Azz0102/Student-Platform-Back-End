@@ -18,9 +18,9 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING(20),
                 allowNull: false,
                 validate: {
-                    isIn: [["NEWS-001", "TIME-001"]], // Possible values
+                    isIn: [["NEWS-001", "CLASS-001"]], // Possible values
                 },
-                comment: "Possible values: NEWS-001, TIME-001",
+                comment: "Possible values: NEWS-001, CLASS-001",
             },
             noti_senderId: {
                 type: DataTypes.INTEGER,
@@ -35,10 +35,6 @@ module.exports = (sequelize) => {
             noti_content: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-            },
-            noti_options: {
-                type: DataTypes.JSON,
-                defaultValue: {},
             },
         },
         {

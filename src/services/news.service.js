@@ -3,13 +3,14 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
-const { publishMessage } = require("./notification.service");
+const { publishMessage, pushNotiToSystem } = require("./notification.service");
 
 const createNews = async ({
     userId,
     content = "",
     name,
     isGeneralSchoolNews = false,
+    classSessionIds = [],
 }) => {
     try {
         // Validate user existence
@@ -33,6 +34,14 @@ const createNews = async ({
                 classSessionId,
             }));
             await db.NewsClassSession.bulkCreate(newsClassSessions);
+
+            await pushNotiToSystem({
+                senderId: userId,
+                noti_content: content,
+                type: "CLASS_001",
+            });
+
+            // emit classSession for noti
         }
 
         // get all subscription

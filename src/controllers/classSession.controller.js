@@ -7,6 +7,7 @@ const {
     deleteClassSession,
     updateClassSession,
     createMultipleClassSessions,
+    getUserSpecificClassSession,
 } = require("../services/classSession.service");
 
 const newClassSession = async (req, res, next) => {
@@ -44,10 +45,18 @@ const newClassSessionsBulk = async (req, res, next) => {
     }).send(res);
 };
 
+const userGetSpecificClassSession = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Get user specific ClassSession",
+        metadata: await getUserSpecificClassSession(req.body),
+    }).send(res);
+};
+
 module.exports = {
     newClassSession,
     classSessionList,
     classSessionDelete,
     classSessionUpdate,
     newClassSessionsBulk,
+    userGetSpecificClassSession,
 };
