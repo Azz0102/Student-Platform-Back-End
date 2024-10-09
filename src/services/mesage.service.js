@@ -11,14 +11,13 @@ const {
 } = require("../core/error.response");
 
 // Create (Insert) a new chat
-exports.createChat = async ({ conversationId, userId, message }) => {
+exports.createChat = async ({ enrollmentId, message, timestamp }) => {
   try {
     const chat = await db.Message.create({
-      conversationId,
-      userId,
-      message
+      enrollmentId,
+      message,
+      timestamp
     });
-    await updateConversation(conversationId);
     return chat;
   } catch (error) {
     return error;
@@ -73,3 +72,64 @@ exports.deleteChat = async ({ messageId }) => {
     return error;
   }
 };
+
+exports.getUserData = async ({ userId }) => {
+  try {
+    // Step 1: Get user
+    const user = await db.User.findByPk(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Step 2: Get enrolled class sessions with messages
+    const enrollments = await db.Enrollment.findAll({
+      where: { userId: userId },
+      include: [
+        {
+          model: db.ClassSession,
+          attributes: ['id', 'name', 'subjectId', 'semesterId', 'capacity']
+        },
+        {
+          model: db.Message,
+          attributes: ['messageId', 'message', 'timestamp'],
+          include: [
+            {
+              model: db.Enrollment,
+              attributes: ['userId'],
+              include: [
+                {
+                  model: db.User,
+                  attributes: ['id', 'name']
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+    // Step 3: Structure the result
+    return {
+      user: {
+        id: user.id,
+        name: user.name
+      },
+      enrolledSessions: enrollments.map(enrollment => ({
+        enrollment: {
+          id: enrollment.id,
+          enrolledAt: enrollment.enrolledAt
+        },
+        classSession: enrollment.ClassSession,
+        messages: enrollment.Messages.map(message => ({
+          id: message.messageId,
+          content: message.message,
+          timestamp: message.timestamp,
+          user: message.Enrollment.User
+        }))
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
+  }
+}

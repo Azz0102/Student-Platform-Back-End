@@ -10,6 +10,11 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
+            name: {
+                type: Sequelize.STRING(60),
+                allowNull: false,
+                unique: true,
+            },
             subjectId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,

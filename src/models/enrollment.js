@@ -7,11 +7,19 @@ module.exports = (sequelize) => {
             Enrollment.belongsTo(models.ClassSession, {
                 foreignKey: "classSessionId",
             });
+            Enrollment.hasMany(models.Message)
         }
     }
 
     Enrollment.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
             userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

@@ -3,7 +3,14 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("enrollments", {
-            user_id: {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -12,7 +19,7 @@ module.exports = {
                 },
                 onDelete: "CASCADE", // Optional: adjust if needed
             },
-            class_session_id: {
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -21,7 +28,7 @@ module.exports = {
                 },
                 onDelete: "CASCADE", // Optional: adjust if needed
             },
-            enrolled_at: {
+            enrolledAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
@@ -40,7 +47,7 @@ module.exports = {
 
         await queryInterface.addIndex(
             "enrollments",
-            ["user_id", "class_session_id"],
+            ["userId", "classSessionId"],
             {
                 unique: true,
                 name: "unique_user_class_session",
