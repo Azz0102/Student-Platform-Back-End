@@ -26,7 +26,7 @@ const routes = (app) => {
     app.use("/api/news", NewsRouter);
     app.use("/api/channel", ChannelRouter);
 
-    app.use("/api/mesage", MesageRouter);
+    app.use("/api/message", MesageRouter);
 
     app.use("/api/amphitheater", AmphitheaterRouter);
     app.use("/api/classroom", ClassroomRouter);

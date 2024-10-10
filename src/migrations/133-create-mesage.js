@@ -3,7 +3,7 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("messages", {
-            messageId: {
+            id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
@@ -27,6 +27,11 @@ module.exports = {
                 type: Sequelize.DATE,
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
+            },
+            file: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
             createdAt: {
                 type: Sequelize.DATE,
