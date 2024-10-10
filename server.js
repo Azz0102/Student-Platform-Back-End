@@ -1,6 +1,7 @@
 
 const dotenv = require('dotenv');
 const app = require('./src/app');
+const db = require("./src/models");
 
 const https = require('https');
 const fs = require('fs');
@@ -46,11 +47,10 @@ io.on('connection', (socket) => {
     socket.on('chatMessage', async (message, room) => {
 
         console.log(room);
-        const { avatar, ...newMessage } = message;
         try {
-            const newChat = await createChat(newMessage);
+            const newChat = await createChat(message);
 
-            io.to(room).emit('chatMessage', { avatar, ...newChat });
+            io.to(room).emit('chatMessage', newChat);
         } catch (error) {
             socket.emit("Error create message");
         }
@@ -65,27 +65,33 @@ io.on('connection', (socket) => {
         if (allowedTypes.includes(data.fileType)) {
             console.log(typeof (data.fileName));
 
-            const { avatar, fileName, fileType, ...newMessage } = data;
+            const { fileName, fileType, message, enrollmentId, timestamp } = data;
 
-            const newChat = await createChat({ ...newMessage, file: true });
+            const enrollment = await db.Enrollment.findByPk(
+                enrollmentId
+            )
 
-            // Gửi tệp tới phòng
-            io.to(room).emit('fileReceived', { newChat });
+            const folderPath = path.join("C:/Users/phamd/Videos/uploads", enrollment.classSessionId);
 
-            const { message } = data;
+            // Tạo thư mục nếu chưa tồn tại
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath, { recursive: true });
+            }
+
+            const filePath = path.join(folderPath, fileName);
 
             // Tạo buffer từ Base64 string
             const buffer = Buffer.from(message, 'base64');
-
-            // Đường dẫn để lưu file
-            const filePath = path.join("C:/Users/phamd/Videos/uploads", fileName);
-
 
             // Lưu file vào hệ thống file
             fs.writeFile(filePath, buffer, (err) => {
                 console.log("err");
             });
 
+            const newChat = await createChat({ message: filePath, enrollmentId, timestamp, file: true });
+
+            // Gửi tệp tới phòng
+            io.to(room).emit('fileReceived', { newChat });
 
 
         } else {

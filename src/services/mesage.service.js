@@ -9,49 +9,18 @@ const {
   ForbiddenError,
   NotFoundError,
 } = require("../core/error.response");
+const { where } = require("sequelize");
 
 // Create (Insert) a new chat
-exports.createChat = async ({ enrollmentId, message, timestamp }) => {
+exports.createChat = async ({ enrollmentId, message, timestamp, file = false }) => {
   try {
     const chat = await db.Message.create({
       enrollmentId,
       message,
-      timestamp
+      timestamp,
+      file
     });
     return chat;
-  } catch (error) {
-    return error;
-  }
-};
-
-// Read (Retrieve) a chat by ID
-exports.getChatById = async ({ messageId }) => {
-  try {
-    const chat = await db.Message.findByPk(messageId);
-    if (!chat) {
-      throw new NotFoundError("");
-    }
-    return chat;
-  } catch (error) {
-    return error;
-  }
-};
-
-// Read (Retrieve) a chat by getChatByConversationId
-exports.getChatByConversationId = async ({ conversationId }) => {
-  try {
-    const chats = await db.Message.findAll({
-      where: { conversationId },
-      order: [['timestamp', 'DESC']],
-      include: [
-        {
-          model: db.User,
-          attributes: ['name'],
-        },
-      ],
-    });
-
-    return chats;
   } catch (error) {
     return error;
   }
@@ -59,10 +28,10 @@ exports.getChatByConversationId = async ({ conversationId }) => {
 
 
 // Delete a chat by ID
-exports.deleteChat = async ({ messageId }) => {
+exports.deleteChat = async ({ id }) => {
   try {
     const deletedChat = await db.Message.destroy({
-      where: { messageId },
+      where: { id },
     });
     if (!deletedChat) {
       throw new NotFoundError("deleteChat");
@@ -87,11 +56,14 @@ exports.getUserData = async ({ userId }) => {
       include: [
         {
           model: db.ClassSession,
-          attributes: ['id', 'name', 'subjectId', 'semesterId', 'capacity']
+          attributes: ['id', 'name', 'subjectId', 'semesterId', 'capacity'],
+          include: [
+
+          ]
         },
         {
           model: db.Message,
-          attributes: ['messageId', 'message', 'timestamp'],
+          attributes: ['id', 'message', 'timestamp'],
           include: [
             {
               model: db.Enrollment,
@@ -121,7 +93,7 @@ exports.getUserData = async ({ userId }) => {
         },
         classSession: enrollment.ClassSession,
         messages: enrollment.Messages.map(message => ({
-          id: message.messageId,
+          id: message.id,
           content: message.message,
           timestamp: message.timestamp,
           user: message.Enrollment.User

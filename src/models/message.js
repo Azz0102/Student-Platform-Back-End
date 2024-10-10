@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Message.init(
         {
-            messageId: {
+            id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
             file: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValueL: false,
+                defaultValue: false,
             }
         },
         {
