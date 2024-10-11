@@ -10,7 +10,8 @@ const {
     ForbiddenError,
     NotFoundError,
 } = require("../core/error.response");
-const { where } = require("sequelize");
+const { where, Sequelize, Op } = require("sequelize");
+const { name } = require("ejs");
 
 // Create (Insert) a new chat
 exports.createChat = async ({
@@ -91,6 +92,7 @@ exports.getUserData = async ({ userId }) => {
                     semesterId: enrollment.ClassSession.semesterId,
                     capacity: enrollment.ClassSession.capacity,
                     enrollmentId: enrollment.id,
+<<<<<<< HEAD
                 },
             };
         });
@@ -108,6 +110,18 @@ exports.getUserData = async ({ userId }) => {
                 me_enrollmentId,
                 enrollmentId,
             };
+=======
+                }
+            };
+        });
+
+
+
+        const listClass = enrollments.map((list) => {
+            const { id, name, subjectId, semesterId, capacity, enrollmentId } = list.ClassSession;
+            const me_enrollmentId = list.id;
+            return { id, name, subjectId, semesterId, capacity, me_enrollmentId, enrollmentId };
+>>>>>>> origin/fix_api_getAllChat
             // return list.id;
         });
 
@@ -118,17 +132,29 @@ exports.getUserData = async ({ userId }) => {
                 classSessionId: {
                     [Sequelize.Op.in]: classSessionIds,
                 },
+<<<<<<< HEAD
             },
+=======
+            }
+>>>>>>> origin/fix_api_getAllChat
         });
 
         const enrollmentIds = enrolls.map((enroll) => enroll.id);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/fix_api_getAllChat
         const messageAll = await db.Message.findAll({
             where: {
                 enrollmentId: {
                     [Sequelize.Op.in]: enrollmentIds,
                 },
+<<<<<<< HEAD
             },
+=======
+            }
+>>>>>>> origin/fix_api_getAllChat
         });
 
         const data = enrollments.map((enrollment) => {
@@ -136,13 +162,22 @@ exports.getUserData = async ({ userId }) => {
             const classSession = enrollment.ClassSession;
 
             const enrollments = enrolls.filter((enroll) => {
+<<<<<<< HEAD
                 return enroll.classSessionId === enrollment.classSessionId;
+=======
+                return enroll.classSessionId === enrollment.classSessionId
+>>>>>>> origin/fix_api_getAllChat
             });
 
             const newenrollments = enrollments.map((enroll) => {
                 const { id, userId, classSessionId } = enroll;
                 return { id, userId, classSessionId };
+<<<<<<< HEAD
             });
+=======
+            })
+
+>>>>>>> origin/fix_api_getAllChat
 
             const messages = messageAll.filter((mes) => {
                 for (let index = 0; index < enrollments.length; index++) {
@@ -156,6 +191,7 @@ exports.getUserData = async ({ userId }) => {
             const newmessages = messages.map((mes) => {
                 const { id, enrollmentId, message, timestamp, file } = mes;
                 return { id, enrollmentId, message, timestamp, file };
+<<<<<<< HEAD
             });
 
             return { classSession, newenrollments, newmessages };
@@ -167,6 +203,23 @@ exports.getUserData = async ({ userId }) => {
 
         const allMessages = messages.flatMap((messageGroup) => messageGroup);
 
+=======
+            })
+
+            return { classSession, newenrollments, newmessages }
+
+        })
+
+        const messages = data.map((mes) => {
+
+            return mes.newmessages;
+        })
+
+        const allMessages = messages.flatMap((messageGroup) => messageGroup);
+
+
+
+>>>>>>> origin/fix_api_getAllChat
         const fullMessages = await Promise.all(
             allMessages.map(async (mes) => {
                 const temp = await db.Enrollment.findOne({
@@ -182,6 +235,7 @@ exports.getUserData = async ({ userId }) => {
                 const { id, enrollmentId, message, timestamp, file } = mes;
                 const { id: usedId, name } = temp.User;
                 return {
+<<<<<<< HEAD
                     id,
                     enrollmentId,
                     message,
@@ -189,22 +243,36 @@ exports.getUserData = async ({ userId }) => {
                     file,
                     usedId,
                     name,
+=======
+                    id, enrollmentId, message, timestamp, file, usedId, name
+>>>>>>> origin/fix_api_getAllChat
                 };
             })
         );
 
+<<<<<<< HEAD
         data.forEach((session) => {
             session.newmessages = session.newmessages.map((mes) => {
                 const fullMes = fullMessages.find((fm) => fm.id === mes.id);
                 return fullMes
                     ? { ...mes, usedId: fullMes.usedId, name: fullMes.name }
                     : mes;
+=======
+        data.forEach(session => {
+            session.newmessages = session.newmessages.map(mes => {
+                const fullMes = fullMessages.find(fm => fm.id === mes.id);
+                return fullMes ? { ...mes, usedId: fullMes.usedId, name: fullMes.name } : mes;
+>>>>>>> origin/fix_api_getAllChat
             });
         });
 
         // Step 3: Structure the result
         return {
+<<<<<<< HEAD
             data,
+=======
+            data
+>>>>>>> origin/fix_api_getAllChat
         };
     } catch (error) {
         console.error("Error fetching user data:", error);

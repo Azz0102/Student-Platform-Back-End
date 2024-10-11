@@ -12,10 +12,10 @@ const { asyncHandler } = require("../helpers/asyncHandler");
 const { authenticationV2 } = require("../auth/authUtils");
 const { grantAccess } = require("../middleware/rbac");
 
-router.use(authenticationV2);
+// router.use(authenticationV2);
 
 router.post("", grantAccess("createOwn", "note"), asyncHandler(newNote));
-router.get("/:id", grantAccess("readOwn", "note"), asyncHandler(noteList));
+router.get("/:id", asyncHandler(noteList)); //grantAccess("readOwn", "note")
 router.patch("", grantAccess("updateOwn", "note"), asyncHandler(noteUpdate));
 router.delete(
     "/:id",
