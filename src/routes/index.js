@@ -7,14 +7,14 @@ const NewsRouter = require("./NewsRouter");
 const ChannelRouter = require("./ChannelRouter");
 
 
-const MesageRouter = require("./mesageRouter");
+const MesageRouter = require("./messageRouter");
 const AmphitheaterRouter = require("./amphitheaterRouter");
-const ClassroomRouter = require("./classroomRoute");
-const SubjectRouter = require("./subjectRoute");
-const SemesterRouter = require("./semesterRoute");
-const ClassSessionRouter = require("./classSessionRoute");
-const TeacherRouter = require("./teacherRoute");
-const SessionDetailsRouter = require("./sessionDetailsRoute");
+const ClassroomRouter = require("./classroomRouter");
+const SubjectRouter = require("./subjectRouter");
+const SemesterRouter = require("./semesterRouter");
+const ClassSessionRouter = require("./classSessionRouter");
+const TeacherRouter = require("./teacherRouter");
+const SessionDetailsRouter = require("./sessionDetailsRouter");
 const EnrollmentRouter = require("./enrollmentRouter");
 
 const routes = (app) => {
