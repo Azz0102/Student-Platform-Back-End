@@ -3,7 +3,7 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("note_tags", {
-            note_id: {
+            noteId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -12,7 +12,7 @@ module.exports = {
                 },
                 onDelete: "CASCADE",
             },
-            tag_id: {
+            tagId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -31,12 +31,13 @@ module.exports = {
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
             },
-            // Add unique constraint to prevent duplicate entries
-            unique_constraint: {
-                type: Sequelize.INTEGER,
-                unique: true,
-                fields: ["note_id", "tag_id"],
-            },
+        });
+
+        // Thêm ràng buộc duy nhất cho các cột noteId và tagId
+        await queryInterface.addConstraint("note_tags", {
+            fields: ["noteId", "tagId"],
+            type: "unique",
+            name: "unique_note_tag" // Tên của ràng buộc duy nhất
         });
     },
 

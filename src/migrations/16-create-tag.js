@@ -14,7 +14,7 @@ module.exports = {
                 type: Sequelize.STRING(255),
                 allowNull: false,
             },
-            user_id: {
+            userId: { // Đã chuyển đổi tên cột thành camelCase
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -24,7 +24,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            is_permanent: {
+            isPermanent: { // Đã chuyển đổi tên cột thành camelCase
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,

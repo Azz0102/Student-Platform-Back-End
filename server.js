@@ -18,8 +18,8 @@ const { createChat } = require("./src/services/mesage.service");
 const { BadRequestError } = require('./src/core/error.response');
 
 const options = {
-    key: fs.readFileSync('./localhost+2-key.pem'),
-    cert: fs.readFileSync('./localhost+2.pem'),
+    key: fs.readFileSync('./localhost-key.pem'),
+    cert: fs.readFileSync('./localhost.pem'),
 };
 
 
@@ -50,7 +50,9 @@ io.on('connection', (socket) => {
         try {
             const newChat = await createChat(message);
 
-            io.to(room).emit('chatMessage', newChat);
+            console.log({ ...newChat });
+
+            io.to(room).emit('chatMessage', { ...newChat });
         } catch (error) {
             socket.emit("Error create message");
         }

@@ -18,15 +18,28 @@ const createNote = async ({ userId, content = "", name }) => {
         return error;
     }
 };
-const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
+const listNote = async ({ userId, limit = 1, offset = 0, search = "" }) => {
     try {
+        console.log('notes', userId);
         const notes = await db.UserNote.findAll({
-            where: userId, // Filter by userId if provided
-            include: [db.Tag], // Include associated tags
-            limit,
-            offset,
-            order: [["createdAt", "DESC"]],
+            where: {
+                userId: userId, // Lọc theo userId
+            },
+            include: [
+                {
+                    model: db.Tag,
+                    through: {
+                        attributes: [], // Không lấy thuộc tính nào từ bảng trung gian
+                    },
+                }
+            ],
+            limit,  // Giới hạn số lượng bản ghi trả về (nếu có)
+            offset, // Dịch chuyển bản ghi (nếu có)
+            order: [["createdAt", "DESC"]], // Sắp xếp theo ngày tạo
+            // Sử dụng raw để nhận kết quả thô
         });
+
+        console.log('notes', notes);
         return notes;
     } catch (error) {
         return error;
