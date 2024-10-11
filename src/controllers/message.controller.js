@@ -4,6 +4,7 @@ const db = require("../models");
 
 const { SuccessResponse } = require("../core/success.response");
 const Mesage = require("../services/mesage.service");
+const path = require('path');
 
 exports.createChat = async (req, res, next) => {
     new SuccessResponse({
@@ -27,29 +28,42 @@ exports.getUserData = async (req, res, next) => {
 };
 
 exports.dowloadFile = async (req, res, next) => {
-    const message = db.Message.findByPk(
-        req.params.id
-    );
+    try {
+        // Await the result of the database query
+        const message = await db.Message.findByPk(req.params.id);
 
-    const filePath = message.message;
+        // Check if the message exists
+        if (!message) {
+            return res.status(404).send("Message not found");
+        }
 
-    const extension = path.extname(fileName).toLowerCase();
+        // Assuming message.message contains the file path
+        const filePath = message.message;
 
-    // Kiểm tra nếu là file ảnh thì hiển thị trực tiếp
-    if (['.jpg', '.jpeg', '.png', '.gif'].includes(extension)) {
-        res.sendFile(filePath, (err) => {
-            if (err) {
-                console.error("Lỗi khi gửi file:", err);
-                res.status(500).send("Lỗi khi hiển thị file");
-            }
-        });
-    } else {
-        // Các file khác sẽ được tải xuống
-        res.download(filePath, fileName, (err) => {
-            if (err) {
-                console.error("Lỗi khi tải file:", err);
-                res.status(500).send("Lỗi khi tải file");
-            }
-        });
+        // Extract the file name from the path
+        const fileName = path.basename(filePath);
+        const extension = path.extname(fileName).toLowerCase();
+
+        // Check if it is an image file
+        if ([".jpg", ".jpeg", ".png", ".gif"].includes(extension)) {
+            res.sendFile(filePath, (err) => {
+                if (err) {
+                    console.error("Error sending file:", err);
+                    res.status(500).send("Error displaying file");
+                }
+            });
+        } else {
+            // Other files will be downloaded
+            console.log(filePath)
+            res.download(filePath, (err) => {
+                if (err) {
+                    console.error("Error downloading file:", err);
+                    res.status(500).send("Error downloading file");
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching message:", error);
+        res.status(500).send("Internal server error");
     }
 };
