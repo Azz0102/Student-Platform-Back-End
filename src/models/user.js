@@ -3,10 +3,14 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class User extends Model {
         static associate(models) {
-            User.belongsToMany(models.ClassSession, { through: models.Enrollment });
+            User.belongsToMany(models.ClassSession, {
+                through: models.Enrollment,
+            });
             User.hasMany(models.Enrollment);
             // Define associations here if needed
             User.belongsTo(models.Role, { foreignKey: "roleId" });
+            User.hasMany(models.NotiUser, { foreignKey: "userId" });
+            User.hasMany(models.News, { foreignKey: "userId" });
         }
     }
 
@@ -46,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             reset_token: {
                 type: DataTypes.STRING(100),
-                allowNull: true,              // Có thể null nếu không sử dụng reset mật khẩu
+                allowNull: true, // Có thể null nếu không sử dụng reset mật khẩu
                 defaultValue: null,
             },
         },

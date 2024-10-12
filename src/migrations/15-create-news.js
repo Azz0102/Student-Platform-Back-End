@@ -10,7 +10,7 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            user_id: {
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -29,7 +29,7 @@ module.exports = {
                 allowNull: false,
                 comment: "Content is in Markdown format",
             },
-            is_general_school_news: {
+            isGeneralSchoolNews: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,

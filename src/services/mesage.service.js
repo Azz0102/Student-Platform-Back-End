@@ -10,7 +10,6 @@ const {
     ForbiddenError,
     NotFoundError,
 } = require("../core/error.response");
-const { where, Sequelize, Op } = require("sequelize");
 const { name } = require("ejs");
 
 // Create (Insert) a new chat

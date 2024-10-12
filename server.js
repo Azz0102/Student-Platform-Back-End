@@ -145,6 +145,11 @@ io.on("connection", (socket) => {
     });
 });
 
+const pushNoti = (newNoti) => {
+    io.emit("NewsNoti", newNoti);
+    return newNoti;
+};
+
 httpServer.listen(portSocket);
 
 // app.listen(port, () => {
@@ -154,3 +159,6 @@ httpServer.listen(portSocket);
 https.createServer(options, app).listen(port, () => {
     console.log(`Server running on https://localhost:${port}`);
 });
+
+// Export the io instance so it can be used in other files
+module.exports = { pushNoti };

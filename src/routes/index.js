@@ -16,6 +16,7 @@ const ClassSessionRouter = require("./classSessionRouter");
 const TeacherRouter = require("./teacherRouter");
 const SessionDetailsRouter = require("./sessionDetailsRouter");
 const EnrollmentRouter = require("./enrollmentRouter");
+const NotiRouter = require("./NotiRouter");
 
 const routes = (app) => {
     app.use("/api/user", UserRouter);
@@ -27,6 +28,7 @@ const routes = (app) => {
     app.use("/api/channel", ChannelRouter);
 
     app.use("/api/message", MesageRouter);
+    app.use("/api/notification", NotiRouter);
 
     app.use("/api/amphitheater", AmphitheaterRouter);
     app.use("/api/classroom", ClassroomRouter);

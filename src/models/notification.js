@@ -2,7 +2,13 @@ const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     class Notification extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Notification.belongsTo(models.News, {
+                foreignKey: "noti_sender_id",
+                as: "newsSender",
+            });
+            Notification.hasMany(models.NotiUser, { foreignKey: "notiId" });
+        }
     }
 
     Notification.init(
@@ -22,7 +28,7 @@ module.exports = (sequelize) => {
                 },
                 comment: "Possible values: NEWS-001, CLASS-001",
             },
-            noti_senderId: {
+            noti_sender_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0,

@@ -42,15 +42,6 @@ module.exports = {
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
             },
-            // Add indexes for better query performance
-            index_noti_type: {
-                type: Sequelize.INTEGER,
-                fields: ["noti_type"],
-            },
-            index_noti_sender_id: {
-                type: Sequelize.INTEGER,
-                fields: ["noti_sender_id"],
-            },
         });
     },
 

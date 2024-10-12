@@ -38,19 +38,26 @@ const createNews = async ({
             await pushNotiToSystem({
                 senderId: userId,
                 noti_content: content,
-                type: "CLASS_001",
+                type: "CLASS-001",
             });
 
             // emit classSession for noti
         }
 
+        const noti  = await pushNotiToSystem({
+            senderId: userId,
+            noti_content: content,
+            type: "NEWS-001",
+        });
+
+        console.log(noti);
         // get all subscription
 
-        await publishMessage({
-            exchangeName: "coke_studio",
-            bindingKey: "coke_studio",
-            message: content, // { content, title, subscription}
-        });
+        // await publishMessage({
+        //     exchangeName: "coke_studio",
+        //     bindingKey: "coke_studio",
+        //     message: content, // { content, title, subscription}
+        // });
 
         return news;
     } catch (error) {

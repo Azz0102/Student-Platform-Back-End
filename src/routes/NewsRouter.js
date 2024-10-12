@@ -13,9 +13,9 @@ const { authenticationV2 } = require("../auth/authUtils");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
 
-router.use(authenticationV2);
+// router.use(authenticationV2);
 
-router.post("", grantAccess("createAny", "news"), asyncHandler(newNews));
+router.post("", asyncHandler(newNews)); //grantAccess("createAny", "news")
 router.get("", grantAccess("readAny", "news"), asyncHandler(newsList));
 router.get(
     "/:id",
