@@ -38,13 +38,34 @@ module.exports = {
             },
             {
                 name: "Personal",
-                userId: 3,
+                userId: 2, // Chuyển userId về 2 để có nhiều tag cho userId 2
                 isPermanent: false,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
                 name: "Work",
+                userId: 2, // Tag khác cho userId 2
+                isPermanent: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "Urgent",
+                userId: 2, // Thêm tag Urgent cho userId 2
+                isPermanent: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "Read Later",
+                userId: 3,
+                isPermanent: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "Meeting",
                 userId: 4,
                 isPermanent: false,
                 createdAt: new Date(),
@@ -61,14 +82,26 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
-                noteId: 2, // Giả sử ID của UserNote thứ hai là 2
+                noteId: 1, // Giả sử ID của UserNote đầu tiên là 1
                 tagId: 2,  // Giả sử ID của Tag thứ hai là 2
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                noteId: 3, // Giả sử ID của UserNote thứ ba là 3
+                noteId: 1, // Giả sử ID của UserNote đầu tiên là 1
                 tagId: 3,  // Giả sử ID của Tag thứ ba là 3
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                noteId: 2, // Giả sử ID của UserNote thứ hai là 2
+                tagId: 4,  // Giả sử ID của Tag thứ tư là 4
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                noteId: 3, // Giả sử ID của UserNote thứ ba là 3
+                tagId: 5,  // Giả sử ID của Tag thứ năm là 5
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },

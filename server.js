@@ -17,8 +17,8 @@ const { createChat } = require("./src/services/mesage.service");
 const { BadRequestError } = require("./src/core/error.response");
 
 const options = {
-    key: fs.readFileSync("./localhost+2-key.pem"),
-    cert: fs.readFileSync("./localhost+2.pem"),
+    key: fs.readFileSync("./localhost-key.pem"),
+    cert: fs.readFileSync("./localhost.pem"),
 };
 
 const httpServer = createServer(options, app);

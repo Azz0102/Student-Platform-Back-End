@@ -2,7 +2,6 @@
 
 const db = require("../models");
 const { updateConversation } = require("./conversation.service");
-const { Sequelize } = require("sequelize");
 
 const {
     BadRequestError,
