@@ -11,7 +11,7 @@ const {
 const createTag = async ({ userId, name, isPermanent = false }) => {
     try {
         // Check the number of tags with isPermanent: false
-        const count = await Tag.count({
+        const count = await db.Tag.count({
             where: {
                 userId,
                 isPermanent: false,
@@ -42,6 +42,7 @@ const createTag = async ({ userId, name, isPermanent = false }) => {
         });
 
         return tag;
+
     } catch (error) {
         return error;
     }
@@ -56,7 +57,14 @@ const listTags = async ({ userId }) => {
             order: [["name", "ASC"]], // Order by tag name
         });
 
-        return tags;
+        const newtag = tags.map((tag) => {
+            return {
+                id: tag.id,
+                name: tag.name,
+            }
+        })
+
+        return newtag;
     } catch (error) {
         return error;
     }
@@ -75,7 +83,7 @@ const deleteTag = async ({ tagId }) => {
         }
 
         // Delete the tag
-        await tag.destroy();
+        await tag.destroy({ force: true });
     } catch (error) {
         return error;
     }

@@ -14,13 +14,12 @@ const { grantAccess } = require("../middleware/rbac");
 
 // router.use(authenticationV2);
 
-router.post("", grantAccess("createOwn", "note"), asyncHandler(newNote));
+router.post("", asyncHandler(newNote));//grantAccess("createOwn", "note")
 router.get("/:id", asyncHandler(noteList)); //grantAccess("readOwn", "note")
-router.patch("", grantAccess("updateOwn", "note"), asyncHandler(noteUpdate));
+router.patch("", asyncHandler(noteUpdate));//grantAccess("updateOwn", "note")
 router.delete(
     "/:id",
-    grantAccess("deleteOwn", "note"),
     asyncHandler(noteDelete)
-);
+);//grantAccess("deleteOwn", "note")
 
 module.exports = router;

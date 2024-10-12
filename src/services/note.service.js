@@ -7,20 +7,25 @@ const { BadRequestError, NotFoundError } = require("../core/error.response");
 const createNote = async ({ userId, content = "", name }) => {
     try {
         // Create the UserNote entry
-        const newNote = await db.UserNote.create({
+        const note = await db.UserNote.create({
             userId,
             name,
             content,
         });
 
-        return newNote;
+        return {
+            id: note.id,
+            name: note.name,
+            content: note.content,
+            tags: []
+        }
     } catch (error) {
         return error;
     }
 };
-const listNote = async ({ userId, limit = 1, offset = 0, search = "" }) => {
+
+const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
     try {
-        console.log('notes', userId);
         const notes = await db.UserNote.findAll({
             where: {
                 userId: userId, // Lọc theo userId
@@ -31,25 +36,38 @@ const listNote = async ({ userId, limit = 1, offset = 0, search = "" }) => {
                     through: {
                         attributes: [], // Không lấy thuộc tính nào từ bảng trung gian
                     },
+                    attributes: ['id', 'name'], // Chỉ lấy các thuộc tính cần thiết
                 }
             ],
             limit,  // Giới hạn số lượng bản ghi trả về (nếu có)
             offset, // Dịch chuyển bản ghi (nếu có)
             order: [["createdAt", "DESC"]], // Sắp xếp theo ngày tạo
-            // Sử dụng raw để nhận kết quả thô
         });
 
-        console.log('notes', notes);
-        return notes;
+        // Xử lý lại dữ liệu để trả về đúng format
+        const formattedNotes = notes.map(note => ({
+            id: note.id,
+            name: note.name, // Chuyển 'name' thành 'title'
+            content: note.content,
+            tags: note.Tags.map(tag => ({
+                id: tag.id,
+                name: tag.name,
+            }))
+        }));
+        return formattedNotes;
     } catch (error) {
+        console.error(error);
         return error;
     }
 };
+
+
 const updateNote = async ({ noteId, content, name, tagIds = [] }) => {
     try {
         // Find the note to update
-        const note = await UserNote.findByPk(noteId);
+        const note = await db.UserNote.findByPk(noteId);
 
+        console.log("note", name, tagIds);
         if (!note) {
             throw new NotFoundError("Note not found");
         }
@@ -61,14 +79,16 @@ const updateNote = async ({ noteId, content, name, tagIds = [] }) => {
 
         // Update the note's content
         if (content) {
-            note.notes = content;
+            note.content = content;
         }
 
         await note.save();
 
+        console.log(note.content);
+
         // Update the associated tags if provided
         if (tagIds.length > 0) {
-            const tags = await Tag.findAll({
+            const tags = await db.Tag.findAll({
                 where: {
                     id: tagIds,
                 },
@@ -86,14 +106,14 @@ const updateNote = async ({ noteId, content, name, tagIds = [] }) => {
 const deleteNote = async ({ noteId }) => {
     try {
         // Find the note to delete
-        const note = await UserNote.findByPk(noteId);
+        const note = await db.UserNote.findByPk(noteId);
 
         if (!note) {
             throw new NotFoundError("Note not found");
         }
 
         // Delete the note and associated tags in the join table
-        await note.destroy();
+        await note.destroy({ force: true });
     } catch (error) {
         return error;
     }
