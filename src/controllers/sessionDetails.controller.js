@@ -6,6 +6,7 @@ const {
     updateSessionDetail,
     createMultipleSessionDetails,
     getAllUserSessionDetails,
+    getSessionDetailsById,
 } = require("../services/sessionDetails.service");
 
 const newSessionDetail = async (req, res, next) => {
@@ -50,11 +51,19 @@ const getUserSessionDetails = async (req, res, next) => {
     }).send(res);
 };
 
+const getSessionDetailsByUserId = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Get all user session detail",
+        metadata: await getSessionDetailsById({ id: req.params.id }),
+    }).send(res);
+};
+
 module.exports = {
     newSessionDetail,
     sessionDetailList,
     sessionDetailDelete,
     sessionDetailUpdate,
     newMultipleSessionDetails,
-    getUserSessionDetails
+    getUserSessionDetails,
+    getSessionDetailsByUserId
 };

@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
                 enrollmentId: message.enrollmentId,
                 usedId: enrollment.User.id,
                 name: enrollment.User.name,
-            });
+            }, room);
         } catch (error) {
             socket.emit("Error create message");
         }
@@ -133,7 +133,7 @@ io.on("connection", (socket) => {
                 enrollmentId,
                 usedId: enrollment.User.id,
                 name: enrollment.User.name,
-            });
+            }, room);
         } else {
             console.log("File type not allowed.");
             socket.emit("fileError", "File type not allowed."); // Thông báo lỗi cho người gửi

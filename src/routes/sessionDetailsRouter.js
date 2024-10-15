@@ -6,6 +6,7 @@ const {
     sessionDetailUpdate,
     newMultipleSessionDetails,
     getUserSessionDetails,
+    getSessionDetailsByUserId
 } = require("../controllers/sessionDetails.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 
@@ -18,5 +19,8 @@ router.put("/:id", asyncHandler(sessionDetailUpdate)); // Cập nhật SessionDe
 router.post("/multiple", asyncHandler(newMultipleSessionDetails)); // Tạo mới hàng loạt SessionDetails
 
 router.get("/user", asyncHandler(getUserSessionDetails));
+
+router.get("/user/:id", asyncHandler(getSessionDetailsByUserId));
+
 
 module.exports = router;

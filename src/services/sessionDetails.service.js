@@ -240,6 +240,99 @@ const getAllUserSessionDetails = async ({ userId }) => {
     }
 };
 
+const getDayOfWeekNumber = (dayOfWeek) => {
+    const days = {
+        "Sunday": 0,
+        "Monday": 1,
+        "Tuesday": 2,
+        "Wednesday": 3,
+        "Thursday": 4,
+        "Friday": 5,
+        "Saturday": 6
+    };
+    return days[dayOfWeek];
+};
+
+// Hàm để lấy tất cả các ngày có session từ fromDate đến endDate
+const getSessionDates = (fromDate, endDate, dayOfWeek) => {
+    let dates = [];
+    let currentDate = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()));
+    currentDate.setHours(0, 0, 0, 0);
+
+    // Chuyển đổi dayOfWeek (text) thành số
+    const targetDay = getDayOfWeekNumber(dayOfWeek);
+
+    // Lặp qua các tuần và tìm ngày đúng với dayOfWeek
+    while (currentDate <= endDate) {
+        if (currentDate.getDay() === targetDay) {
+            dates.push(new Date(currentDate));  // Lưu ngày
+        }
+        currentDate.setDate(currentDate.getDate() + 1);  // Tăng 1 ngày
+    }
+    return dates;
+};
+
+const getSessionDetailsById = async ({ id }) => {
+    try {
+        const userSessionDetails = await db.User.findByPk(id, {
+            include: [{
+                model: db.Enrollment,
+                include: [{
+                    model: db.ClassSession,
+                    include: [{
+                        model: db.SessionDetails,
+                        include: [{
+                            model: db.Classroom,
+                            include: [{
+                                model: db.Amphitheater
+                            }]
+                        }, {
+                            model: db.Teacher
+                        }]
+                    }, {
+                        model: db.Semester // Include semester information
+                    }]
+                }]
+            }],
+        });
+
+        const formattedSessions = userSessionDetails.Enrollments.flatMap(enrollment => {
+            const sessionDetails = enrollment.ClassSession.SessionDetails;
+            const semester = enrollment.ClassSession.Semester;
+
+            return sessionDetails.flatMap(detail => {
+                // Lấy tất cả các ngày cho session dựa vào fromDate, endDate, và dayOfWeek
+                const sessionDates = getSessionDates(new Date(semester.fromDate), new Date(semester.endDate), detail.dayOfWeek);
+
+                // Map từng ngày thành một session
+                return sessionDates.map(sessionDate => {
+                    // Tính thời gian bắt đầu và kết thúc dựa vào startTime và numOfHour
+                    const start = new Date(sessionDate);
+                    start.setHours(new Date(detail.startTime).getUTCHours(), new Date(detail.startTime).getUTCMinutes());
+
+                    const end = new Date(start.getTime() + detail.numOfHour * 60 * 60 * 1000);
+
+                    return {
+                        id: detail.id,
+                        title: enrollment.ClassSession.name,  // Dùng name của ClassSession làm title
+                        start,    // Thời gian bắt đầu
+                        end       // Thời gian kết thúc
+                    };
+                });
+            });
+        })
+
+        return formattedSessions;
+
+
+    } catch (error) {
+        console.error("Error fetching session details:", error);
+        return error; // Handle or propagate the error as needed
+    }
+}
+
+
+
 module.exports = {
     createSessionDetail,
     listSessionDetails,
@@ -247,4 +340,5 @@ module.exports = {
     updateSessionDetail,
     createMultipleSessionDetails,
     getAllUserSessionDetails,
+    getSessionDetailsById
 };
