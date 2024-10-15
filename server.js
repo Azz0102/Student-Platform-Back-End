@@ -17,8 +17,8 @@ const { createChat } = require("./src/services/mesage.service");
 const { BadRequestError } = require("./src/core/error.response");
 
 const options = {
-    key: fs.readFileSync("./localhost-key.pem"),
-    cert: fs.readFileSync("./localhost.pem"),
+    key: fs.readFileSync(process.env.KEY_PATH),
+    cert: fs.readFileSync(process.env.CERT_PATH),
 };
 
 const httpServer = createServer(options, app);
@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
             }
 
             const folderPath = path.join(
-                "C:\\Users\\phamd\\Videos\\data",
+                process.env.SAVE_PATH,
                 enrollment.classSessionId.toString()
             );
 
@@ -159,6 +159,3 @@ httpServer.listen(portSocket);
 https.createServer(options, app).listen(port, () => {
     console.log(`Server running on https://localhost:${port}`);
 });
-
-// Export the io instance so it can be used in other files
-module.exports = { pushNoti };
