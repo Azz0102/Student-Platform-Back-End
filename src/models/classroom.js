@@ -6,6 +6,8 @@ module.exports = (sequelize) => {
             Classroom.belongsTo(models.Amphitheater, {
                 foreignKey: "amphitheaterId",
             });
+
+            Classroom.hasMany(models.SessionDetails, { foreignKey: 'classroomId' });
         }
     }
 

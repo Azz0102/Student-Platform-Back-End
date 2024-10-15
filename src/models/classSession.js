@@ -6,6 +6,13 @@ module.exports = (sequelize) => {
             ClassSession.belongsToMany(models.User, { through: models.Enrollment });
             ClassSession.hasMany(models.Enrollment);
             // ClassSession.hasOne(models.Conversation, { foreignKey: "classSessionId", onDelete: 'CASCADE' });
+
+            ClassSession.hasMany(models.Enrollment, { foreignKey: 'classSessionId' });
+            ClassSession.belongsTo(models.Subject, { foreignKey: 'subjectId' });
+            ClassSession.belongsTo(models.Semester, { foreignKey: 'semesterId' });
+            ClassSession.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
+            ClassSession.hasMany(models.FinalExam, { foreignKey: 'classSessionId' });
+            ClassSession.belongsToMany(models.News, { through: 'news_classSession', foreignKey: 'classSession' });
         }
     }
 

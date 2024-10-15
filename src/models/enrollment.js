@@ -7,7 +7,9 @@ module.exports = (sequelize) => {
             Enrollment.belongsTo(models.ClassSession, {
                 foreignKey: "classSessionId",
             });
-            Enrollment.hasMany(models.Message)
+            Enrollment.hasMany(models.Message);
+            Enrollment.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
+
         }
     }
 

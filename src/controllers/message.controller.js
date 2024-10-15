@@ -46,6 +46,9 @@ exports.dowloadFile = async (req, res, next) => {
 
         // Check if it is an image file
         if ([".jpg", ".jpeg", ".png", ".gif"].includes(extension)) {
+
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
             return res.sendFile(filePath, (err) => {
                 if (err) {
                     console.error("Error sending file:", err);
@@ -54,8 +57,10 @@ exports.dowloadFile = async (req, res, next) => {
             });
         } else {
             // Other files will be downloaded
-            console.log(filePath)
-            return res.download(filePath, (err) => {
+
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+            return res.download(filePath, fileName, (err) => {
                 if (err) {
                     console.error("Error downloading file:", err);
                     // return res.status(500).send("Error downloading file");

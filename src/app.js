@@ -13,7 +13,11 @@ require("dotenv").config();
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-app.use(cors());
+app.use(cors(
+    {
+        exposedHeaders: ['Content-Disposition'], // Cho phép client truy cập header này
+    }
+));
 const path = require("path");
 
 // Cấu hình thư mục views và template engine
