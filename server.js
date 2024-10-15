@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
             }
 
             const folderPath = path.join(
-                "/home/huy/Documents/File",
+                "C:\\Users\\phamd\\Videos\\data",
                 enrollment.classSessionId.toString()
             );
 

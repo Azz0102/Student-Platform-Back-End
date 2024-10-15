@@ -46,24 +46,24 @@ exports.dowloadFile = async (req, res, next) => {
 
         // Check if it is an image file
         if ([".jpg", ".jpeg", ".png", ".gif"].includes(extension)) {
-            res.sendFile(filePath, (err) => {
+            return res.sendFile(filePath, (err) => {
                 if (err) {
                     console.error("Error sending file:", err);
-                    res.status(500).send("Error displaying file");
+                    // return res.status(500).send("Error displaying file");
                 }
             });
         } else {
             // Other files will be downloaded
             console.log(filePath)
-            res.download(filePath, (err) => {
+            return res.download(filePath, (err) => {
                 if (err) {
                     console.error("Error downloading file:", err);
-                    res.status(500).send("Error downloading file");
+                    // return res.status(500).send("Error downloading file");
                 }
             });
         }
     } catch (error) {
         console.error("Error fetching message:", error);
-        res.status(500).send("Internal server error");
+        return res.status(500).send("Internal server error");
     }
 };
