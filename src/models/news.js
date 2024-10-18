@@ -12,6 +12,7 @@ module.exports = (sequelize) => {
                 foreignKey: "noti_senderId",
                 as: "notifications",
             });
+            News.belongsToMany(models.ClassSession, { through: 'news_classSession', foreignKey: 'newsId' });
         }
     }
 

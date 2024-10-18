@@ -13,6 +13,8 @@ module.exports = (sequelize) => {
             ClassSession.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
             ClassSession.hasMany(models.FinalExam, { foreignKey: 'classSessionId' });
             ClassSession.belongsToMany(models.News, { through: 'news_classSession', foreignKey: 'classSession' });
+
+            ClassSession.hasMany(models.Grade, { foreignKey: 'classSessionId' });
         }
     }
 

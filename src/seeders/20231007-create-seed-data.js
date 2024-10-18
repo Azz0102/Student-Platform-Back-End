@@ -95,7 +95,7 @@ module.exports = {
             },
             {
                 noteId: 2, // Giả sử ID của UserNote thứ hai là 2
-                tagId: 4,  // Giả sử ID của Tag thứ tư là 4
+                tagId: 5,  // Giả sử ID của Tag thứ tư là 5
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },

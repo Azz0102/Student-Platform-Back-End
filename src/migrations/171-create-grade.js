@@ -14,7 +14,11 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: true,
             },
-            class_session_id: {
+            name: {
+                type: Sequelize.TEXT,
+                allowNull: true,
+            },
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
                 references: {
@@ -24,7 +28,7 @@ module.exports = {
                 onUpdate: "CASCADE",
                 onDelete: "SET NULL",
             },
-            user_id: {
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
                 references: {

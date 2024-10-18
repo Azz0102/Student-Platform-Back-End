@@ -1,3 +1,4 @@
+const { jwtDecode } = require("jwt-decode");
 const { SuccessResponse } = require("../core/success.response");
 const {
     createSessionDetail,
@@ -7,6 +8,7 @@ const {
     createMultipleSessionDetails,
     getAllUserSessionDetails,
     getSessionDetailsById,
+    getUserClassSessionDetails,
 } = require("../services/sessionDetails.service");
 
 const newSessionDetail = async (req, res, next) => {
@@ -58,6 +60,20 @@ const getSessionDetailsByUserId = async (req, res, next) => {
     }).send(res);
 };
 
+const getUserClassSessionDetail = async (req, res, next) => {
+
+    const refreshToken = req.headers['refreshtoken'];
+    console.log('refreshToken', refreshToken);
+
+    const { userId } = jwtDecode(refreshToken);
+    console.log('userId', userId);
+
+    new SuccessResponse({
+        message: "Get all user session detail",
+        metadata: await getUserClassSessionDetails({ userId, classSessionId: req.params.id }),
+    }).send(res);
+};
+
 module.exports = {
     newSessionDetail,
     sessionDetailList,
@@ -65,5 +81,6 @@ module.exports = {
     sessionDetailUpdate,
     newMultipleSessionDetails,
     getUserSessionDetails,
-    getSessionDetailsByUserId
+    getSessionDetailsByUserId,
+    getUserClassSessionDetail
 };
