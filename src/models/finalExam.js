@@ -2,7 +2,9 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class FinalExam extends Model {
-        static associate(models) {}
+        static associate(models) {
+            FinalExam.belongsTo(models.ClassSession, { foreignKey: 'classSessionId' });
+        }
     }
 
     FinalExam.init(

@@ -62,7 +62,7 @@ const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
 };
 
 
-const updateNote = async ({ noteId, content, name, tagIds = [] }) => {
+const updateNote = async ({ noteId, content, name, tagIds }) => {
     try {
         // Find the note to update
         const note = await db.UserNote.findByPk(noteId);
@@ -93,16 +93,24 @@ const updateNote = async ({ noteId, content, name, tagIds = [] }) => {
                     id: tagIds,
                 },
             });
-            await note.setTags(tags); // This will replace existing tags
-        } else {
-            await note.setTags([]);
-        }
 
+            console.log('tags', tags);
+
+            // Duyệt qua từng tag và cập nhật vào bảng trung gian với status
+            for (let tag of tags) {
+                // Sử dụng upsert để cập nhật hoặc thêm mới trong bảng NoteTag
+                await db.NoteTag.upsert({
+                    noteId: note.id,
+                    tagId: tag.id,
+                });
+            }
+        }
         return note;
     } catch (error) {
         return error;
     }
 };
+
 const deleteNote = async ({ noteId }) => {
     try {
         // Find the note to delete

@@ -7,6 +7,9 @@ module.exports = (sequelize) => {
                 foreignKey: "newsId",
                 onDelete: "CASCADE",
             });
+
+            News.belongsTo(models.User, { foreignKey: 'userId' });
+            News.belongsToMany(models.ClassSession, { through: 'news_classSession', foreignKey: 'newsId' });
         }
     }
 

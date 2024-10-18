@@ -314,6 +314,7 @@ const getSessionDetailsById = async ({ id }) => {
 
                     return {
                         id: detail.id,
+                        classSessionId: enrollment.ClassSession.id,
                         title: enrollment.ClassSession.name,  // Dùng name của ClassSession làm title
                         start,    // Thời gian bắt đầu
                         end       // Thời gian kết thúc
@@ -331,6 +332,76 @@ const getSessionDetailsById = async ({ id }) => {
     }
 }
 
+const getUserClassSessionDetails = async ({ userId, classSessionId }) => {
+    try {
+        const classSessionDetails = await db.ClassSession.findOne({
+            where: { id: classSessionId },
+            include: [
+                {
+                    model: db.Enrollment,
+                    where: { userId: userId },
+                    required: true
+                },
+                {
+                    model: db.Semester
+                },
+                {
+                    model: db.Subject
+                },
+                {
+                    model: db.SessionDetails,
+                    include: [
+                        {
+                            model: db.Classroom,
+                            include: [{ model: db.Amphitheater }]
+                        },
+                        { model: db.Teacher }
+                    ]
+                },
+                {
+                    model: db.Grade,
+                    where: { userId: userId }
+                },
+                {
+                    model: db.FinalExam
+                },
+                // {
+                //     model: db.News,
+                //     through: { attributes: [] }, // This will exclude the junction table attributes
+                //     include: [
+                //         {
+                //             model: db.User,
+                //             attributes: ['id', 'name'] // Include only necessary user attributes
+                //         }
+                //     ]
+                // }
+            ]
+        });
+
+        if (!classSessionDetails) {
+            throw new Error('Class session not found or user not enrolled');
+        }
+
+        // Fetch user notes with matching tags
+        const userNotes = await db.UserNote.findAll({
+            where: { userId: userId },
+            include: [{
+                model: db.Tag,
+                where: { name: classSessionDetails.name },
+                required: true
+            }]
+        });
+
+        return {
+            classSessionDetails,
+            userNotes
+        };
+    } catch (error) {
+        console.error('Error fetching user class session details:', error);
+        throw error;
+    }
+}
+
 
 
 module.exports = {
@@ -340,5 +411,6 @@ module.exports = {
     updateSessionDetail,
     createMultipleSessionDetails,
     getAllUserSessionDetails,
-    getSessionDetailsById
+    getSessionDetailsById,
+    getUserClassSessionDetails
 };

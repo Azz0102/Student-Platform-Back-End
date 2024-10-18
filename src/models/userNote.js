@@ -8,6 +8,8 @@ module.exports = (sequelize) => {
                 foreignKey: "noteId",
                 otherKey: "tagId",
             });
+
+            UserNote.belongsTo(models.User, { foreignKey: 'userId' });
         }
     }
 

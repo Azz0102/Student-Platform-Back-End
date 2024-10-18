@@ -10,7 +10,7 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            class_session_id: {
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -19,7 +19,7 @@ module.exports = {
                 },
                 onDelete: "CASCADE", // Optional: adjust if needed
             },
-            exam_date: {
+            examDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },

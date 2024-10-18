@@ -2,7 +2,10 @@ const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     class Grade extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Grade.belongsTo(models.User, { foreignKey: 'userId' });
+            Grade.belongsTo(models.ClassSession, { foreignKey: 'classSessionId' });
+        }
     }
 
     Grade.init(
@@ -15,6 +18,10 @@ module.exports = (sequelize) => {
                 unique: true,
             },
             type: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+            },
+            name: {
                 type: DataTypes.TEXT,
                 allowNull: true,
             },

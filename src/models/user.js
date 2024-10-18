@@ -7,6 +7,8 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.Enrollment);
             // Define associations here if needed
             User.belongsTo(models.Role, { foreignKey: "roleId" });
+
+            User.hasMany(models.Grade, { foreignKey: 'userId' });
         }
     }
 
