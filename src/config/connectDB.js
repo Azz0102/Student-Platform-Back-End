@@ -5,12 +5,12 @@ const config = require(__dirname + "/config.json")[env];
 
 // Cấu hình kết nối Sequelize với MySQL
 const sequelize = new Sequelize(
-    config.database,
-    config.username,
-    config.password,
+    process.env.DB_HOST_NAME,
+    process.env.DB_HOST_USER,
+    process.env.DB_HOST_PASSWORD,
     {
-        host: "localhost", // Địa chỉ máy chủ MySQL
-        port: 8811,
+        host: process.env.DB_HOST, // Địa chỉ máy chủ MySQL
+        port: process.env.DB_HOST_PORT,
         dialect: "mysql", // Chỉ định rằng cơ sở dữ liệu là MySQL
         logging: console.log, // Có thể bật logging để xem các truy vấn SQL (tùy chọn)
     }
