@@ -4,7 +4,7 @@ const { Op, fn, col, literal } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const amqp = require("amqplib/callback_api");
-const { pushNoti } = require("../../server");
+const { pushNoti } = require("../../src/dbs/init.socket");
 
 const pushNotiToSystem = async ({
     type = "NEWS-001",
@@ -26,9 +26,9 @@ const pushNotiToSystem = async ({
             isRead: false, // By default, mark the notification as unread
         }));
 
-        await db.NotiUser.bulkCreate(notiUserEntries);
+        const notiUser = await db.NotiUser.bulkCreate(notiUserEntries);
 
-        pushNoti(newNoti);
+        pushNoti(newNoti, notiUser);
 
         return newNoti;
     } catch (error) {
@@ -84,36 +84,51 @@ const updateNotiUser = async ({ id }) => {
 };
 
 const publishMessage = async ({ exchangeName, bindingKey, message }) => {
-    // const channelName = 'coke_studio'
+    const channelName = "coke_studio";
     amqp.connect("amqp://guest:12345@localhost", async (err, conn) => {
         if (err) {
             console.log(err);
         }
 
-        const data = await db.User.findAll({
-            attributes: ["name"], // Select only the username from User model
+        // First, get all user IDs in the specified channel
+        const usersInChannel = await db.ChannelUser.findAll({
+            attributes: ["userId"],
             include: [
                 {
-                    model: db.ChannelUser, // Join with the ChannelUser table
-                    attributes: [], // We don't need any fields from the pivot table
-                    include: [
-                        {
-                            model: db.Channel,
-                            attributes: [], // We don't need any fields from the Channel table itself
-                            where: { name: channelName }, // Filter by channel name
-                        },
-                    ],
-                },
-                {
-                    model: db.Subscription, // Include subscriptions
-                    attributes: ["endpoint"], // Select subscription fields
+                    model: db.Channel,
+                    where: { name: channelName },
+                    attributes: [],
                 },
             ],
         });
 
+        console.log("usersInChannel", usersInChannel);
+
+        const userIds = usersInChannel.map((cu) => cu.userId);
+
+        // Now, get all subscriptions for these users
+        const subscriptions = await db.Subscription.findAll({
+            attributes: ["endpoint"],
+            include: [
+                {
+                    model: db.KeyStore,
+                    where: { userId: { [Op.in]: userIds } },
+                    attributes: [],
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: ["name"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        console.log("subscriptions", subscriptions);
+
         const newMessage = {
             message,
-            data,
+            subscriptions,
         };
 
         conn.createChannel((err, ch) => {

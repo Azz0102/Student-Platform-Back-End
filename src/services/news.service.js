@@ -49,8 +49,7 @@ const createNews = async ({
             noti_content: content,
             type: "NEWS-001",
         });
-
-        console.log(noti);
+        
         // get all subscription
 
         await publishMessage({

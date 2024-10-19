@@ -6,9 +6,14 @@ const { BadRequestError, NotFoundError } = require("../core/error.response");
 // Tạo mới một subject
 const createSubscription = async ({ keyStore, endpoint }) => {
     try {
+
+        console.log("userKey", keyStore);
+
         const userKey = await db.KeyStore.findOne({
             where: { refreshToken: keyStore },
         });
+
+        console.log("userKey", userKey);
         if (!userKey) {
             throw new NotFoundError("KeyStore not found");
         }
@@ -16,6 +21,8 @@ const createSubscription = async ({ keyStore, endpoint }) => {
         let subscription = await db.Subscription.findOne({
             where: { keyStoreId: userKey.id },
         });
+
+        console.log("subscription", subscription);
 
         if (subscription) {
             // Update existing subscription

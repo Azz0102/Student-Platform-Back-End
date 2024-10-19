@@ -12,7 +12,16 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.NotiUser, { foreignKey: "userId" });
             User.hasMany(models.News, { foreignKey: "userId" });
 
-            User.hasMany(models.Grade, { foreignKey: 'userId' });
+            User.hasMany(models.Grade, { foreignKey: "userId" });
+            User.belongsToMany(models.Channel, {
+                through: models.ChannelUser,
+                foreignKey: "userId",
+                otherKey: "channelId",
+            });
+            User.hasMany(models.ChannelUser);
+            User.hasMany(models.KeyStore, {
+                foreignKey: "userId",
+            });
         }
     }
 

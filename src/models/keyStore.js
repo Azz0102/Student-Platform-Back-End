@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // Define associations here if needed
             KeyStore.belongsTo(models.User, { foreignKey: "userId" });
+            KeyStore.hasMany(models.Subscription, {
+                foreignKey: "keyStoreId",
+                sourceKey: "id",
+            });
         }
     }
 
