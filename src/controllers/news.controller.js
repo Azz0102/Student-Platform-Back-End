@@ -43,10 +43,18 @@ const newsDelete = async (req, res, next) => {
     }).send(res);
 };
 
+const getUserRelatedNew = async (req, res, next) => {
+    new SuccessResponse({
+        message: "get list news",
+        metadata: await getUserRelatedNews({ userId: req.params.id }),
+    }).send(res);
+};
+
 module.exports = {
     newNews,
     newsList,
     newsListByUser,
     newsUpdate,
     newsDelete,
+    getUserRelatedNew
 };
