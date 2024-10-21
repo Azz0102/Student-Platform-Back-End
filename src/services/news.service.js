@@ -44,12 +44,12 @@ const createNews = async ({
             // emit classSession for noti
         }
 
-        const noti  = await pushNotiToSystem({
+        const noti = await pushNotiToSystem({
             senderId: userId,
             noti_content: content,
             type: "NEWS-001",
         });
-        
+
         // get all subscription
 
         await publishMessage({
@@ -109,11 +109,11 @@ const getListNews = async ({ limit = 30, offset = 0, search = "" }) => {
     try {
         const whereClause = search
             ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } },
+                ],
+            }
             : {};
 
         const newsList = await db.News.findAll({
@@ -139,11 +139,11 @@ const getListNewsByUser = async ({
     try {
         const whereClause = search
             ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } },
+                ],
+            }
             : {};
 
         // Fetch user's enrolled class sessions
@@ -193,10 +193,48 @@ const deleteNews = async ({ newsId }) => {
     }
 };
 
+const getUserRelatedNews = async ({ userId }) => {
+    try {
+        const userNews = await db.News.findAll({
+            where: {
+                [Op.or]: [
+                    { isGeneralSchoolNews: true },
+                    { '$ClassSessions.Enrollments.userId$': userId }
+                ]
+            },
+            include: [
+                {
+                    model: db.User,
+                    attributes: ['id', 'name'],
+                    as: 'Author'
+                },
+                {
+                    model: db.ClassSession,
+                    attributes: ['id', 'name'],
+                    include: [
+                        {
+                            model: db.Enrollment,
+                            where: { userId: userId },
+                            required: false
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        return userNews;
+    } catch (error) {
+        console.error('Error fetching user-related news:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     createNews,
     updateNews,
     getListNews,
     getListNewsByUser,
     deleteNews,
+    getUserRelatedNews
 };
