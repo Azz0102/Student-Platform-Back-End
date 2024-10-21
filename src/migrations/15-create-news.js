@@ -34,6 +34,14 @@ module.exports = {
                 allowNull: false,
                 defaultValue: false,
             },
+            time: { // Thêm trường mới: thời gian
+                type: Sequelize.DATE,
+                allowNull: true, // Có thể cho phép null
+            },
+            location: { // Thêm trường mới: địa điểm
+                type: Sequelize.STRING(255),
+                allowNull: true, // Có thể cho phép null
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

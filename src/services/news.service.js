@@ -178,6 +178,8 @@ const getListNewsByUser = async ({
     }
 };
 
+
+
 const deleteNews = async ({ newsId }) => {
     try {
         // Find the news entry by its ID
@@ -193,13 +195,27 @@ const deleteNews = async ({ newsId }) => {
     }
 };
 
+const formatResponseData = (responseData) => {
+    return responseData.map(news => ({
+        id: news.id,
+        title: news.name, // ánh xạ name thành title
+        content: news.content,
+        relatedTo: news.ClassSessions.map(classSession => ({
+            id: classSession.id, // chỉ giữ lại id
+            name: classSession.name // chỉ giữ lại name
+        })),
+        time: news.time,
+        location: news.location
+    }));
+};
+
 const getUserRelatedNews = async ({ userId }) => {
     try {
         const userNews = await db.News.findAll({
             where: {
                 [Op.or]: [
                     { isGeneralSchoolNews: true },
-                    { '$ClassSessions.Enrollments.userId$': userId }
+                    { '$ClassSessions.Enrollments.userId$': userId } // Đảm bảo điều này là đúng với cấu trúc của bạn
                 ]
             },
             include: [
@@ -211,24 +227,35 @@ const getUserRelatedNews = async ({ userId }) => {
                 {
                     model: db.ClassSession,
                     attributes: ['id', 'name'],
+                    through: {
+                        model: db.NewsClassSession,
+                        attributes: ['classSessionId'], // Chỉ định classSessionId từ bảng trung gian
+                    },
                     include: [
                         {
                             model: db.Enrollment,
                             where: { userId: userId },
                             required: false
                         }
-                    ]
+                    ],
+                    as: 'ClassSessions' // Đặt alias cho include này
                 }
             ],
             order: [['createdAt', 'DESC']]
         });
 
-        return userNews;
+
+
+        return formatResponseData(userNews);
+
     } catch (error) {
         console.error('Error fetching user-related news:', error);
         throw error;
     }
 }
+
+
+
 
 module.exports = {
     createNews,

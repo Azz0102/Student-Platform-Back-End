@@ -6,6 +6,7 @@ const {
     getListNews,
     getListNewsByUser,
     deleteNews,
+    getUserRelatedNews,
 } = require("../services/news.service");
 
 const newNews = async (req, res, next) => {
