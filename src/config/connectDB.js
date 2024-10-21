@@ -1,4 +1,5 @@
 const { Sequelize } = require("sequelize");
+require('dotenv').config();
 
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/config.json")[env];
@@ -15,6 +16,7 @@ const sequelize = new Sequelize(
         logging: console.log, // Có thể bật logging để xem các truy vấn SQL (tùy chọn)
     }
 );
+
 
 // Kiểm tra kết nối
 async function connectDB() {
