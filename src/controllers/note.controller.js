@@ -4,6 +4,7 @@ const {
     listNote,
     updateNote,
     deleteNote,
+    getNoteId,
 } = require("../services/note.service");
 
 const newNote = async (req, res, next) => {
@@ -19,6 +20,14 @@ const noteList = async (req, res, next) => {
         metadata: await listNote({ userId: req.params.id }),
     }).send(res);
 };
+
+const noteId = async (req, res, next) => {
+    new SuccessResponse({
+        message: "get list note",
+        metadata: await getNoteId({ noteId: req.params.id }),
+    }).send(res);
+};
+
 
 const noteUpdate = async (req, res, next) => {
     new SuccessResponse({
@@ -37,6 +46,7 @@ const noteDelete = async (req, res, next) => {
 module.exports = {
     newNote,
     noteList,
+    noteId,
     noteUpdate,
     noteDelete,
 };

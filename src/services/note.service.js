@@ -61,6 +61,20 @@ const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
     }
 };
 
+const getNoteId = async ({ noteId }) => {
+    try {
+        const note = await db.UserNote.findByPk(noteId, {
+            include: [{
+                model: db.Tag, // Nếu bạn muốn bao gồm các tag liên quan
+                through: { attributes: [] }, // Không lấy các trường của bảng trung gian
+            }],
+        });
+
+        return note;
+    } catch (error) {
+        return error;
+    }
+}
 
 const updateNote = async ({ noteId, content, name, tagIds }) => {
     try {
@@ -129,6 +143,7 @@ const deleteNote = async ({ noteId }) => {
 module.exports = {
     createNote,
     listNote,
+    getNoteId,
     updateNote,
     deleteNote,
 };

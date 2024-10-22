@@ -31,6 +31,69 @@ exports.createChat = async ({
     }
 };
 
+exports.getChatById = async ({ classSessionId }) => {
+    try {
+        const classSession = await db.ClassSession.findByPk(classSessionId, {
+            attributes: ['id', 'name']
+        });
+
+        if (!classSession) {
+            throw new Error("Class session not found");
+        }
+
+        // Step 1: Get all enrollments for the class session
+        const enrollments = await db.Enrollment.findAll({
+            where: {
+                classSessionId: classSessionId
+            },
+            include: [{
+                model: db.User,
+                attributes: ['id', 'name']
+            }]
+        });
+
+        if (!enrollments.length) {
+            throw new Error("No enrollments found for this class session");
+        }
+
+        // Step 2: Get enrollment IDs
+        const enrollmentIds = enrollments.map(enrollment => enrollment.id);
+
+        // Step 3: Get all messages for these enrollments
+        const messages = await db.Message.findAll({
+            where: {
+                enrollmentId: {
+                    [Sequelize.Op.in]: enrollmentIds
+                }
+            }
+        });
+
+        // Step 4: Format messages with user information
+        const formattedMessages = messages.map(message => {
+            const enrollment = enrollments.find(e => e.id === message.enrollmentId);
+            return {
+                id: message.id,
+                message: message.message,
+                timestamp: message.timestamp,
+                file: message.file,
+                enrollmentId: message.enrollmentId,
+                userId: enrollment.User.id,
+                userName: enrollment.User.name
+            };
+        });
+
+        return {
+            classSessionId,
+            name: classSession.name,
+            messages: formattedMessages
+        };
+
+    } catch (error) {
+        console.error("Error fetching class session messages:", error);
+        throw error;
+    }
+};
+
 // Delete a chat by ID
 exports.deleteChat = async ({ id }) => {
     try {
