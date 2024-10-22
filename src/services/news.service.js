@@ -44,12 +44,12 @@ const createNews = async ({
             // emit classSession for noti
         }
 
-        const noti  = await pushNotiToSystem({
+        const noti = await pushNotiToSystem({
             senderId: userId,
             noti_content: content,
             type: "NEWS-001",
         });
-        
+
         // get all subscription
 
         await publishMessage({
@@ -109,11 +109,11 @@ const getListNews = async ({ limit = 30, offset = 0, search = "" }) => {
     try {
         const whereClause = search
             ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } },
+                ],
+            }
             : {};
 
         const newsList = await db.News.findAll({
@@ -139,11 +139,11 @@ const getListNewsByUser = async ({
     try {
         const whereClause = search
             ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } },
+                ],
+            }
             : {};
 
         // Fetch user's enrolled class sessions
@@ -178,6 +178,8 @@ const getListNewsByUser = async ({
     }
 };
 
+
+
 const deleteNews = async ({ newsId }) => {
     try {
         // Find the news entry by its ID
@@ -193,10 +195,73 @@ const deleteNews = async ({ newsId }) => {
     }
 };
 
+const formatResponseData = (responseData) => {
+    return responseData.map(news => ({
+        id: news.id,
+        title: news.name, // ánh xạ name thành title
+        content: news.content,
+        relatedTo: news.ClassSessions.map(classSession => ({
+            id: classSession.id, // chỉ giữ lại id
+            name: classSession.name // chỉ giữ lại name
+        })),
+        time: news.time,
+        location: news.location
+    }));
+};
+
+const getUserRelatedNews = async ({ userId }) => {
+    try {
+        const userNews = await db.News.findAll({
+            where: {
+                [Op.or]: [
+                    { isGeneralSchoolNews: true },
+                    { '$ClassSessions.Enrollments.userId$': userId } // Đảm bảo điều này là đúng với cấu trúc của bạn
+                ]
+            },
+            include: [
+                {
+                    model: db.User,
+                    attributes: ['id', 'name'],
+                    as: 'Author'
+                },
+                {
+                    model: db.ClassSession,
+                    attributes: ['id', 'name'],
+                    through: {
+                        model: db.NewsClassSession,
+                        attributes: ['classSessionId'], // Chỉ định classSessionId từ bảng trung gian
+                    },
+                    include: [
+                        {
+                            model: db.Enrollment,
+                            where: { userId: userId },
+                            required: false
+                        }
+                    ],
+                    as: 'ClassSessions' // Đặt alias cho include này
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+
+
+        return formatResponseData(userNews);
+
+    } catch (error) {
+        console.error('Error fetching user-related news:', error);
+        throw error;
+    }
+}
+
+
+
+
 module.exports = {
     createNews,
     updateNews,
     getListNews,
     getListNewsByUser,
     deleteNews,
+    getUserRelatedNews
 };

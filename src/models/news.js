@@ -7,12 +7,20 @@ module.exports = (sequelize) => {
                 foreignKey: "newsId",
                 onDelete: "CASCADE",
             });
-            News.belongsTo(models.User, { foreignKey: "userId" });
+
+            News.belongsTo(models.User, { foreignKey: "userId", as: "Author" });
+
             News.hasMany(models.Notification, {
                 foreignKey: "noti_senderId",
                 as: "notifications",
             });
-            News.belongsToMany(models.ClassSession, { through: 'news_classSession', foreignKey: 'newsId' });
+            News.belongsToMany(models.ClassSession, {
+                through: models.NewsClassSession,
+                foreignKey: 'newsId',
+                otherKey: 'classSessionId', // Chỉ định khóa khác từ bảng trung gian nếu cần
+                as: 'ClassSessions' // Đặt alias cho quan hệ
+            });
+
         }
     }
 
@@ -46,6 +54,14 @@ module.exports = (sequelize) => {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            time: { // Trường mới: thời gian
+                type: DataTypes.DATE,
+                allowNull: true, // Có thể cho phép null
+            },
+            location: { // Trường mới: địa điểm
+                type: DataTypes.STRING(255),
+                allowNull: true, // Có thể cho phép null
             },
         },
         {

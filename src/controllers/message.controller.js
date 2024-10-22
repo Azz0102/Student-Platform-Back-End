@@ -13,6 +13,13 @@ exports.createChat = async (req, res, next) => {
     }).send(res);
 };
 
+exports.getChatById = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Create Chat!",
+        metadata: await Mesage.getChatById({ classSessionId: req.params.id }),
+    }).send(res);
+};
+
 exports.deleteChat = async (req, res, next) => {
     new SuccessResponse({
         message: "Delete Chat!",

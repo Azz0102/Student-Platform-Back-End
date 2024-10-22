@@ -4,7 +4,7 @@ module.exports = (sequelize) => {
     class ClassSession extends Model {
         static associate(models) {
             ClassSession.belongsToMany(models.User, { through: models.Enrollment });
-            ClassSession.hasMany(models.Enrollment);
+            // ClassSession.hasMany(models.Enrollment);
             // ClassSession.hasOne(models.Conversation, { foreignKey: "classSessionId", onDelete: 'CASCADE' });
 
             ClassSession.hasMany(models.Enrollment, { foreignKey: 'classSessionId' });
@@ -12,7 +12,14 @@ module.exports = (sequelize) => {
             ClassSession.belongsTo(models.Semester, { foreignKey: 'semesterId' });
             ClassSession.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
             ClassSession.hasMany(models.FinalExam, { foreignKey: 'classSessionId' });
-            ClassSession.belongsToMany(models.News, { through: 'news_classSession', foreignKey: 'classSession' });
+
+            ClassSession.belongsToMany(models.News, {
+                through: models.NewsClassSession, // Sử dụng models.NewsClassSession
+                foreignKey: 'classSessionId',
+                otherKey: 'newsId',
+                as: 'News' // Đặt alias cho quan hệ
+            });
+
 
             ClassSession.hasMany(models.Grade, { foreignKey: 'classSessionId' });
         }
