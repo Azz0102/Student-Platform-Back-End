@@ -2,6 +2,8 @@ const { Sequelize } = require("sequelize");
 
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/config.json")[env];
+const dotenv = require("dotenv");
+dotenv.config();
 
 // Cấu hình kết nối Sequelize với MySQL
 const sequelize = new Sequelize(

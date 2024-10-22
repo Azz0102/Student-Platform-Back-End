@@ -13,16 +13,16 @@ require("dotenv").config();
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-app.use(cors(
-    {
-        exposedHeaders: ['Content-Disposition'], // Cho phép client truy cập header này
-    }
-));
+app.use(
+    cors({
+        exposedHeaders: ["Content-Disposition"], // Cho phép client truy cập header này
+    })
+);
 const path = require("path");
 
 // Cấu hình thư mục views và template engine
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "/view/serverRunning.html"));
@@ -47,8 +47,9 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
     const statusCode = error.status || 500;
-    const resMessage = `${error.status} - ${Date.now() - error.now
-        }ms - Response: ${JSON.stringify(error)}`;
+    const resMessage = `${error.status} - ${
+        Date.now() - error.now
+    }ms - Response: ${JSON.stringify(error)}`;
 
     // myLogger.error(resMessage, [
     //     req.path,
