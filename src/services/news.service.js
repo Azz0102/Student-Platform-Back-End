@@ -11,6 +11,8 @@ const createNews = async ({
     name,
     isGeneralSchoolNews = false,
     classSessionIds = [],
+    time,
+    location
 }) => {
     try {
         // Validate user existence
@@ -25,6 +27,8 @@ const createNews = async ({
             content,
             name,
             isGeneralSchoolNews,
+            time,
+            location
         });
 
         // Create associations with class sessions if provided
@@ -52,11 +56,11 @@ const createNews = async ({
 
         // get all subscription
 
-        await publishMessage({
-            exchangeName: "coke_studio",
-            bindingKey: "coke_studio",
-            message: content, // { content, title, subscription}
-        });
+        // await publishMessage({
+        //     exchangeName: "coke_studio",
+        //     bindingKey: "coke_studio",
+        //     message: content, // { content, title, subscription}
+        // });
 
         return news;
     } catch (error) {
