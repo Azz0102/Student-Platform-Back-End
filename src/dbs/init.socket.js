@@ -5,6 +5,8 @@ const db = require("../models");
 const { createChat } = require("../services/mesage.service");
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config();
 
 let io;
 function createSocketServer(httpServer) {
@@ -88,9 +90,11 @@ function createSocketServer(httpServer) {
                 if (!enrollment || !enrollment.User) {
                     throw new Error("User not found for the given enrollment");
                 }
+                console.log(process.env.SAVE_PATH)
 
                 const folderPath = path.join(
-                    process.env.SAVE_PATH,
+                    // process.env.SAVE_PATH,
+                    'C:\Users\phamd\Videos\data',
                     enrollment.classSessionId.toString()
                 );
 
