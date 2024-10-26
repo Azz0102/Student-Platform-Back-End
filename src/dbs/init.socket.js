@@ -25,7 +25,7 @@ function createSocketServer(httpServer) {
         });
 
         socket.on("chatMessage", async (message, room) => {
-            console.log(room);
+            console.log(typeof room);
             try {
                 const newChat = await createChat(message);
 
@@ -43,7 +43,7 @@ function createSocketServer(httpServer) {
                 }
 
                 console.log("aa ", newChat.message);
-                io.to(room).emit(
+                io.to(room.toString()).emit(
                     "chatMessaged",
                     {
                         id: newChat.id,
@@ -117,7 +117,7 @@ function createSocketServer(httpServer) {
                 });
 
                 // Gửi tệp tới phòng
-                io.to(room).emit(
+                io.to(room.toString()).emit(
                     "fileReceived",
                     {
                         id: newChat.id,
