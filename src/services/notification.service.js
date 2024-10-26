@@ -85,7 +85,7 @@ const updateNotiUser = async ({ id }) => {
 
 const publishMessage = async ({ exchangeName, bindingKey, message }) => {
     const channelName = "coke_studio";
-    amqp.connect("amqp://guest:12345@localhost", async (err, conn) => {
+    amqp.connect("amqp://guest:guest@localhost", async (err, conn) => {
         if (err) {
             console.log(err);
         }
@@ -132,7 +132,7 @@ const publishMessage = async ({ exchangeName, bindingKey, message }) => {
         };
 
         conn.createChannel((err, ch) => {
-            ch.assertExchange(exchangeName, "fanout", { durable: true });
+            // ch.assertExchange(exchangeName, "fanout", { durable: true });
             ch.publish(
                 exchangeName,
                 bindingKey,

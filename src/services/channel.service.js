@@ -6,22 +6,8 @@ const { BadRequestError, NotFoundError } = require("../core/error.response");
 const amqp = require("amqplib/callback_api");
 
 const subscribe = ({ username, channel, data }) => {
-    amqp.connect("amqp://guest:12345@localhost", (err, conn) => {
+    amqp.connect("amqp://guest:guest@localhost", (err, conn) => {
         conn.createChannel(async (err, ch) => {
-            const notificationExchangeDLX = "notificationExDLX" + username;
-            const notificationRoutingKeyDLX =
-                "notificationRoutingKeyDLX" + username;
-            await ch.assertExchange(channel, "fanout", { durable: true });
-            const queueResult = await ch.assertQueue(username, {
-                durable: true,
-                exclusive: false, // allow many connections to queue
-                arguments: {
-                    "x-dead-letter-exchange": notificationExchangeDLX,
-                    "x-dead-letter-routing-key": notificationRoutingKeyDLX,
-                },
-            });
-            await ch.bindQueue(queueResult.queue, channel, channel);
-
             const user = await db.User.findOne({ where: { name: username } });
 
             const keyStore = await db.KeyStore.findOne({
@@ -37,10 +23,10 @@ const subscribe = ({ username, channel, data }) => {
                 channelId: findChannel.id,
             });
 
-            const subscription = await db.Subscription.create({
-                keyStoreId: keyStore.id,
-                endpoint: data.token,
-            });
+            // const subscription = await db.Subscription.create({
+            //     keyStoreId: keyStore.id,
+            //     endpoint: data.token,
+            // });
 
             console.log(
                 username +

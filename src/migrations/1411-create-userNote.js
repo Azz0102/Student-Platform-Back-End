@@ -21,7 +21,7 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
             name: {
-                type: Sequelize.STRING(150),
+                type: Sequelize.TEXT,
                 allowNull: false,
             },
             content: {

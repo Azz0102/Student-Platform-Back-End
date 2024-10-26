@@ -102,7 +102,7 @@ class UserService {
         4 - generate tokens
         5 - get data return login 
     */
-    login = async ({ name, password }) => {
+    login = async ({ name, password, device = "web" }) => {
         // 1.
         const checkUser = await db.User.findOne({
             where: {
@@ -136,18 +136,19 @@ class UserService {
             privateKey,
             publicKey,
             userId,
+            device,
         });
 
         // Cập nhật lastLogin với thời điểm hiện tại
         await db.User.update(
             { lastLogin: new Date() },
-            { where: { id: userId } }  // Điều kiện để xác định người dùng
+            { where: { id: userId } } // Điều kiện để xác định người dùng
         );
 
         // await db.Subscription.create({})
 
         informNS({
-            username: "20020672",
+            username: name,
             userId: userId,
         });
         // 5.
@@ -222,7 +223,7 @@ class UserService {
     //     }
     // };
 
-    forgotPassword = async ({ name }) => {
+    forgotPassword = async ({ name, device = "web" }) => {
         const user = await db.User.findOne({
             where: {
                 name,
@@ -231,22 +232,27 @@ class UserService {
 
         if (!user) {
             throw new NotFoundError("User not found");
-        };
+        }
 
-        const resetToken = crypto.randomBytes(20).toString('hex');
+        const resetToken = crypto.randomBytes(20).toString("hex");
 
         await user.update({
             reset_token: resetToken, // Cập nhật cột 'reset_token'
         });
 
         // const resetLink = `${process.env.USERNAME_EMAIL}/reset-password/${resetToken}`;
-        const resetLink = `https://localhost:3000/reset-password/${resetToken}`;
+        let resetLink;
+        if (device !== "web") {
+            resetLink = `myapp://reset-password/${resetToken}`;
+        } else {
+            resetLink = `https://localhost:3000/reset-password/${resetToken}`;
+        }
 
         // Cấu hình nội dung email
         const mailOptions = {
-            from: 'your-email@gmail.com',
+            from: "your-email@gmail.com",
             to: `${name}@vnu.edu.vn`,
-            subject: 'Reset your password',
+            subject: "Reset your password",
             text: `Click this link to reset your password: ${resetLink}`,
         };
 
@@ -254,10 +260,9 @@ class UserService {
     };
 
     resetPassword = async ({ token }) => {
-
         // Kiểm tra token trong cơ sở dữ liệu
         const user = await db.User.findOne({
-            where: { reset_token: token }
+            where: { reset_token: token },
         });
 
         if (!user) {
@@ -269,10 +274,11 @@ class UserService {
     };
 
     resetPasswordToken = async ({ resetToken, newPassword }) => {
-
         console.log("token", resetToken);
         // Tìm người dùng với resetToken
-        const user = await db.User.findOne({ where: { reset_token: resetToken } });
+        const user = await db.User.findOne({
+            where: { reset_token: resetToken },
+        });
 
         if (!user) {
             throw new NotFoundError("User not found");
@@ -286,7 +292,7 @@ class UserService {
             { passwordHash: hashedPassword, reset_token: null }, // Cập nhật thông tin
             { where: { id: user.id } } // Điều kiện
         );
-    }
+    };
 
     // handleSendMail = async (val) => {
     //     try {
@@ -299,13 +305,15 @@ class UserService {
     // };
 
     updatePassword = async ({ oldPassword, newPassword }) => {
-
         const userId = req.user.id;
         const user = await db.User.findByPk(userId);
         if (!user) throw new BadRequestError("User not registered");
 
         // Kiểm tra mật khẩu cũ
-        const isPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+        const isPasswordValid = await bcrypt.compare(
+            oldPassword,
+            user.passwordHash
+        );
         if (!isPasswordValid) throw new BadRequestError("Password not correct");
 
         // Mã hóa mật khẩu mới
@@ -314,9 +322,7 @@ class UserService {
         // Cập nhật mật khẩu
         user.passwordHash = hashedPassword;
         await db.User.save();
-
-    }
-
+    };
 }
 
 module.exports = new UserService();

@@ -31,7 +31,7 @@ module.exports = (sequelize) => {
                 },
             },
             name: {
-                type: DataTypes.STRING(150),
+                type: DataTypes.TEXT,
                 allowNull: false,
             },
             content: {

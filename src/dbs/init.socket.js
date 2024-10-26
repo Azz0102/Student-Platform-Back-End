@@ -44,7 +44,7 @@ function createSocketServer(httpServer) {
 
                 console.log("aa ", newChat.message);
                 io.to(room).emit(
-                    "chatMessage",
+                    "chatMessaged",
                     {
                         id: newChat.id,
                         message: newChat.message,
@@ -62,7 +62,78 @@ function createSocketServer(httpServer) {
         });
 
         socket.on("fileMessage", async (data, room) => {
-            // ... (rest of the fileMessage event handler)
+            console.log(
+                `File received: ${data.fileName} of type ${data.fileType}`
+            );
+
+            // Kiểm tra loại tệp
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "application/pdf",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ];
+
+            if (allowedTypes.includes(data.fileType)) {
+                console.log(typeof data.fileName);
+
+                const { fileName, fileType, message, enrollmentId, timestamp } =
+                    data;
+
+                const enrollment = await db.Enrollment.findByPk(enrollmentId, {
+                    include: [{ model: db.User, attributes: ["id", "name"] }],
+                });
+
+                if (!enrollment || !enrollment.User) {
+                    throw new Error("User not found for the given enrollment");
+                }
+
+                const folderPath = path.join(
+                    process.env.SAVE_PATH,
+                    enrollment.classSessionId.toString()
+                );
+
+                // Tạo thư mục nếu chưa tồn tại
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath, { recursive: true });
+                }
+
+                const filePath = path.join(folderPath, fileName);
+
+                // Tạo buffer từ Base64 string
+                const buffer = Buffer.from(message, "base64");
+
+                // Lưu file vào hệ thống file
+                fs.writeFile(filePath, buffer, (err) => {
+                    console.log("err");
+                });
+
+                const newChat = await createChat({
+                    message: filePath,
+                    enrollmentId,
+                    timestamp,
+                    file: true,
+                });
+
+                // Gửi tệp tới phòng
+                io.to(room).emit(
+                    "fileReceived",
+                    {
+                        id: newChat.id,
+                        message: filePath,
+                        timestamp: newChat.timestamp,
+                        file: newChat.file,
+                        enrollmentId,
+                        usedId: enrollment.User.id,
+                        name: enrollment.User.name,
+                    },
+                    room
+                );
+            } else {
+                console.log("File type not allowed.");
+                socket.emit("fileError", "File type not allowed."); // Thông báo lỗi cho người gửi
+            }
         });
 
         socket.on("disconnect", () => {
