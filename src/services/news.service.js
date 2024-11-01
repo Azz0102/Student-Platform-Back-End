@@ -56,11 +56,11 @@ const createNews = async ({
 
         // get all subscription
 
-        // await publishMessage({
-        //     exchangeName: "coke_studio",
-        //     bindingKey: "coke_studio",
-        //     message: content, // { content, title, subscription}
-        // });
+        await publishMessage({
+            exchangeName: "coke_studio",
+            bindingKey: "coke_studio",
+            message: content, // { content, title, subscription}
+        });
 
         return news;
     } catch (error) {

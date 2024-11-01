@@ -30,7 +30,6 @@ const pushNotiToSystem = async ({
 
         pushNoti(newNoti, notiUser);
 
-
         return newNoti;
     } catch (error) {
         return error;
@@ -107,14 +106,17 @@ const publishMessage = async ({ exchangeName, bindingKey, message }) => {
 
         const userIds = usersInChannel.map((cu) => cu.userId);
 
+        console.log("userIds", userIds);
+
         // Now, get all subscriptions for these users
         const subscriptions = await db.Subscription.findAll({
             attributes: ["endpoint"],
             include: [
                 {
                     model: db.KeyStore,
+                    required: true,
                     where: { userId: { [Op.in]: userIds } },
-                    attributes: [],
+                    attributes: ["id"],
                     include: [
                         {
                             model: db.User,
@@ -123,9 +125,10 @@ const publishMessage = async ({ exchangeName, bindingKey, message }) => {
                     ],
                 },
             ],
+            raw: false,
         });
 
-        console.log("subscriptions", subscriptions);
+        console.log("subscriptions", subscriptions[0].KeyStore.User);
 
         const newMessage = {
             message,

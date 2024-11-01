@@ -22,6 +22,8 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.KeyStore, {
                 foreignKey: "userId",
             });
+
+            User.hasMany(models.File, { foreignKey: "userId" });
         }
     }
 

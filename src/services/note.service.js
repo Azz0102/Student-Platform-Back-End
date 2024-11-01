@@ -17,8 +17,8 @@ const createNote = async ({ userId, content = "", name }) => {
             id: note.id,
             name: note.name,
             content: note.content,
-            tags: []
-        }
+            tags: [],
+        };
     } catch (error) {
         return error;
     }
@@ -36,23 +36,23 @@ const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
                     through: {
                         attributes: [], // Không lấy thuộc tính nào từ bảng trung gian
                     },
-                    attributes: ['id', 'name'], // Chỉ lấy các thuộc tính cần thiết
-                }
+                    attributes: ["id", "name"], // Chỉ lấy các thuộc tính cần thiết
+                },
             ],
-            limit,  // Giới hạn số lượng bản ghi trả về (nếu có)
+            limit, // Giới hạn số lượng bản ghi trả về (nếu có)
             offset, // Dịch chuyển bản ghi (nếu có)
             order: [["createdAt", "DESC"]], // Sắp xếp theo ngày tạo
         });
 
         // Xử lý lại dữ liệu để trả về đúng format
-        const formattedNotes = notes.map(note => ({
+        const formattedNotes = notes.map((note) => ({
             id: note.id,
             name: note.name, // Chuyển 'name' thành 'title'
             content: note.content,
-            tags: note.Tags.map(tag => ({
+            tags: note.Tags.map((tag) => ({
                 id: tag.id,
                 name: tag.name,
-            }))
+            })),
         }));
         return formattedNotes;
     } catch (error) {
@@ -64,17 +64,19 @@ const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
 const getNoteId = async ({ noteId }) => {
     try {
         const note = await db.UserNote.findByPk(noteId, {
-            include: [{
-                model: db.Tag, // Nếu bạn muốn bao gồm các tag liên quan
-                through: { attributes: [] }, // Không lấy các trường của bảng trung gian
-            }],
+            include: [
+                {
+                    model: db.Tag, // Nếu bạn muốn bao gồm các tag liên quan
+                    through: { attributes: [] }, // Không lấy các trường của bảng trung gian
+                },
+            ],
         });
 
         return note;
     } catch (error) {
         return error;
     }
-}
+};
 
 const updateNote = async ({ noteId, content, name, tagIds }) => {
     try {
@@ -108,7 +110,7 @@ const updateNote = async ({ noteId, content, name, tagIds }) => {
                 },
             });
 
-            console.log('tags', tags);
+            console.log("tags", tags);
 
             // Duyệt qua từng tag và cập nhật vào bảng trung gian với status
             for (let tag of tags) {
@@ -140,6 +142,7 @@ const deleteNote = async ({ noteId }) => {
         return error;
     }
 };
+
 module.exports = {
     createNote,
     listNote,
