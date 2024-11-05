@@ -83,6 +83,8 @@ function createSocketServer(httpServer) {
                 const { fileName, fileType, message, enrollmentId, timestamp } =
                     data;
 
+                console.log('enroll', enrollmentId)
+
                 const enrollment = await db.Enrollment.findByPk(enrollmentId, {
                     include: [{ model: db.User, attributes: ["id", "name"] }],
                 });
@@ -90,11 +92,8 @@ function createSocketServer(httpServer) {
                 if (!enrollment || !enrollment.User) {
                     throw new Error("User not found for the given enrollment");
                 }
-                console.log(process.env.SAVE_PATH)
-
                 const folderPath = path.join(
-                    // process.env.SAVE_PATH,
-                    'C:\Users\phamd\Videos\data',
+                    process.env.SAVE_PATH,
                     enrollment.classSessionId.toString()
                 );
 
@@ -107,10 +106,10 @@ function createSocketServer(httpServer) {
 
                 // Tạo buffer từ Base64 string
                 const buffer = Buffer.from(message, "base64");
-
+                console.log(filePath)
                 // Lưu file vào hệ thống file
                 fs.writeFile(filePath, buffer, (err) => {
-                    console.log("err");
+                    console.log("err", err);
                 });
 
                 const newChat = await createChat({
