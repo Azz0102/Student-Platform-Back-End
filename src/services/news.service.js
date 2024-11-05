@@ -12,7 +12,8 @@ const createNews = async ({
     isGeneralSchoolNews = false,
     classSessionIds = [],
     time,
-    location
+    location,
+    fileIds = [],
 }) => {
     try {
         // Validate user existence
@@ -28,7 +29,7 @@ const createNews = async ({
             name,
             isGeneralSchoolNews,
             time,
-            location
+            location,
         });
 
         // Create associations with class sessions if provided
@@ -41,26 +42,36 @@ const createNews = async ({
 
             await pushNotiToSystem({
                 senderId: userId,
-                noti_content: content,
+                noti_content: name,
                 type: "CLASS-001",
             });
 
             // emit classSession for noti
+        } // Create associations with class sessions if provided
+
+        if (fileIds.length > 0) {
+            const newsFile = fileIds.map((fileId) => ({
+                newsId: news.id,
+                fileId,
+            }));
+            await db.NewsFile.bulkCreate(newsFile);
         }
 
-        const noti = await pushNotiToSystem({
-            senderId: userId,
-            noti_content: content,
-            type: "NEWS-001",
-        });
+        if (isGeneralSchoolNews) {
+            const noti = await pushNotiToSystem({
+                senderId: userId,
+                noti_content: name,
+                type: "NEWS-001",
+            });
 
-        // get all subscription
+            // get all subscription
 
-        await publishMessage({
-            exchangeName: "coke_studio",
-            bindingKey: "coke_studio",
-            message: content, // { content, title, subscription}
-        });
+            // await publishMessage({
+            //     exchangeName: "coke_studio",
+            //     bindingKey: "coke_studio",
+            //     message: content, // { content, title, subscription}
+            // });
+        }
 
         return news;
     } catch (error) {
@@ -113,11 +124,11 @@ const getListNews = async ({ limit = 30, offset = 0, search = "" }) => {
     try {
         const whereClause = search
             ? {
-                [Op.or]: [
-                    { name: { [Op.like]: `%${search}%` } },
-                    { content: { [Op.like]: `%${search}%` } },
-                ],
-            }
+                  [Op.or]: [
+                      { name: { [Op.like]: `%${search}%` } },
+                      { content: { [Op.like]: `%${search}%` } },
+                  ],
+              }
             : {};
 
         const newsList = await db.News.findAll({
@@ -143,11 +154,11 @@ const getListNewsByUser = async ({
     try {
         const whereClause = search
             ? {
-                [Op.or]: [
-                    { name: { [Op.like]: `%${search}%` } },
-                    { content: { [Op.like]: `%${search}%` } },
-                ],
-            }
+                  [Op.or]: [
+                      { name: { [Op.like]: `%${search}%` } },
+                      { content: { [Op.like]: `%${search}%` } },
+                  ],
+              }
             : {};
 
         // Fetch user's enrolled class sessions
@@ -182,8 +193,6 @@ const getListNewsByUser = async ({
     }
 };
 
-
-
 const deleteNews = async ({ newsId }) => {
     try {
         // Find the news entry by its ID
@@ -200,16 +209,21 @@ const deleteNews = async ({ newsId }) => {
 };
 
 const formatResponseData = (responseData) => {
-    return responseData.map(news => ({
+    return responseData.map((news) => ({
         id: news.id,
         title: news.name, // ánh xạ name thành title
         content: news.content,
-        relatedTo: news.ClassSessions.map(classSession => ({
+        isGeneralSchoolNews: news.isGeneralSchoolNews,
+        relatedTo: news.ClassSessions.map((classSession) => ({
             id: classSession.id, // chỉ giữ lại id
-            name: classSession.name // chỉ giữ lại name
+            name: classSession.name, // chỉ giữ lại name
+        })),
+        files: news.NewsFiles.map((newsFile) => ({
+            id: newsFile.File.id,
+            name: newsFile.File.name,
         })),
         time: news.time,
-        location: news.location
+        location: news.location,
     }));
 };
 
@@ -219,47 +233,52 @@ const getUserRelatedNews = async ({ userId }) => {
             where: {
                 [Op.or]: [
                     { isGeneralSchoolNews: true },
-                    { '$ClassSessions.Enrollments.userId$': userId } // Đảm bảo điều này là đúng với cấu trúc của bạn
-                ]
+                    { "$ClassSessions.Enrollments.userId$": userId },
+                ],
             },
             include: [
                 {
                     model: db.User,
-                    attributes: ['id', 'name'],
-                    as: 'Author'
+                    attributes: ["id", "name"],
+                    as: "Author",
                 },
                 {
                     model: db.ClassSession,
-                    attributes: ['id', 'name'],
+                    attributes: ["id", "name"],
                     through: {
                         model: db.NewsClassSession,
-                        attributes: ['classSessionId'], // Chỉ định classSessionId từ bảng trung gian
+                        attributes: ["classSessionId"],
                     },
                     include: [
                         {
                             model: db.Enrollment,
                             where: { userId: userId },
-                            required: false
-                        }
+                            required: false,
+                        },
                     ],
-                    as: 'ClassSessions' // Đặt alias cho include này
-                }
+                    as: "ClassSessions",
+                },
+                {
+                    model: db.NewsFile,
+                    as: "NewsFiles", // Ensure this matches the alias defined in the News model association
+                    include: [
+                        {
+                            model: db.File,
+                            attributes: ["id", "name"],
+                            as: "File", // Ensure this matches the alias defined in the NewsFile model association
+                        },
+                    ],
+                },
             ],
-            order: [['createdAt', 'DESC']]
+            order: [["createdAt", "DESC"]],
         });
 
-
-
         return formatResponseData(userNews);
-
     } catch (error) {
-        console.error('Error fetching user-related news:', error);
+        console.error("Error fetching user-related news:", error);
         throw error;
     }
-}
-
-
-
+};
 
 module.exports = {
     createNews,
@@ -267,5 +286,5 @@ module.exports = {
     getListNews,
     getListNewsByUser,
     deleteNews,
-    getUserRelatedNews
+    getUserRelatedNews,
 };

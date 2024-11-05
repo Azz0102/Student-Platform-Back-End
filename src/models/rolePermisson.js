@@ -18,6 +18,13 @@ module.exports = (sequelize) => {
 
     RolePermission.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
             roleId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

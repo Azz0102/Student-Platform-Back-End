@@ -31,7 +31,7 @@ module.exports = {
                 },
                 {
                     roleId: 2, // Đảm bảo giá trị này tồn tại trong bảng 'roles'
-                    name: "20020648",
+                    name: "20020672",
                     passwordHash: "$2b$10$gJ.LXAA23WmFL9C/5OP49OT0ynN1drHfaxZovT.39lDvyjCUyk7Lm",
                     lastLogin: new Date(),
                     createdAt: new Date(),

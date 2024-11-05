@@ -16,6 +16,13 @@ module.exports = (sequelize) => {
 
     NewsClassSession.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
             newsId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

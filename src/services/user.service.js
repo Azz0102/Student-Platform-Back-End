@@ -116,8 +116,7 @@ class UserService {
             password,
             checkUser.passwordHash
         );
-        if (!comparePassword)
-            throw new AuthFailureError("Authentication error");
+        if (!comparePassword) throw new AuthFailureError("Wrong password");
 
         // 3.
         const privateKey = crypto.randomBytes(64).toString("hex");

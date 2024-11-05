@@ -21,6 +21,10 @@ module.exports = (sequelize) => {
                 as: 'ClassSessions' // Đặt alias cho quan hệ
             });
 
+            News.hasMany(models.NewsFile, {
+                foreignKey: "newsId",
+                onDelete: "CASCADE",
+            });
         }
     }
 

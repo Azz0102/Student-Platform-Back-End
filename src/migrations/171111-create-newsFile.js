@@ -2,53 +2,50 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("note_tags", {
+        await queryInterface.createTable("news_file", {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
+                allowNull: false,
                 unique: true,
-                allowNull: false,
             },
-            noteId: {
+            newsId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "user_notes",
+                    model: "news",
                     key: "id",
                 },
                 onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
-            tagId: {
+            fileId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "tags",
+                    model: "files",
                     key: "id",
                 },
                 onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.fn("NOW"),
+                defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
             },
             updatedAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
-                defaultValue: Sequelize.fn("NOW"),
+                defaultValue: Sequelize.literal(
+                    "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+                ),
             },
-        });
-
-        // Thêm ràng buộc duy nhất cho các cột noteId và tagId
-        await queryInterface.addConstraint("note_tags", {
-            fields: ["noteId", "tagId"],
-            type: "unique",
-            name: "unique_note_tag", // Tên của ràng buộc duy nhất
         });
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("note_tags");
+        await queryInterface.dropTable("news_file");
     },
 };

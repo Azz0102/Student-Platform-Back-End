@@ -4,6 +4,7 @@ module.exports = (sequelize) => {
     class File extends Model {
         static associate(models) {
             File.belongsTo(models.User, { foreignKey: "userId" });
+            File.hasMany(models.NewsFile, { foreignKey: "fileId" });
         }
     }
 
