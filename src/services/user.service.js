@@ -252,7 +252,7 @@ class UserService {
             from: "your-email@gmail.com",
             to: `${name}@vnu.edu.vn`,
             subject: "Reset your password",
-            text: `Click this link to reset your password: ${resetLink}`,
+            html: `Click this link to reset your password: <a href="${resetLink}">${resetLink}</a>`,
         };
 
         await handleSendMail(mailOptions);
