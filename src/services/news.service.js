@@ -44,6 +44,15 @@ const createNews = async ({
                 senderId: userId,
                 noti_content: name,
                 type: "CLASS-001",
+                classSessionIds,
+            });
+
+            await publishMessage({
+                exchangeName: "coke_studio",
+                bindingKey: "coke_studio",
+                message: content, // { content, title, subscription}
+                type,
+                classSessionIds,
             });
 
             // emit classSession for noti
@@ -66,11 +75,13 @@ const createNews = async ({
 
             // get all subscription
 
-            // await publishMessage({
-            //     exchangeName: "coke_studio",
-            //     bindingKey: "coke_studio",
-            //     message: content, // { content, title, subscription}
-            // });
+            await publishMessage({
+                exchangeName: "coke_studio",
+                bindingKey: "coke_studio",
+                message: content, // { content, title, subscription}
+                type,
+                classSessionIds,
+            });
         }
 
         return news;

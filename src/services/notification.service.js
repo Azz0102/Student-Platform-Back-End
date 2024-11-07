@@ -10,25 +10,49 @@ const pushNotiToSystem = async ({
     type = "NEWS-001",
     senderId = 1,
     noti_content,
+    classSessionIds,
 }) => {
     try {
+        // Create the notification
         const newNoti = await db.Notification.create({
             noti_type: type,
             noti_content,
-            noti_sender_id: senderId,
+            noti_senderId: senderId,
         });
 
-        const users = await db.User.findAll();
+        let users;
 
+        if (
+            type === "CLASS-001" &&
+            classSessionIds &&
+            classSessionIds.length > 0
+        ) {
+            // Find unique users enrolled in the specified class sessions
+            users = await db.User.findAll({
+                include: {
+                    model: db.Enrollment,
+                    where: { classSessionId: classSessionIds },
+                },
+                attributes: ["id"],
+                group: ["User.id"], // Ensures no duplicate users
+            });
+        } else {
+            // Get all users for other notification types
+            users = await db.User.findAll({ attributes: ["id"] });
+        }
+
+        // Prepare NotiUser entries
         const notiUserEntries = users.map((user) => ({
             userId: user.id,
             notiId: newNoti.id,
-            isRead: false, // By default, mark the notification as unread
+            read: false, // By default, mark the notification as unread
         }));
 
-        const notiUser = await db.NotiUser.bulkCreate(notiUserEntries);
+        // Bulk create NotiUser entries
+        await db.NotiUser.bulkCreate(notiUserEntries);
 
-        pushNoti(newNoti, notiUser);
+        // Push the notification to the system
+        pushNoti(newNoti, notiUserEntries);
 
         return newNoti;
     } catch (error) {
@@ -83,32 +107,71 @@ const updateNotiUser = async ({ id }) => {
     }
 };
 
-const publishMessage = async ({ exchangeName, bindingKey, message }) => {
+const publishMessage = async ({
+    exchangeName,
+    bindingKey,
+    message,
+    type,
+    classSessionIds,
+}) => {
     const channelName = "coke_studio";
     amqp.connect("amqp://guest:guest@localhost", async (err, conn) => {
         if (err) {
-            console.log(err);
+            console.error("AMQP Connection Error:", err);
+            return;
         }
 
-        // First, get all user IDs in the specified channel
-        const usersInChannel = await db.ChannelUser.findAll({
-            attributes: ["userId"],
-            include: [
-                {
-                    model: db.Channel,
-                    where: { name: channelName },
-                    attributes: [],
-                },
-            ],
-        });
+        let userIds;
 
-        console.log("usersInChannel", usersInChannel);
+        if (type === "CLASS-001") {
+            // Get unique userIds enrolled in specified class sessions and part of the specified channel
+            const enrolledUsersInChannel = await db.Enrollment.findAll({
+                attributes: [
+                    [
+                        db.Sequelize.fn("DISTINCT", db.Sequelize.col("userId")),
+                        "userId",
+                    ],
+                ],
+                where: { classSessionId: { [Op.in]: classSessionIds } },
+                include: [
+                    {
+                        model: db.ChannelUser,
+                        required: true,
+                        include: [
+                            {
+                                model: db.Channel,
+                                where: { name: channelName },
+                                attributes: [],
+                            },
+                        ],
+                        attributes: [],
+                    },
+                ],
+                raw: true,
+            });
+            userIds = enrolledUsersInChannel.map((e) => e.userId);
+        } else if (type === "NEWS-001") {
+            // Get all userIds in the specified channel
+            const usersInChannel = await db.ChannelUser.findAll({
+                attributes: [
+                    [
+                        db.Sequelize.fn("DISTINCT", db.Sequelize.col("userId")),
+                        "userId",
+                    ],
+                ],
+                include: [
+                    {
+                        model: db.Channel,
+                        where: { name: channelName },
+                        attributes: [],
+                    },
+                ],
+                raw: true,
+            });
+            userIds = usersInChannel.map((cu) => cu.userId);
+        }
 
-        const userIds = usersInChannel.map((cu) => cu.userId);
-
-        console.log("userIds", userIds);
-
-        // Now, get all subscriptions for these users
+        // Get subscriptions for these users with specific platform information
         const subscriptions = await db.Subscription.findAll({
             attributes: ["endpoint"],
             include: [
@@ -116,7 +179,7 @@ const publishMessage = async ({ exchangeName, bindingKey, message }) => {
                     model: db.KeyStore,
                     required: true,
                     where: { userId: { [Op.in]: userIds } },
-                    attributes: ["id"],
+                    attributes: ["id", "device"], // include device from KeyStore
                     include: [
                         {
                             model: db.User,
