@@ -14,7 +14,7 @@ module.exports = {
                 type: Sequelize.STRING(20),
                 allowNull: false,
                 validate: {
-                    isIn: [["NEWS-001", "CLASS-001"]], // Possible values
+                    isIn: [["EXAM-001", "EVENT-002", "ASSIGNMENT-003"]], // Possible values
                 },
                 comment: "Possible values: NEWS-001, CLASS-001",
             },

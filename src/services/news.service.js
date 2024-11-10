@@ -14,6 +14,7 @@ const createNews = async ({
     time,
     location,
     fileIds = [],
+    type = "EVENT-002",
 }) => {
     try {
         // Validate user existence
@@ -30,6 +31,7 @@ const createNews = async ({
             isGeneralSchoolNews,
             time,
             location,
+            type,
         });
 
         // Create associations with class sessions if provided
@@ -41,9 +43,9 @@ const createNews = async ({
             await db.NewsClassSession.bulkCreate(newsClassSessions);
 
             await pushNotiToSystem({
-                senderId: userId,
+                senderId: news.id,
                 noti_content: name,
-                type: "CLASS-001",
+                type,
                 classSessionIds,
             });
 
@@ -53,6 +55,7 @@ const createNews = async ({
                 message: content, // { content, title, subscription}
                 type,
                 classSessionIds,
+                id: news.id,
             });
 
             // emit classSession for noti
@@ -68,9 +71,9 @@ const createNews = async ({
 
         if (isGeneralSchoolNews) {
             const noti = await pushNotiToSystem({
-                senderId: userId,
+                senderId: news.id,
                 noti_content: name,
-                type: "NEWS-001",
+                type,
             });
 
             // get all subscription
@@ -81,6 +84,7 @@ const createNews = async ({
                 message: content, // { content, title, subscription}
                 type,
                 classSessionIds,
+                id: news.id,
             });
         }
 

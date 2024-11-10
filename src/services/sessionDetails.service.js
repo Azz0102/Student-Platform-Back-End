@@ -242,13 +242,13 @@ const getAllUserSessionDetails = async ({ userId }) => {
 
 const getDayOfWeekNumber = (dayOfWeek) => {
     const days = {
-        "Sunday": 0,
-        "Monday": 1,
-        "Tuesday": 2,
-        "Wednesday": 3,
-        "Thursday": 4,
-        "Friday": 5,
-        "Saturday": 6
+        Sunday: 0,
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6,
     };
     return days[dayOfWeek];
 };
@@ -256,7 +256,13 @@ const getDayOfWeekNumber = (dayOfWeek) => {
 // Hàm để lấy tất cả các ngày có session từ fromDate đến endDate
 const getSessionDates = (fromDate, endDate, dayOfWeek) => {
     let dates = [];
-    let currentDate = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()));
+    let currentDate = new Date(
+        Date.UTC(
+            fromDate.getUTCFullYear(),
+            fromDate.getUTCMonth(),
+            fromDate.getUTCDate()
+        )
+    );
     currentDate.setHours(0, 0, 0, 0);
 
     // Chuyển đổi dayOfWeek (text) thành số
@@ -265,9 +271,9 @@ const getSessionDates = (fromDate, endDate, dayOfWeek) => {
     // Lặp qua các tuần và tìm ngày đúng với dayOfWeek
     while (currentDate <= endDate) {
         if (currentDate.getDay() === targetDay) {
-            dates.push(new Date(currentDate));  // Lưu ngày
+            dates.push(new Date(currentDate)); // Lưu ngày
         }
-        currentDate.setDate(currentDate.getDate() + 1);  // Tăng 1 ngày
+        currentDate.setDate(currentDate.getDate() + 1); // Tăng 1 ngày
     }
     return dates;
 };
@@ -275,62 +281,83 @@ const getSessionDates = (fromDate, endDate, dayOfWeek) => {
 const getSessionDetailsById = async ({ id }) => {
     try {
         const userSessionDetails = await db.User.findByPk(id, {
-            include: [{
-                model: db.Enrollment,
-                include: [{
-                    model: db.ClassSession,
-                    include: [{
-                        model: db.SessionDetails,
-                        include: [{
-                            model: db.Classroom,
-                            include: [{
-                                model: db.Amphitheater
-                            }]
-                        }, {
-                            model: db.Teacher
-                        }]
-                    }, {
-                        model: db.Semester // Include semester information
-                    }]
-                }]
-            }],
+            include: [
+                {
+                    model: db.Enrollment,
+                    include: [
+                        {
+                            model: db.ClassSession,
+                            include: [
+                                {
+                                    model: db.SessionDetails,
+                                    include: [
+                                        {
+                                            model: db.Classroom,
+                                            include: [
+                                                {
+                                                    model: db.Amphitheater,
+                                                },
+                                            ],
+                                        },
+                                        {
+                                            model: db.Teacher,
+                                        },
+                                    ],
+                                },
+                                {
+                                    model: db.Semester, // Include semester information
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
         });
 
-        const formattedSessions = userSessionDetails.Enrollments.flatMap(enrollment => {
-            const sessionDetails = enrollment.ClassSession.SessionDetails;
-            const semester = enrollment.ClassSession.Semester;
+        const formattedSessions = userSessionDetails.Enrollments.flatMap(
+            (enrollment) => {
+                const sessionDetails = enrollment.ClassSession.SessionDetails;
+                const semester = enrollment.ClassSession.Semester;
 
-            return sessionDetails.flatMap(detail => {
-                // Lấy tất cả các ngày cho session dựa vào fromDate, endDate, và dayOfWeek
-                const sessionDates = getSessionDates(new Date(semester.fromDate), new Date(semester.endDate), detail.dayOfWeek);
+                return sessionDetails.flatMap((detail) => {
+                    // Lấy tất cả các ngày cho session dựa vào fromDate, endDate, và dayOfWeek
+                    const sessionDates = getSessionDates(
+                        new Date(semester.fromDate),
+                        new Date(semester.endDate),
+                        detail.dayOfWeek
+                    );
 
-                // Map từng ngày thành một session
-                return sessionDates.map(sessionDate => {
-                    // Tính thời gian bắt đầu và kết thúc dựa vào startTime và numOfHour
-                    const start = new Date(sessionDate);
-                    start.setHours(new Date(detail.startTime).getUTCHours(), new Date(detail.startTime).getUTCMinutes());
+                    // Map từng ngày thành một session
+                    return sessionDates.map((sessionDate) => {
+                        // Tính thời gian bắt đầu và kết thúc dựa vào startTime và numOfHour
+                        const start = new Date(sessionDate);
+                        start.setHours(
+                            new Date(detail.startTime).getUTCHours(),
+                            new Date(detail.startTime).getUTCMinutes()
+                        );
 
-                    const end = new Date(start.getTime() + detail.numOfHour * 60 * 60 * 1000);
+                        const end = new Date(
+                            start.getTime() + detail.numOfHour * 60 * 60 * 1000
+                        );
 
-                    return {
-                        id: detail.id,
-                        classSessionId: enrollment.ClassSession.id,
-                        title: enrollment.ClassSession.name,  // Dùng name của ClassSession làm title
-                        start,    // Thời gian bắt đầu
-                        end       // Thời gian kết thúc
-                    };
+                        return {
+                            id: detail.id,
+                            classSessionId: enrollment.ClassSession.id,
+                            title: enrollment.ClassSession.name, // Dùng name của ClassSession làm title
+                            start, // Thời gian bắt đầu
+                            end, // Thời gian kết thúc
+                        };
+                    });
                 });
-            });
-        })
+            }
+        );
 
         return formattedSessions;
-
-
     } catch (error) {
         console.error("Error fetching session details:", error);
         return error; // Handle or propagate the error as needed
     }
-}
+};
 
 const getUserClassSessionDetails = async ({ userId, classSessionId }) => {
     try {
@@ -340,69 +367,64 @@ const getUserClassSessionDetails = async ({ userId, classSessionId }) => {
                 {
                     model: db.Enrollment,
                     where: { userId: userId },
-                    required: true
+                    required: true,
                 },
                 {
-                    model: db.Semester
+                    model: db.Semester,
                 },
                 {
-                    model: db.Subject
+                    model: db.Subject,
                 },
                 {
                     model: db.SessionDetails,
                     include: [
                         {
                             model: db.Classroom,
-                            include: [{ model: db.Amphitheater }]
+                            include: [{ model: db.Amphitheater }],
                         },
-                        { model: db.Teacher }
-                    ]
+                        { model: db.Teacher },
+                    ],
                 },
                 {
                     model: db.Grade,
-                    where: { userId: userId }
+                    where: { userId: userId },
                 },
                 {
-                    model: db.FinalExam
+                    model: db.FinalExam,
                 },
-                // {
-                //     model: db.News,
-                //     through: { attributes: [] }, // This will exclude the junction table attributes
-                //     include: [
-                //         {
-                //             model: db.User,
-                //             attributes: ['id', 'name'] // Include only necessary user attributes
-                //         }
-                //     ]
-                // }
-            ]
+                {
+                    model: db.News,
+                    as: "News", // Specify the alias here
+                    through: { attributes: [] },
+                },
+            ],
         });
 
         if (!classSessionDetails) {
-            throw new Error('Class session not found or user not enrolled');
+            throw new Error("Class session not found or user not enrolled");
         }
 
         // Fetch user notes with matching tags
         const userNotes = await db.UserNote.findAll({
             where: { userId: userId },
-            include: [{
-                model: db.Tag,
-                where: { name: classSessionDetails.name },
-                required: true
-            }]
+            include: [
+                {
+                    model: db.Tag,
+                    where: { name: classSessionDetails.name },
+                    required: true,
+                },
+            ],
         });
 
         return {
             classSessionDetails,
-            userNotes
+            userNotes,
         };
     } catch (error) {
-        console.error('Error fetching user class session details:', error);
+        console.error("Error fetching user class session details:", error);
         throw error;
     }
-}
-
-
+};
 
 module.exports = {
     createSessionDetail,
@@ -412,5 +434,5 @@ module.exports = {
     createMultipleSessionDetails,
     getAllUserSessionDetails,
     getSessionDetailsById,
-    getUserClassSessionDetails
+    getUserClassSessionDetails,
 };

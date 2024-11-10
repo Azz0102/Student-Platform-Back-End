@@ -12,6 +12,7 @@ module.exports = {
                 isGeneralSchoolNews: true,
                 time: new Date("2024-09-01T08:00:00"), // Thời gian
                 location: "Main Auditorium", // Địa điểm
+                type: "EVENT-002",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -23,6 +24,7 @@ module.exports = {
                 isGeneralSchoolNews: false,
                 time: new Date("2024-10-15T09:00:00"), // Thời gian
                 location: "Room 101", // Địa điểm
+                type: "EVENT-002",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },

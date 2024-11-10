@@ -7,7 +7,7 @@ const amqp = require("amqplib/callback_api");
 const { pushNoti } = require("../../src/dbs/init.socket");
 
 const pushNotiToSystem = async ({
-    type = "NEWS-001",
+    type = "EVENT-002",
     senderId = 1,
     noti_content,
     classSessionIds,
@@ -22,11 +22,7 @@ const pushNotiToSystem = async ({
 
         let users;
 
-        if (
-            type === "CLASS-001" &&
-            classSessionIds &&
-            classSessionIds.length > 0
-        ) {
+        if (classSessionIds && classSessionIds.length > 0) {
             // Find unique users enrolled in the specified class sessions
             users = await db.User.findAll({
                 include: {
@@ -113,6 +109,7 @@ const publishMessage = async ({
     message,
     type,
     classSessionIds,
+    id,
 }) => {
     const channelName = "coke_studio";
     amqp.connect("amqp://guest:guest@localhost", async (err, conn) => {
@@ -123,7 +120,7 @@ const publishMessage = async ({
 
         let userIds;
 
-        if (type === "CLASS-001") {
+        if (classSessionIds && classSessionIds.length > 0) {
             // Get unique userIds enrolled in specified class sessions and part of the specified channel
             const enrolledUsersInChannel = await db.Enrollment.findAll({
                 attributes: [
@@ -150,7 +147,7 @@ const publishMessage = async ({
                 raw: true,
             });
             userIds = enrolledUsersInChannel.map((e) => e.userId);
-        } else if (type === "NEWS-001") {
+        } else {
             // Get all userIds in the specified channel
             const usersInChannel = await db.ChannelUser.findAll({
                 attributes: [
@@ -194,8 +191,10 @@ const publishMessage = async ({
         console.log("subscriptions", subscriptions[0].KeyStore.User);
 
         const newMessage = {
+            type,
             message,
             subscriptions,
+            id,
         };
 
         conn.createChannel((err, ch) => {
