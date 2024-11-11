@@ -8,6 +8,8 @@ module.exports = (sequelize) => {
                 foreignKey: "noteId",
                 otherKey: "tagId",
             });
+
+            UserNote.belongsTo(models.User, { foreignKey: 'userId' });
         }
     }
 
@@ -29,7 +31,7 @@ module.exports = (sequelize) => {
                 },
             },
             name: {
-                type: DataTypes.STRING(150),
+                type: DataTypes.TEXT,
                 allowNull: false,
             },
             content: {

@@ -35,7 +35,7 @@ router.post(
 );
 router.post(
     "/sign-up-multiple",
-    grantAccess("createAny", "user"),
+    // grantAccess("createAny", "user"),
     asyncHandler(signUpMultipleUsersController)
 );
 router.post(

@@ -10,7 +10,7 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            class_session_id: {
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -20,7 +20,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            classroom_id: {
+            classroomId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -30,19 +30,19 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            start_time: {
+            startTime: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },
-            num_of_hour: {
+            numOfHour: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            day_of_week: {
+            dayOfWeek: {
                 type: Sequelize.TEXT,
                 allowNull: false,
             },
-            session_type: {
+            sessionType: {
                 type: Sequelize.STRING(50),
                 allowNull: false,
                 comment: "Theory, Practice",
@@ -51,7 +51,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            teacher_id: {
+            teacherId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {

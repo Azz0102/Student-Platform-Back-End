@@ -41,7 +41,7 @@ const schedulingClassSession = async ({
 
 const saveSchedule = async ({ data }) => {
     try {
-    } catch (error) {}
+    } catch (error) { }
 };
 
 const signUp = async ({ name, password = 1, roleId = 2 }) => {
@@ -89,42 +89,35 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             }
 
             return {
-                code: 201,
-                metadata: {
-                    user: getInfoData({
-                        fields: ["id", "name"],
-                        object: newUser,
-                    }),
-                    tokens,
-                },
+                tokens,
             };
         }
-        return {
-            code: 200,
-            metadata: null,
-        };
+        throw new BadRequestError("Signup error");
     } catch (error) {
         return error.message;
     }
 };
 
-const signUpMultipleUsers = async ({ usersArray }) => {
-    const results = [];
-    for (const user of usersArray) {
-        const { name, password, roleId } = user;
+const signUpMultipleUsers = async (usersArray) => {
+    try {
+        // Mã hóa mật khẩu cho từng người dùng
+        const userData = await Promise.all(usersArray.map(async (user) => {
+            const passwordHash = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
+            return {
+                name: user.name,
+                passwordHash,
+                roleId: user.roleId,
+            };
+        }));
 
-        try {
-            const result = await signUp({ name, password, roleId });
-            results.push({
-                user: name,
-                data: result,
-            });
-        } catch (error) {
-            return error;
-        }
+        // Sử dụng bulkCreate để thêm tất cả người dùng
+        const results = await db.User.bulkCreate(userData);
+
+        return results;
+    } catch (error) {
+        console.error(error);
+        throw new BadRequestError('Error while signing up multiple users');
     }
-
-    return results;
 };
 
 module.exports = {

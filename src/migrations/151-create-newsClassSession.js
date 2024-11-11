@@ -3,7 +3,14 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("news_class_sessions", {
-            news_id: {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                unique: true,
+                allowNull: false,
+            },
+            newsId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -13,7 +20,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            class_session_id: {
+            classSessionId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -33,12 +40,13 @@ module.exports = {
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
             },
-            // Define composite unique constraint
-            unique_constraint: {
-                type: Sequelize.STRING,
-                unique: true,
-                defaultValue: "news_class_sessions_unique_constraint",
-            },
+        });
+
+        // Thêm unique constraint cho cặp (newsId, classSessionId)
+        await queryInterface.addConstraint("news_class_sessions", {
+            fields: ["newsId", "classSessionId"],
+            type: "unique",
+            name: "news_class_sessions_unique_constraint", // Tên của unique constraint
         });
     },
 

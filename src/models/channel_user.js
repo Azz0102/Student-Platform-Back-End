@@ -2,7 +2,10 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class ChannelUser extends Model {
-        static associate(models) {}
+        static associate(models) {
+            ChannelUser.belongsTo(models.User);
+            ChannelUser.belongsTo(models.Channel);
+        }
     }
 
     ChannelUser.init(

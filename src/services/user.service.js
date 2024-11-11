@@ -43,46 +43,46 @@ class UserService {
     /*
         check this token used?
     */
-    handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
-        const { id, name } = user;
+    // handlerRefreshTokenV2 = async ({ user, keyStore, refreshToken }) => {
+    //     const { id, name } = user;
 
-        if (keyStore.refreshToken !== refreshToken) {
-            throw new AuthFailureError("User not registered");
-        }
+    //     if (keyStore.refreshToken !== refreshToken) {
+    //         throw new AuthFailureError("User not registered");
+    //     }
 
-        const checkUser = await db.User.findOne({
-            where: {
-                name,
-            },
-        });
-        if (!checkUser) {
-            throw new AuthFailureError("User not registered 2");
-        }
+    //     const checkUser = await db.User.findOne({
+    //         where: {
+    //             name,
+    //         },
+    //     });
+    //     if (!checkUser) {
+    //         throw new AuthFailureError("User not registered 2");
+    //     }
 
-        // create new token pair
-        const tokens = await createTokenPair(
-            { id, name },
-            keyStore.publicKey,
-            keyStore.privateKey
-        );
+    //     // create new token pair
+    //     const tokens = await createTokenPair(
+    //         { id, name },
+    //         keyStore.publicKey,
+    //         keyStore.privateKey
+    //     );
 
-        // update token
-        await keyStore.update(
-            {
-                refreshToken: tokens.refreshToken,
-            },
-            {
-                where: {
-                    // điều kiện để chọn tài liệu/cột để cập nhật
-                },
-            }
-        );
+    //     // update token
+    //     await keyStore.update(
+    //         {
+    //             refreshToken: tokens.refreshToken,
+    //         },
+    //         {
+    //             where: {
+    //                 // điều kiện để chọn tài liệu/cột để cập nhật
+    //             },
+    //         }
+    //     );
 
-        return {
-            user,
-            tokens,
-        };
-    };
+    //     return {
+    //         user,
+    //         tokens,
+    //     };
+    // };
 
     logout = async ({ keyStore }) => {
         const findKey = await db.KeyStore.findOne({
@@ -102,7 +102,7 @@ class UserService {
         4 - generate tokens
         5 - get data return login 
     */
-    login = async ({ name, password }) => {
+    login = async ({ name, password, device = "web" }) => {
         // 1.
         const checkUser = await db.User.findOne({
             where: {
@@ -116,8 +116,7 @@ class UserService {
             password,
             checkUser.passwordHash
         );
-        if (!comparePassword)
-            throw new AuthFailureError("Authentication error");
+        if (!comparePassword) throw new AuthFailureError("Wrong password");
 
         // 3.
         const privateKey = crypto.randomBytes(64).toString("hex");
@@ -136,18 +135,19 @@ class UserService {
             privateKey,
             publicKey,
             userId,
+            device,
         });
 
         // Cập nhật lastLogin với thời điểm hiện tại
         await db.User.update(
             { lastLogin: new Date() },
-            { where: { id: userId } }  // Điều kiện để xác định người dùng
+            { where: { id: userId } } // Điều kiện để xác định người dùng
         );
 
         // await db.Subscription.create({})
 
         informNS({
-            username: "20020672",
+            username: name,
             userId: userId,
         });
         // 5.
@@ -160,40 +160,40 @@ class UserService {
         };
     };
 
-    verification = async ({ name }) => {
-        const verificationCode = Math.round(1000 + Math.random() * 9000);
+    // verification = async ({ name }) => {
+    //     const verificationCode = Math.round(1000 + Math.random() * 9000);
 
-        try {
-            const data = {
-                from: `"Support EventHub Application" <${process.env.USERNAME_EMAIL}>`,
-                to: `${name}@vnu.edu.vn`,
-                subject: "Verification email code",
-                text: "Your code to verification email",
-                html: `<h1>${verificationCode}</h1>`,
-            };
+    //     try {
+    //         const data = {
+    //             from: `"Support EventHub Application" <${process.env.USERNAME_EMAIL}>`,
+    //             to: `${name}@vnu.edu.vn`,
+    //             subject: "Verification email code",
+    //             text: "Your code to verification email",
+    //             html: `<h1>${verificationCode}</h1>`,
+    //         };
 
-            await handleSendMail(data);
+    //         await handleSendMail(data);
 
-            const user = await db.User.findOne({
-                where: {
-                    name,
-                },
-            });
+    //         const user = await db.User.findOne({
+    //             where: {
+    //                 name,
+    //             },
+    //         });
 
-            const checkCode = await db.Code.create({
-                userId: user.id,
-                value: verificationCode,
-            });
+    //         const checkCode = await db.Code.create({
+    //             userId: user.id,
+    //             value: verificationCode,
+    //         });
 
-            return {
-                data: {
-                    code: verificationCode,
-                },
-            };
-        } catch (error) {
-            return error;
-        }
-    };
+    //         return {
+    //             data: {
+    //                 code: verificationCode,
+    //             },
+    //         };
+    //     } catch (error) {
+    //         return error;
+    //     }
+    // };
 
     // forgotPassword = async ({ name, code }) => {
     //     const user = await db.User.findOne({
@@ -222,7 +222,7 @@ class UserService {
     //     }
     // };
 
-    forgotPassword = async ({ name }) => {
+    forgotPassword = async ({ name, device = "web" }) => {
         const user = await db.User.findOne({
             where: {
                 name,
@@ -231,33 +231,37 @@ class UserService {
 
         if (!user) {
             throw new NotFoundError("User not found");
-        };
+        }
 
-        const resetToken = crypto.randomBytes(20).toString('hex');
+        const resetToken = crypto.randomBytes(20).toString("hex");
 
         await user.update({
             reset_token: resetToken, // Cập nhật cột 'reset_token'
         });
 
         // const resetLink = `${process.env.USERNAME_EMAIL}/reset-password/${resetToken}`;
-        const resetLink = `http://localhost:3001/api/user/reset-password/${resetToken}`;
+        let resetLink;
+        if (device !== "web") {
+            resetLink = `myapp://reset-password/${resetToken}`;
+        } else {
+            resetLink = `https://localhost:3000/reset-password/${resetToken}`;
+        }
 
         // Cấu hình nội dung email
         const mailOptions = {
-            from: 'your-email@gmail.com',
+            from: "your-email@gmail.com",
             to: `${name}@vnu.edu.vn`,
-            subject: 'Reset your password',
-            text: `Click this link to reset your password: ${resetLink}`,
+            subject: "Reset your password",
+            html: `Click this link to reset your password: <a href="${resetLink}">${resetLink}</a>`,
         };
 
         await handleSendMail(mailOptions);
     };
 
     resetPassword = async ({ token }) => {
-
         // Kiểm tra token trong cơ sở dữ liệu
         const user = await db.User.findOne({
-            where: { reset_token: token }
+            where: { reset_token: token },
         });
 
         if (!user) {
@@ -269,10 +273,11 @@ class UserService {
     };
 
     resetPasswordToken = async ({ resetToken, newPassword }) => {
-
         console.log("token", resetToken);
         // Tìm người dùng với resetToken
-        const user = await db.User.findOne({ where: { reset_token: resetToken } });
+        const user = await db.User.findOne({
+            where: { reset_token: resetToken },
+        });
 
         if (!user) {
             throw new NotFoundError("User not found");
@@ -286,7 +291,7 @@ class UserService {
             { passwordHash: hashedPassword, reset_token: null }, // Cập nhật thông tin
             { where: { id: user.id } } // Điều kiện
         );
-    }
+    };
 
     // handleSendMail = async (val) => {
     //     try {
@@ -299,13 +304,15 @@ class UserService {
     // };
 
     updatePassword = async ({ oldPassword, newPassword }) => {
-
         const userId = req.user.id;
         const user = await db.User.findByPk(userId);
         if (!user) throw new BadRequestError("User not registered");
 
         // Kiểm tra mật khẩu cũ
-        const isPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+        const isPasswordValid = await bcrypt.compare(
+            oldPassword,
+            user.passwordHash
+        );
         if (!isPasswordValid) throw new BadRequestError("Password not correct");
 
         // Mã hóa mật khẩu mới
@@ -314,9 +321,7 @@ class UserService {
         // Cập nhật mật khẩu
         user.passwordHash = hashedPassword;
         await db.User.save();
-
-    }
-
+    };
 }
 
 module.exports = new UserService();

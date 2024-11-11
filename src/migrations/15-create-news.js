@@ -10,7 +10,7 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            user_id: {
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -21,7 +21,7 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
             name: {
-                type: Sequelize.STRING(255),
+                type: Sequelize.TEXT,
                 allowNull: false,
             },
             content: {
@@ -29,10 +29,20 @@ module.exports = {
                 allowNull: false,
                 comment: "Content is in Markdown format",
             },
-            is_general_school_news: {
+            isGeneralSchoolNews: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            time: {
+                // Thêm trường mới: thời gian
+                type: Sequelize.DATE,
+                allowNull: true, // Có thể cho phép null
+            },
+            location: {
+                // Thêm trường mới: địa điểm
+                type: Sequelize.TEXT,
+                allowNull: true, // Có thể cho phép null
             },
             createdAt: {
                 type: Sequelize.DATE,
@@ -43,6 +53,11 @@ module.exports = {
                 type: Sequelize.DATE,
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
+            },
+            type: {
+                type: Sequelize.ENUM("EXAM-001", "EVENT-002", "ASSIGNMENT-003"),
+                allowNull: false,
+                defaultValue: "EVENT-002",
             },
         });
     },

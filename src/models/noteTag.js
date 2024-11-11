@@ -10,6 +10,13 @@ module.exports = (sequelize) => {
 
     NoteTag.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
             noteId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

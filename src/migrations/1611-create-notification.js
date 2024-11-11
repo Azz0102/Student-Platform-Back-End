@@ -14,9 +14,9 @@ module.exports = {
                 type: Sequelize.STRING(20),
                 allowNull: false,
                 validate: {
-                    isIn: [["NEWS-001", "TIME-001"]], // Possible values
+                    isIn: [["EXAM-001", "EVENT-002", "ASSIGNMENT-003"]], // Possible values
                 },
-                comment: "Possible values: NEWS-001, TIME-001",
+                comment: "Possible values: NEWS-001, CLASS-001",
             },
             noti_sender_id: {
                 type: Sequelize.INTEGER,
@@ -32,10 +32,6 @@ module.exports = {
                 type: Sequelize.TEXT,
                 allowNull: false,
             },
-            noti_options: {
-                type: Sequelize.JSON,
-                defaultValue: {},
-            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
@@ -45,15 +41,6 @@ module.exports = {
                 type: Sequelize.DATE,
                 allowNull: false,
                 defaultValue: Sequelize.fn("NOW"),
-            },
-            // Add indexes for better query performance
-            index_noti_type: {
-                type: Sequelize.INTEGER,
-                fields: ["noti_type"],
-            },
-            index_noti_sender_id: {
-                type: Sequelize.INTEGER,
-                fields: ["noti_sender_id"],
             },
         });
     },

@@ -2,7 +2,27 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class ClassSession extends Model {
-        static associate(models) {}
+        static associate(models) {
+            ClassSession.belongsToMany(models.User, { through: models.Enrollment });
+            // ClassSession.hasMany(models.Enrollment);
+            // ClassSession.hasOne(models.Conversation, { foreignKey: "classSessionId", onDelete: 'CASCADE' });
+
+            ClassSession.hasMany(models.Enrollment, { foreignKey: 'classSessionId' });
+            ClassSession.belongsTo(models.Subject, { foreignKey: 'subjectId' });
+            ClassSession.belongsTo(models.Semester, { foreignKey: 'semesterId' });
+            ClassSession.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
+            ClassSession.hasMany(models.FinalExam, { foreignKey: 'classSessionId' });
+
+            ClassSession.belongsToMany(models.News, {
+                through: models.NewsClassSession, // Sử dụng models.NewsClassSession
+                foreignKey: 'classSessionId',
+                otherKey: 'newsId',
+                as: 'News' // Đặt alias cho quan hệ
+            });
+
+
+            ClassSession.hasMany(models.Grade, { foreignKey: 'classSessionId' });
+        }
     }
 
     ClassSession.init(
@@ -11,6 +31,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
+            name: {
+                type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             },

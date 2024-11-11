@@ -2,7 +2,12 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class Subscription extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Subscription.belongsTo(models.KeyStore, {
+                foreignKey: "keyStoreId",
+                targetKey: "id",
+            });
+        }
     }
 
     Subscription.init(

@@ -3,13 +3,18 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
-const { publishMessage } = require("./notification.service");
+const { publishMessage, pushNotiToSystem } = require("./notification.service");
 
 const createNews = async ({
     userId,
     content = "",
     name,
     isGeneralSchoolNews = false,
+    classSessionIds = [],
+    time,
+    location,
+    fileIds = [],
+    type = "EVENT-002",
 }) => {
     try {
         // Validate user existence
@@ -24,6 +29,9 @@ const createNews = async ({
             content,
             name,
             isGeneralSchoolNews,
+            time,
+            location,
+            type,
         });
 
         // Create associations with class sessions if provided
@@ -33,15 +41,52 @@ const createNews = async ({
                 classSessionId,
             }));
             await db.NewsClassSession.bulkCreate(newsClassSessions);
+
+            await pushNotiToSystem({
+                senderId: news.id,
+                noti_content: name,
+                type,
+                classSessionIds,
+            });
+
+            await publishMessage({
+                exchangeName: "coke_studio",
+                bindingKey: "coke_studio",
+                message: content, // { content, title, subscription}
+                type,
+                classSessionIds,
+                id: news.id,
+            });
+
+            // emit classSession for noti
+        } // Create associations with class sessions if provided
+
+        if (fileIds.length > 0) {
+            const newsFile = fileIds.map((fileId) => ({
+                newsId: news.id,
+                fileId,
+            }));
+            await db.NewsFile.bulkCreate(newsFile);
         }
 
-        // get all subscription
+        if (isGeneralSchoolNews) {
+            const noti = await pushNotiToSystem({
+                senderId: news.id,
+                noti_content: name,
+                type,
+            });
 
-        await publishMessage({
-            exchangeName: "coke_studio",
-            bindingKey: "coke_studio",
-            message: content, // { content, title, subscription}
-        });
+            // get all subscription
+
+            await publishMessage({
+                exchangeName: "coke_studio",
+                bindingKey: "coke_studio",
+                message: content, // { content, title, subscription}
+                type,
+                classSessionIds,
+                id: news.id,
+            });
+        }
 
         return news;
     } catch (error) {
@@ -178,10 +223,83 @@ const deleteNews = async ({ newsId }) => {
     }
 };
 
+const formatResponseData = (responseData) => {
+    return responseData.map((news) => ({
+        id: news.id,
+        title: news.name, // ánh xạ name thành title
+        content: news.content,
+        isGeneralSchoolNews: news.isGeneralSchoolNews,
+        relatedTo: news.ClassSessions.map((classSession) => ({
+            id: classSession.id, // chỉ giữ lại id
+            name: classSession.name, // chỉ giữ lại name
+        })),
+        files: news.NewsFiles.map((newsFile) => ({
+            id: newsFile.File.id,
+            name: newsFile.File.name,
+        })),
+        time: news.time,
+        location: news.location,
+    }));
+};
+
+const getUserRelatedNews = async ({ userId }) => {
+    try {
+        const userNews = await db.News.findAll({
+            where: {
+                [Op.or]: [
+                    { isGeneralSchoolNews: true },
+                    { "$ClassSessions.Enrollments.userId$": userId },
+                ],
+            },
+            include: [
+                {
+                    model: db.User,
+                    attributes: ["id", "name"],
+                    as: "Author",
+                },
+                {
+                    model: db.ClassSession,
+                    attributes: ["id", "name"],
+                    through: {
+                        model: db.NewsClassSession,
+                        attributes: ["classSessionId"],
+                    },
+                    include: [
+                        {
+                            model: db.Enrollment,
+                            where: { userId: userId },
+                            required: false,
+                        },
+                    ],
+                    as: "ClassSessions",
+                },
+                {
+                    model: db.NewsFile,
+                    as: "NewsFiles", // Ensure this matches the alias defined in the News model association
+                    include: [
+                        {
+                            model: db.File,
+                            attributes: ["id", "name"],
+                            as: "File", // Ensure this matches the alias defined in the NewsFile model association
+                        },
+                    ],
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        return formatResponseData(userNews);
+    } catch (error) {
+        console.error("Error fetching user-related news:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     createNews,
     updateNews,
     getListNews,
     getListNewsByUser,
     deleteNews,
+    getUserRelatedNews,
 };

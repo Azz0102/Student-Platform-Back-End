@@ -10,7 +10,7 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            user_id: {
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -21,7 +21,7 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
             name: {
-                type: Sequelize.STRING(150),
+                type: Sequelize.TEXT,
                 allowNull: false,
             },
             content: {

@@ -3,7 +3,14 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("noti_user", {
-            user_id: {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                unique: true,
+                allowNull: false,
+            },
+            userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -12,7 +19,7 @@ module.exports = {
                 },
                 onDelete: "CASCADE", // Optional: If a user is deleted, their notifications are also deleted
             },
-            noti_id: {
+            notiId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -39,7 +46,7 @@ module.exports = {
         });
 
         // Create a unique index to prevent duplicates
-        await queryInterface.addIndex("noti_user", ["user_id", "noti_id"], {
+        await queryInterface.addIndex("noti_user", ["userId", "notiId"], {
             unique: true,
             name: "unique_noti_user",
         });

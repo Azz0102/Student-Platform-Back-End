@@ -4,29 +4,51 @@ const { Op, fn, col, literal } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const amqp = require("amqplib/callback_api");
+const { pushNoti } = require("../../src/dbs/init.socket");
 
 const pushNotiToSystem = async ({
-    type = "NEWS-001",
-    receivedId = 1,
+    type = "EVENT-002",
     senderId = 1,
-    options = {},
+    noti_content,
+    classSessionIds,
 }) => {
     try {
-        let noti_content;
-
-        if (type === "NEWS-001") {
-            noti_content = "Tin tức mới";
-        } else if (type === "TIME-001") {
-            noti_content = "Sắp đến giờ học, bạn còn @@@ phút";
-        }
-
+        // Create the notification
         const newNoti = await db.Notification.create({
             noti_type: type,
             noti_content,
             noti_senderId: senderId,
-            noti_receivedId: receivedId,
-            noti_options: options,
         });
+
+        let users;
+
+        if (classSessionIds && classSessionIds.length > 0) {
+            // Find unique users enrolled in the specified class sessions
+            users = await db.User.findAll({
+                include: {
+                    model: db.Enrollment,
+                    where: { classSessionId: classSessionIds },
+                },
+                attributes: ["id"],
+                group: ["User.id"], // Ensures no duplicate users
+            });
+        } else {
+            // Get all users for other notification types
+            users = await db.User.findAll({ attributes: ["id"] });
+        }
+
+        // Prepare NotiUser entries
+        const notiUserEntries = users.map((user) => ({
+            userId: user.id,
+            notiId: newNoti.id,
+            read: false, // By default, mark the notification as unread
+        }));
+
+        // Bulk create NotiUser entries
+        await db.NotiUser.bulkCreate(notiUserEntries);
+
+        // Push the notification to the system
+        pushNoti(newNoti, notiUserEntries);
 
         return newNoti;
     } catch (error) {
@@ -34,81 +56,149 @@ const pushNotiToSystem = async ({
     }
 };
 
-const listNotiByUser = async ({ userId = 1, type = "All" }) => {
-    // Build the WHERE condition
-    const whereCondition = { userId: userId };
-
-    if (type !== "All") {
-        whereCondition["noti_type"] = type;
-    }
-
-    return await db.Notification.findAll({
-        include: [
-            {
-                model: db.NotiUser,
-                where: whereCondition,
-                attributes: [],
-            },
-        ],
-        attributes: [
-            "noti_type",
-            "noti_senderId",
-            [col("NotiUser.userId"), "noti_receivedId"],
-            [
-                fn(
-                    "CONCAT",
-                    "Tin tức mới: ",
-                    fn("COALESCE", col("noti_options.content"), "")
-                ),
-                "noti_content",
+const listNotiByUser = async ({ userId = 1 }) => {
+    try {
+        const notifications = await db.Notification.findAll({
+            include: [
+                {
+                    model: db.NotiUser,
+                    as: "NotiUsers", // Use the correct alias as per the association definition
+                    where: { userId },
+                    attributes: ["isRead", "id"], // Correct the field name to 'read' if it matches your schema
+                    required: true,
+                },
             ],
-            "createdAt",
-            "noti_options",
-        ],
-        raw: true, // To get plain JavaScript objects instead of Sequelize instances
-    });
+            attributes: [
+                "id",
+                "noti_type",
+                "noti_content",
+                "createdAt",
+                "updatedAt",
+            ],
+            order: [["createdAt", "DESC"]], // Order by newest notifications first
+        });
+
+        return notifications;
+    } catch (error) {
+        console.error("Error fetching user notifications: ", error);
+        throw error;
+    }
 };
 
-const publishMessage = async ({ exchangeName, bindingKey, message }) => {
-    // const channelName = 'coke_studio'
-    amqp.connect("amqp://guest:12345@localhost", async (err, conn) => {
+const updateNotiUser = async ({ id }) => {
+    try {
+        // Update the NotiUser record
+        const [updatedCount] = await db.NotiUser.update(
+            { isRead: true }, // New value for isRead
+            {
+                where: {
+                    id: id, // Condition to find the specific NotiUser
+                },
+            }
+        );
+
+        return;
+    } catch (error) {
+        return error;
+    }
+};
+
+const publishMessage = async ({
+    exchangeName,
+    bindingKey,
+    message,
+    type,
+    classSessionIds,
+    id,
+}) => {
+    const channelName = "coke_studio";
+    amqp.connect("amqp://guest:guest@localhost", async (err, conn) => {
         if (err) {
-            console.log(err);
+            console.error("AMQP Connection Error:", err);
+            return;
         }
 
-        // const data = await db.User.findAll({
-        //     attributes: ["name"], // Select only the username from User model
-        //     include: [
-        //         {
-        //             model: db.ChannelUser, // Join with the ChannelUser table
-        //             attributes: [], // We don't need any fields from the pivot table
-        //             include: [
-        //                 {
-        //                     model: db.Channel,
-        //                     attributes: [], // We don't need any fields from the Channel table itself
-        //                     where: { name: channelName }, // Filter by channel name
-        //                 },
-        //             ],
-        //         },
-        //         {
-        //             model: db.Subscription, // Include subscriptions
-        //             attributes: [
-        //                 "endpoint",
-        //                 "expirationTime",
-        //                 "auth",
-        //                 "p256dh",
-        //             ], // Select subscription fields
-        //         },
-        //     ],
-        // });
+        let userIds;
+
+        if (classSessionIds && classSessionIds.length > 0) {
+            // Get unique userIds enrolled in specified class sessions and part of the specified channel
+            const enrolledUsersInChannel = await db.Enrollment.findAll({
+                attributes: [
+                    [
+                        db.Sequelize.fn("DISTINCT", db.Sequelize.col("userId")),
+                        "userId",
+                    ],
+                ],
+                where: { classSessionId: { [Op.in]: classSessionIds } },
+                include: [
+                    {
+                        model: db.ChannelUser,
+                        required: true,
+                        include: [
+                            {
+                                model: db.Channel,
+                                where: { name: channelName },
+                                attributes: [],
+                            },
+                        ],
+                        attributes: [],
+                    },
+                ],
+                raw: true,
+            });
+            userIds = enrolledUsersInChannel.map((e) => e.userId);
+        } else {
+            // Get all userIds in the specified channel
+            const usersInChannel = await db.ChannelUser.findAll({
+                attributes: [
+                    [
+                        db.Sequelize.fn("DISTINCT", db.Sequelize.col("userId")),
+                        "userId",
+                    ],
+                ],
+                include: [
+                    {
+                        model: db.Channel,
+                        where: { name: channelName },
+                        attributes: [],
+                    },
+                ],
+                raw: true,
+            });
+            userIds = usersInChannel.map((cu) => cu.userId);
+        }
+
+        // Get subscriptions for these users with specific platform information
+        const subscriptions = await db.Subscription.findAll({
+            attributes: ["endpoint"],
+            include: [
+                {
+                    model: db.KeyStore,
+                    required: true,
+                    where: { userId: { [Op.in]: userIds } },
+                    attributes: ["id", "device"], // include device from KeyStore
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: ["name"],
+                        },
+                    ],
+                },
+            ],
+            raw: false,
+        });
+
+        console.log("subscriptions", subscriptions[0].KeyStore.User);
 
         const newMessage = {
+            type,
             message,
-            // data,
+            subscriptions,
+            id,
         };
 
         conn.createChannel((err, ch) => {
-            ch.assertExchange(exchangeName, "fanout", { durable: true });
+            // ch.assertExchange(exchangeName, "fanout", { durable: true });
             ch.publish(
                 exchangeName,
                 bindingKey,
@@ -125,4 +215,5 @@ module.exports = {
     pushNotiToSystem,
     listNotiByUser,
     publishMessage,
+    updateNotiUser,
 };

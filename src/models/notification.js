@@ -2,7 +2,13 @@ const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     class Notification extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Notification.belongsTo(models.News, {
+                foreignKey: "noti_sender_id",
+                as: "newsSender",
+            });
+            Notification.hasMany(models.NotiUser, { foreignKey: "notiId" });
+        }
     }
 
     Notification.init(
@@ -18,11 +24,11 @@ module.exports = (sequelize) => {
                 type: DataTypes.STRING(20),
                 allowNull: false,
                 validate: {
-                    isIn: [["NEWS-001", "TIME-001"]], // Possible values
+                    isIn: [["EXAM-001", "EVENT-002", "ASSIGNMENT-003"]], // Possible values
                 },
-                comment: "Possible values: NEWS-001, TIME-001",
+                comment: "Possible values: NEWS-001, CLASS-001",
             },
-            noti_senderId: {
+            noti_sender_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 defaultValue: 0,
@@ -35,10 +41,6 @@ module.exports = (sequelize) => {
             noti_content: {
                 type: DataTypes.TEXT,
                 allowNull: false,
-            },
-            noti_options: {
-                type: DataTypes.JSON,
-                defaultValue: {},
             },
         },
         {

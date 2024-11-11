@@ -7,6 +7,7 @@ class KeyTokenService {
         publicKey,
         privateKey,
         refreshToken,
+        device,
     }) => {
         try {
             const [tokens, created] = await db.KeyStore.findOrCreate({
@@ -15,6 +16,7 @@ class KeyTokenService {
                     publicKey: publicKey,
                     privateKey: privateKey,
                     refreshToken: refreshToken,
+                    device: device,
                 },
             });
 
@@ -23,6 +25,7 @@ class KeyTokenService {
                     publicKey: publicKey,
                     privateKey: privateKey,
                     refreshToken: refreshToken,
+                    device: device,
                 });
             }
 

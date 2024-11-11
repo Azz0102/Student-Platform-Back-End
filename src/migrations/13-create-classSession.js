@@ -10,24 +10,38 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            subject_id: {
+            name: {
+                type: Sequelize.STRING(60),
+                allowNull: false,
+                unique: true,
+            },
+            subjectId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
                     model: "subjects",
                     key: "id",
                 },
-                onDelete: "CASCADE", // Optional: adjust if needed
+                onDelete: "CASCADE", // Nếu cần
             },
-            from_date: {
+            semesterId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: "semester",
+                    key: "id",
+                },
+                onDelete: "CASCADE", // Nếu cần
+            },
+            fromDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },
-            end_date: {
+            endDate: {
                 type: Sequelize.DATE,
                 allowNull: false,
             },
-            num_of_session_a_week: {
+            numOfSessionAWeek: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 defaultValue: 1,

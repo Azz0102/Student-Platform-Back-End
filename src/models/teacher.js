@@ -2,7 +2,10 @@ const { Model, DataTypes } = require("sequelize");
 // Adjust the path as needed
 module.exports = (sequelize) => {
     class Teacher extends Model {
-        static associate(models) {}
+        static associate(models) {
+            Teacher.hasMany(models.SessionDetails, { foreignKey: 'teacherId' });
+            Teacher.belongsToMany(models.SessionDetails, { through: 'teacher_session', foreignKey: 'teacherId' });
+        }
     }
 
     Teacher.init(
@@ -16,6 +19,10 @@ module.exports = (sequelize) => {
             },
             name: {
                 type: DataTypes.STRING(150),
+                allowNull: false,
+            },
+            email: {
+                type: DataTypes.TEXT,
                 allowNull: false,
             },
             dateOfBirth: {

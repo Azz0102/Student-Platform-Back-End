@@ -2,11 +2,21 @@ const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     class NotiUser extends Model {
-        static associate(models) {}
+        static associate(models) {
+            NotiUser.belongsTo(models.User, { foreignKey: "userId" });
+            NotiUser.belongsTo(models.Notification, { foreignKey: "notiId" });
+        }
     }
 
     NotiUser.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+                allowNull: false,
+                unique: true,
+            },
             userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

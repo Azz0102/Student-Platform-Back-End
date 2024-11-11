@@ -3,27 +3,17 @@
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable("messages", {
-            messageId: {
+            id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
                 allowNull: false,
             },
-            conversationId: {
+            enrollmentId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "conversations", // Tên bảng `conversations` đã tồn tại trong cơ sở dữ liệu
-                    key: "conversationId",
-                },
-                onDelete: "CASCADE", // Xóa message khi conversation bị xóa
-                onUpdate: "CASCADE",
-            },
-            userId: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                references: {
-                    model: "users", // Tên bảng `users` đã tồn tại trong cơ sở dữ liệu
+                    model: "enrollments", // Tên bảng `users` đã tồn tại trong cơ sở dữ liệu
                     key: "id",
                 },
                 onDelete: "CASCADE", // Xóa message khi user bị xóa
@@ -32,6 +22,16 @@ module.exports = {
             message: {
                 type: Sequelize.TEXT,
                 allowNull: false,
+            },
+            timestamp: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.fn("NOW"),
+            },
+            file: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
             createdAt: {
                 type: Sequelize.DATE,
