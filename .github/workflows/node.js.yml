@@ -18,10 +18,27 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Make envfile
+      uses: SpicyPizza/create-envfile@v2.0
+      with:
+        envkey_PORT: 3001
+        envkey_NODE_ENV: development
+        envkey_ACCESS_TOKEN: access_token
+        envkey_REFRESH_TOKEN: refresh_token
+        envkey_KEY_PATH: ./localhost+2-key.pem
+        envkey_CERT_PATH: ./localhost+2.pem
+        envkey_SAVE_PATH: /home/ubuntu/Documents/File
+        envkey_DB_HOST: buqyrwpz2ds7qaavcw6v-mysql.services.clever-cloud.com
+        envkey_DB_HOST_USER: ufywgpvhhlngeonk
+        envkey_DB_HOST_PASSWORD: auWImzsmqjPby4wMcZxO
+        envkey_DB_HOST_PORT: 3306
+        envkey_DB_HOST_NAME: buqyrwpz2ds7qaavcw6v
+        envkey_USERNAME_EMAIL: phamducdat171102dta@gmail.com
+        envkey_PASSWORD_EMAIL: ofkknueekbtugqmf
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        cache: 'npm'    
     - run: npm ci
     - run: pm2 restart Doan-backend  
