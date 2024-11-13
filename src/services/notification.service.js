@@ -5,6 +5,8 @@ const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const amqp = require("amqplib/callback_api");
 const { pushNoti } = require("../../src/dbs/init.socket");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const pushNotiToSystem = async ({
     type = "EVENT-002",
@@ -112,7 +114,7 @@ const publishMessage = async ({
     id,
 }) => {
     const channelName = "coke_studio";
-    amqp.connect("amqp://guest:guest@localhost", async (err, conn) => {
+    amqp.connect(`${process.env.RABBIT_URL}`, async (err, conn) => {
         if (err) {
             console.error("AMQP Connection Error:", err);
             return;

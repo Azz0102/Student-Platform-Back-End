@@ -1,8 +1,10 @@
 "use strict";
 const io = require("socket.io-client");
 global.socket = null;
+const dotenv = require("dotenv");
+dotenv.config();
 
-const NotificationServer = "http://localhost:4000";
+const NotificationServer = `http://${process.env.NOTIFY_URL}`;
 
 const informNS = (user) => {
     global.socket = io.connect(NotificationServer, {

@@ -4,9 +4,11 @@ const { Op, where } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 const amqp = require("amqplib/callback_api");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const subscribe = ({ username, channel, data }) => {
-    amqp.connect("amqp://guest:guest@localhost", (err, conn) => {
+    amqp.connect(`${process.env.RABBIT_URL}`, (err, conn) => {
         conn.createChannel(async (err, ch) => {
             const user = await db.User.findOne({ where: { name: username } });
 

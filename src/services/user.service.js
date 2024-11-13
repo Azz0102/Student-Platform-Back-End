@@ -244,7 +244,7 @@ class UserService {
         if (device !== "web") {
             resetLink = `myapp://reset-password/${resetToken}`;
         } else {
-            resetLink = `https://localhost:3000/reset-password/${resetToken}`;
+            resetLink = `https://${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
         }
 
         // Cấu hình nội dung email
