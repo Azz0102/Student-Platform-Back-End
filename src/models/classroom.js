@@ -7,7 +7,9 @@ module.exports = (sequelize) => {
                 foreignKey: "amphitheaterId",
             });
 
-            Classroom.hasMany(models.SessionDetails, { foreignKey: 'classroomId' });
+            Classroom.hasMany(models.SessionDetails, {
+                foreignKey: "classroomId",
+            });
         }
     }
 
@@ -34,6 +36,10 @@ module.exports = (sequelize) => {
             },
             capacity: {
                 type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            type: {
+                type: DataTypes.ENUM("Theory", "Practice"),
                 allowNull: false,
             },
         },

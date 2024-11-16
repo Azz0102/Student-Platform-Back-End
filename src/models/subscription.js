@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
                 unique: true,
             },
             keyStoreId: {
-                type: DataTypes.STRING,
+                type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
                     model: "keystores",
