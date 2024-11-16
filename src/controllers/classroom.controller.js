@@ -17,9 +17,15 @@ const newClassroom = async (req, res, next) => {
 };
 
 const classroomList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
         message: "Get classroom list",
-        metadata: await listClassrooms(),
+        metadata: await listClassrooms({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 

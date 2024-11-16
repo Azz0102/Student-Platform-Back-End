@@ -1,10 +1,12 @@
 "use strict";
 
+const { Op } = require("sequelize");
 const db = require("../models");
 const {
     BadRequestError,
     NotFoundError,
 } = require("../core/error.response");
+const { where } = require("sequelize");
 
 // Tạo mới một classroom
 const createClassroom = async ({ amphitheaterId, name, capacity }) => {
@@ -38,14 +40,76 @@ const createClassroom = async ({ amphitheaterId, name, capacity }) => {
 };
 
 // Liệt kê tất cả classrooms
-const listClassrooms = async () => {
+const listClassrooms = async ({ filters, sort, limit, offset }) => {
     try {
-        const classrooms = await db.Classroom.findAll({
-            include: [{ model: db.Amphitheater }],
-            order: [["name", "ASC"]], // Sắp xếp theo tên
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        const whereConditionsAmphitheater = {};
+
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    if (filter.id == 'nameAmphitheater') {
+                        whereConditionsAmphitheater["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'location') {
+                        whereConditionsAmphitheater[filter.id] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.Classroom.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            include: [
+                {
+                    model: db.Amphitheater,
+                    where: parsedFilters.length > 0 ? whereConditionsAmphitheater : undefined,
+                }
+            ],
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
         });
 
-        return classrooms;
+        const totalRecords = await db.Teacher.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    nameAmphitheater: item.Amphitheater.name,
+                    location: item.Amphitheater.location,
+                    capacity: item.capacity,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
     } catch (error) {
         return error;
     }

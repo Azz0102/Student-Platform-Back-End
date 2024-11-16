@@ -17,7 +17,7 @@ app.use(compression());
 app.use(
     cors({
         origin: "*",
-        exposedHeaders: ["Content-Disposition"], // Cho phép client truy cập header này
+        exposedHeaders: ["Content-Disposition", "Cache-Control"], // Cho phép client truy cập header này
     })
 );
 const path = require("path");
@@ -71,9 +71,8 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
     const statusCode = error.status || 500;
-    const resMessage = `${error.status} - ${
-        Date.now() - error.now
-    }ms - Response: ${JSON.stringify(error)}`;
+    const resMessage = `${error.status} - ${Date.now() - error.now
+        }ms - Response: ${JSON.stringify(error)}`;
 
     // myLogger.error(resMessage, [
     //     req.path,

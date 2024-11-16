@@ -15,9 +15,15 @@ const newTeacher = async (req, res, next) => {
 };
 
 const teacherList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
         message: "Get teacher list",
-        metadata: await listTeachers(),
+        metadata: await listTeachers({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 
