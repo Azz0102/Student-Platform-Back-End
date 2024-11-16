@@ -8,6 +8,10 @@ const {
     signUpMultipleUsersController,
     publish,
     savedSchedule,
+    getlistUser,
+    deleteUserById,
+    deleteListUsers,
+    updateUserById,
 } = require("../controllers/admin.controller");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
@@ -43,5 +47,11 @@ router.post(
     // grantAccess("createAny", "notification"),
     asyncHandler(publish)
 );
+
+router.get("/user", asyncHandler(getlistUser)); // Liệt kê user
+router.patch("/user", asyncHandler(updateUserById)); // Cap nhat user bang Id
+router.delete("/user", asyncHandler(deleteUserById)); // Xoa user bang Id
+router.delete("/user-list", asyncHandler(deleteListUsers)); // Xoa user bang Id
+
 
 module.exports = router;

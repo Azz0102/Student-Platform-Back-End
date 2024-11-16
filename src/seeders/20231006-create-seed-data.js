@@ -4,20 +4,20 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.bulkInsert("subjects", [
             {
-                name: "Mathematics",
-                description: "Study of numbers, shapes, and patterns.",
+                name: "INT_2021",
+                description: "Mathematics.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "Physics",
-                description: "Study of matter, energy, and their interactions.",
+                name: "ENU_2020",
+                description: "Physics.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "Chemistry",
-                description: "Study of substances, their properties, and reactions.",
+                name: "UEH_2020",
+                description: "Chemistry.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -50,7 +50,7 @@ module.exports = {
 
         await queryInterface.bulkInsert("class_sessions", [
             {
-                name: "INT_2021",
+                name: "INT_2021_1",
                 subjectId: subjectIds[0], // Mathematics
                 semesterId: semesterIds[0], // Semester 1
                 fromDate: new Date("2024-01-01"),
@@ -61,7 +61,7 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
-                name: "ENU_2020",
+                name: "ENU_2020_1",
                 subjectId: subjectIds[1], // Physics
                 semesterId: semesterIds[1], // Semester 2
                 fromDate: new Date("2024-06-01"),

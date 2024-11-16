@@ -7,6 +7,10 @@ const {
     signUp,
     signUpMultipleUsers,
     saveSchedule,
+    listUser,
+    deleteUser,
+    deleteUsers,
+    updateUser,
 } = require("../services/admin.service");
 const { publishMessage } = require("../services/notification.service");
 
@@ -45,10 +49,50 @@ const publish = async (req, res, next) => {
     }).send(res);
 };
 
+const getlistUser = async (req, res, next) => {
+    // await new Promise(resolve => setTimeout(resolve, 3000));
+    const perPage = parseInt(req.query.perPage) || 10
+    new SuccessResponse({
+        message: "Get user list",
+        metadata: await listUser({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
+    }).send(res);
+};
+
+const deleteUserById = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Delete User By Id!",
+        metadata: await deleteUser(req.body),
+    }).send(res);
+};
+
+const deleteListUsers = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Delete List Users!",
+        metadata: await deleteUsers(req.body),
+    }).send(res);
+};
+
+const updateUserById = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Update User By Id!",
+        metadata: await updateUser(req.body),
+    }).send(res);
+};
+
 module.exports = {
     schedulingClassSessionController,
     signUpController,
     signUpMultipleUsersController,
     publish,
     savedSchedule,
+    getlistUser,
+    deleteUserById,
+    deleteListUsers,
+    updateUserById,
+
 };

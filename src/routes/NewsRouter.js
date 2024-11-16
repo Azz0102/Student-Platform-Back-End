@@ -16,10 +16,10 @@ const { grantAccess } = require("../middleware/rbac");
 
 // router.use(authenticationV2);
 
-router.post("", asyncHandler(newNews)); //grantAccess("createAny", "news")
-router.get("", asyncHandler(newsList)); //grantAccess("readAny", "news")
+router.post("/", asyncHandler(newNews)); //grantAccess("createAny", "news")
+router.get("/", asyncHandler(newsList)); //grantAccess("readAny", "news")
 router.get("/:id", asyncHandler(newsListByUser)); //grantAccess("readOwn", "news")
-router.patch("", asyncHandler(newsUpdate)); //grantAccess("updateAny", "news")
+router.patch("/:id", asyncHandler(newsUpdate)); //grantAccess("updateAny", "news")
 router.delete("/:id", asyncHandler(newsDelete)); //grantAccess("deleteAny", "news")
 
 router.get("/user/:id", asyncHandler(getUserRelatedNew));

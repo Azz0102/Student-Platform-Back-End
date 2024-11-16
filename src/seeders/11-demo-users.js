@@ -7,8 +7,8 @@ module.exports = {
             [
                 {
                     roleId: 1, // Đảm bảo giá trị này tồn tại trong bảng 'roles'
-                    name: "admin",
-                    passwordHash: "hashed_password",
+                    name: "20020645",
+                    passwordHash: "$2b$10$dcWs5yJWJ2x6jY9ENKgTdO7hK5sy5.uJncq2TWfeXz4nkUT8otjQS",
                     lastLogin: new Date(),
                     createdAt: new Date(),
                     updatedAt: new Date(),
