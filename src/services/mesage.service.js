@@ -31,25 +31,40 @@ exports.createChat = async ({
     }
 };
 
-exports.getChatById = async ({ classSessionId }) => {
+exports.getChatById = async ({ classSessionId, refreshToken }) => {
     try {
+
+        console.log('ref', refreshToken);
         const classSession = await db.ClassSession.findByPk(classSessionId, {
-            attributes: ['id', 'name']
+            attributes: ["id", "name"],
         });
 
         if (!classSession) {
             throw new Error("Class session not found");
         }
 
+        const keyStore = await db.KeyStore.findOne({
+            where: { refreshToken: refreshToken },
+        });
+
+        console.log('keyStore', keyStore);
+
+
+        const enrollment = await db.Enrollment.findOne({
+            where: { userId: keyStore.userId },
+        });
+
         // Step 1: Get all enrollments for the class session
         const enrollments = await db.Enrollment.findAll({
             where: {
-                classSessionId: classSessionId
+                classSessionId: classSessionId,
             },
-            include: [{
-                model: db.User,
-                attributes: ['id', 'name']
-            }]
+            include: [
+                {
+                    model: db.User,
+                    attributes: ["id", "name"],
+                },
+            ],
         });
 
         if (!enrollments.length) {
@@ -57,20 +72,22 @@ exports.getChatById = async ({ classSessionId }) => {
         }
 
         // Step 2: Get enrollment IDs
-        const enrollmentIds = enrollments.map(enrollment => enrollment.id);
+        const enrollmentIds = enrollments.map((enrollment) => enrollment.id);
 
         // Step 3: Get all messages for these enrollments
         const messages = await db.Message.findAll({
             where: {
                 enrollmentId: {
-                    [Sequelize.Op.in]: enrollmentIds
-                }
-            }
+                    [Sequelize.Op.in]: enrollmentIds,
+                },
+            },
         });
 
         // Step 4: Format messages with user information
-        const formattedMessages = messages.map(message => {
-            const enrollment = enrollments.find(e => e.id === message.enrollmentId);
+        const formattedMessages = messages.map((message) => {
+            const enrollment = enrollments.find(
+                (e) => e.id === message.enrollmentId
+            );
             return {
                 id: message.id,
                 message: message.message,
@@ -78,16 +95,16 @@ exports.getChatById = async ({ classSessionId }) => {
                 file: message.file,
                 enrollmentId: message.enrollmentId,
                 userId: enrollment.User.id,
-                userName: enrollment.User.name
+                userName: enrollment.User.name,
             };
         });
 
         return {
             classSessionId,
+            enrollmentId: enrollment.id,
             name: classSession.name,
-            messages: formattedMessages
+            messages: formattedMessages,
         };
-
     } catch (error) {
         console.error("Error fetching class session messages:", error);
         throw error;
