@@ -10,9 +10,15 @@ module.exports = (sequelize, DataTypes) => {
             // Define associations here if needed
             User.belongsTo(models.Role, { foreignKey: "roleId" });
             User.hasMany(models.NotiUser, { foreignKey: "userId" });
-            User.hasMany(models.News, { foreignKey: "userId" });
+            User.hasMany(models.News, {
+                foreignKey: "userId",
+                onDelete: "CASCADE",
+            });
 
-            User.hasMany(models.Grade, { foreignKey: "userId" });
+            User.hasMany(models.Grade, {
+                foreignKey: "userId",
+                onDelete: "CASCADE",
+            });
             User.belongsToMany(models.Channel, {
                 through: models.ChannelUser,
                 foreignKey: "userId",
@@ -21,11 +27,14 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.ChannelUser);
             User.hasMany(models.KeyStore, {
                 foreignKey: "userId",
+                onDelete: "CASCADE",
             });
 
-            User.hasMany(models.File, { foreignKey: "userId" });
+            User.hasMany(models.File, {
+                foreignKey: "userId",
+                onDelete: "CASCADE",
+            });
 
-            User.hasMany(models.UserSessionDetails);
         }
     }
 

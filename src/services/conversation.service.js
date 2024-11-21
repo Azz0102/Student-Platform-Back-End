@@ -21,7 +21,7 @@ exports.createConversation = async ({ classSessionId }) => {
     }
     return conversation;
   } catch (error) {
-    return error;
+    return error.message;
   }
 };
 
@@ -34,7 +34,7 @@ exports.getConversationById = async ({ conversationId }) => {
     }
     return conversation;
   } catch (error) {
-    return error;
+    return error.message;
   }
 };
 
@@ -63,7 +63,7 @@ exports.getConversationByUserid = async ({ userId }) => {
 
     return conversations;
   } catch (error) {
-    return error;
+    return error.message;
   }
 };
 
@@ -115,6 +115,6 @@ exports.getUserConversations = async ({ userId }) => {
       }))
     };
   } catch (error) {
-    return error;
+    return error.message;
   }
 };

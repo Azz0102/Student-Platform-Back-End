@@ -5,83 +5,217 @@ const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 // Tạo mới một SessionDetail
 const createSessionDetail = async ({
-    classSessionId,
-    classroomId,
+    nameClassSession,
+    nameClassroom,
+    nameTeacher,
     startTime,
     numOfHour,
     dayOfWeek,
     sessionType,
     capacity,
-    teacherId,
 }) => {
     try {
         // Kiểm tra xem classSession có tồn tại không
-        const classSession = await db.ClassSession.findByPk(classSessionId);
+        const classSession = await db.ClassSession.findOne({
+            where: { name: nameClassSession },
+        });
         if (!classSession) {
             throw new NotFoundError("ClassSession not found.");
         }
 
         // Kiểm tra xem classroom có tồn tại không
-        const classroom = await db.Classroom.findByPk(classroomId);
+        const classroom = await db.Classroom.findOne({
+            where: { name: nameClassroom },
+        });
         if (!classroom) {
             throw new NotFoundError("Classroom not found.");
         }
 
         // Kiểm tra xem teacher có tồn tại không
-        const teacher = await db.Teacher.findByPk(teacherId);
+        const teacher = await db.Teacher.findOne({
+            where: { name: nameTeacher },
+        });
         if (!teacher) {
             throw new NotFoundError("Teacher not found.");
         }
 
         // Tạo SessionDetail mới
         const sessionDetail = await db.SessionDetails.create({
-            classSessionId,
-            classroomId,
+            classSessionId: classSession.id,
+            classroomId: classroom.id,
+            teacherId: teacher.id,
             startTime,
             numOfHour,
             dayOfWeek,
             sessionType,
             capacity,
-            teacherId,
         });
+
+        const classSessionCreat = await db.ClassSession.findOne({
+            where: { id: classSession.id }
+        });
+
+        classSessionCreat.numOfSessionAWeek += 1;
+
+        await classSessionCreat.save();
 
         return sessionDetail;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Liệt kê tất cả SessionDetails
-const listSessionDetails = async () => {
+const listSessionDetails = async ({ classSession, filters, sort, limit, offset }) => {
     try {
-        const sessionDetails = await db.SessionDetails.findAll({
+
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        const nameClassSession = {
+            name: classSession
+        };
+        const nameClassroom = {};
+        const nameTeacher = {};
+
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    // if (filter.id == 'nameClassSession') {
+                    //     nameClassSession["name"] = {
+                    //         [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    //     };
+                    //     continue;
+                    // }
+                    if (filter.id == 'nameClassroom') {
+                        nameClassroom["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'nameTeacher') {
+                        nameTeacher["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'sessionType') {
+                        whereConditions["sessionType"] = {
+                            [Op.in]: filter.value, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.SessionDetails.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
             include: [
-                { model: db.ClassSession },
-                { model: db.Classroom },
-                { model: db.Teacher },
+                {
+                    model: db.ClassSession,
+                    where: nameClassSession
+                },
+                {
+                    model: db.Classroom,
+                    where: parsedFilters.length > 0 ? nameClassroom : undefined,
+                },
+                {
+                    model: db.Teacher,
+                    where: parsedFilters.length > 0 ? nameTeacher : undefined,
+                },
             ],
-            order: [["startTime", "ASC"]],
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
         });
 
-        return sessionDetails;
+        const totalRecords = await db.SessionDetails.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined,
+            include: [
+                {
+                    model: db.ClassSession,
+                    where: nameClassSession
+                },
+                {
+                    model: db.Classroom,
+                    where: parsedFilters.length > 0 ? nameClassroom : undefined,
+                },
+                {
+                    model: db.Teacher,
+                    where: parsedFilters.length > 0 ? nameTeacher : undefined,
+                },
+            ],
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    nameClassSession: item.ClassSession.name,
+                    nameClassroom: item.Classroom.name,
+                    nameTeacher: item.Teacher.name,
+                    startTime: item.startTime,
+                    numOfHour: item.numOfHour,
+                    dayOfWeek: item.dayOfWeek,
+                    sessionType: item.sessionType,
+                    capacity: item.capacity,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một SessionDetail
-const deleteSessionDetail = async ({ sessionDetailId }) => {
+const deleteSessionDetail = async ({ ids }) => {
     try {
-        // Tìm SessionDetail theo ID
-        const sessionDetail = await db.SessionDetails.findByPk(sessionDetailId);
-        if (!sessionDetail) {
-            throw new NotFoundError("SessionDetail not found.");
+        console.log("ids", ids)
+        const sessionDetailsDe = await db.SessionDetails.findOne({
+            where: { id: ids[0] }
+        });
+        console.log("sessionDetailsDe", sessionDetailsDe)
+        const classSessionCreat = await db.ClassSession.findOne({
+            where: { id: sessionDetailsDe.classSessionId }
+        });
+        console.log("classSessionCreat", classSessionCreat.numOfSessionAWeek)
+
+        classSessionCreat.numOfSessionAWeek -= 1;
+
+        await classSessionCreat.save();
+        const sessionDetails = await db.SessionDetails.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+
+        if (sessionDetails === 0) {
+            throw new NotFoundError("deletedSessionDetails");
         }
 
-        // Xóa SessionDetail
-        await sessionDetail.destroy();
+        return sessionDetails;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -142,7 +276,7 @@ const updateSessionDetail = async ({
 
         return sessionDetail;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -188,7 +322,7 @@ const createMultipleSessionDetails = async (sessionDetailArray) => {
 
         return sessionDetails;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -236,7 +370,7 @@ const getAllUserSessionDetails = async ({ userId }) => {
 
         return sessionDetails;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -355,7 +489,7 @@ const getSessionDetailsById = async ({ id }) => {
         return formattedSessions;
     } catch (error) {
         console.error("Error fetching session details:", error);
-        return error; // Handle or propagate the error as needed
+        return error.message; // Handle or propagate the error as needed
     }
 };
 

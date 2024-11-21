@@ -30,7 +30,7 @@ const teacherList = async (req, res, next) => {
 const teacherDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "Deleted teacher",
-        metadata: await deleteTeacher({ teacherId: req.params.id }),
+        metadata: await deleteTeacher(req.body),
     }).send(res);
 };
 

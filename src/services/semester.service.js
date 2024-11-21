@@ -29,7 +29,7 @@ const createSemester = async ({ fromDate, endDate }) => {
 
         return semester;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -42,7 +42,7 @@ const listSemesters = async () => {
 
         return semesters;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -58,7 +58,7 @@ const deleteSemester = async ({ semesterId }) => {
         // Xóa semester
         await semester.destroy();
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -79,7 +79,7 @@ const updateSemester = async ({ semesterId, fromDate, endDate }) => {
 
         return semester;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -107,7 +107,7 @@ const createMultipleSemesters = async (semesterArray) => {
 
         return semesters;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

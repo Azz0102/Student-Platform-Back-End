@@ -9,17 +9,19 @@ const {
 const { where } = require("sequelize");
 
 // Tạo mới một classroom
-const createClassroom = async ({ amphitheaterId, name, capacity }) => {
+const createClassroom = async ({ nameAmphitheater, name, type, capacity }) => {
     try {
         // Kiểm tra xem amphitheater có tồn tại không
-        const amphitheater = await db.Amphitheater.findByPk(amphitheaterId);
+        const amphitheater = await db.Amphitheater.findOne({
+            where: { name: nameAmphitheater },
+        });
         if (!amphitheater) {
             throw new NotFoundError("Amphitheater not found.");
         }
 
         // Kiểm tra xem classroom với tên này đã tồn tại chưa
         const existingClassroom = await db.Classroom.findOne({
-            where: { name, amphitheaterId },
+            where: { name },
         });
 
         if (existingClassroom) {
@@ -28,14 +30,15 @@ const createClassroom = async ({ amphitheaterId, name, capacity }) => {
 
         // Tạo classroom mới
         const classroom = await db.Classroom.create({
-            amphitheaterId,
+            amphitheaterId: amphitheater.id,
+            type,
             name,
             capacity,
         });
 
         return classroom;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -48,7 +51,6 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
         // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
         const whereConditions = {};
         const whereConditionsAmphitheater = {};
-
         if (parsedFilters.length > 0) {
             for (const filter of parsedFilters) {
                 if (filter.value) {
@@ -61,6 +63,12 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
                     if (filter.id == 'location') {
                         whereConditionsAmphitheater[filter.id] = {
                             [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'type') {
+                        whereConditions["type"] = {
+                            [Op.in]: filter.value, // Sử dụng toán tử Sequelize dựa trên operator
                         };
                         continue;
                     }
@@ -90,8 +98,14 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
             offset
         });
 
-        const totalRecords = await db.Teacher.count({
-            where: parsedFilters.length > 0 ? whereConditions : undefined
+        const totalRecords = await db.Classroom.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined,
+            include: [
+                {
+                    model: db.Amphitheater,
+                    where: parsedFilters.length > 0 ? whereConditionsAmphitheater : undefined,
+                }
+            ],
         });
         const totalPages = Math.ceil(totalRecords / limit);
 
@@ -102,6 +116,7 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
                     name: item.name,
                     nameAmphitheater: item.Amphitheater.name,
                     location: item.Amphitheater.location,
+                    type: item.type,
                     capacity: item.capacity,
                     createdAt: item.createdAt,
                     updatedAt: item.updatedAt,
@@ -111,23 +126,26 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
         };
 
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một classroom
-const deleteClassroom = async ({ classroomId }) => {
+const deleteClassroom = async ({ ids }) => {
     try {
-        // Tìm classroom theo ID
-        const classroom = await db.Classroom.findByPk(classroomId);
-        if (!classroom) {
-            throw new NotFoundError("Classroom not found.");
+        const classroom = await db.Classroom.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (classroom === 0) {
+            throw new NotFoundError("deletedClassroom");
         }
-
-        // Xóa classroom
-        await classroom.destroy();
+        return classroom;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -157,7 +175,7 @@ const updateClassroom = async ({ classroomId, amphitheaterId, name, capacity }) 
 
         return classroom;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -184,7 +202,7 @@ const createMultipleClassrooms = async (classroomArray) => {
 
         return classrooms;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

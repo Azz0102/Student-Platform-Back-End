@@ -1,37 +1,46 @@
 "use strict";
 
+const { Op } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 // Tạo mới một ClassSession
 const createClassSession = async ({
-    subjectId,
-    semesterId,
+    name,
+    nameSubject,
+    nameSemester,
     fromDate,
     endDate,
-    numOfSessionAWeek,
+    numOfSessionAWeek = 0,
     capacity,
 }) => {
     try {
         // Kiểm tra xem subject có tồn tại không
-        const subject = await db.Subject.findByPk(subjectId);
+        const subject = await db.Subject.findOne({
+            where: { name: nameSubject },
+        });
+
         if (!subject) {
-            throw new NotFoundError("Subject not found.");
+            throw new BadRequestError("Error: Subject not found.");
         }
 
         // Kiểm tra xem semester có tồn tại không
-        const semester = await db.Semester.findByPk(semesterId);
+        const semester = await db.Semester.findOne({
+            where: { name: nameSemester },
+        });
         if (!semester) {
-            throw new NotFoundError("Semester not found.");
+            throw new BadRequestError("Semester not found.");
         }
 
         // Kiểm tra xem ClassSession với thông tin này đã tồn tại chưa
         const existingClassSession = await db.ClassSession.findOne({
             where: {
-                subjectId,
-                semesterId,
+                name: name,
+                subjectId: subject.id,
+                semesterId: semester.id,
                 fromDate,
                 endDate,
+                capacity,
             },
         });
 
@@ -41,47 +50,139 @@ const createClassSession = async ({
 
         // Tạo ClassSession mới
         const classSession = await db.ClassSession.create({
-            subjectId,
-            semesterId,
+            name: name,
+            subjectId: subject.id,
+            semesterId: semester.id,
             fromDate,
             endDate,
             numOfSessionAWeek,
             capacity,
         });
 
+
+
         return classSession;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Liệt kê tất cả ClassSessions
-const listClassSessions = async () => {
+const listClassSessions = async ({ filters, sort, limit, offset }) => {
     try {
-        const classSessions = await db.ClassSession.findAll({
-            include: [{ model: db.Subject }, { model: db.Semester }],
-            order: [["fromDate", "ASC"]], // Sắp xếp theo ngày bắt đầu
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        const nameSubject = {};
+        const nameSemester = {};
+
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    if (filter.id == 'nameSubject') {
+                        nameSubject["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'descriptionSubject') {
+                        nameSubject["description"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'nameSemester') {
+                        nameSemester["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.ClassSession.findAll({
+            where: whereConditions.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            include: [
+                {
+                    model: db.Subject,
+                    where: parsedFilters.length > 0 ? nameSubject : undefined,
+                },
+                {
+                    model: db.Semester,
+                    where: parsedFilters.length > 0 ? nameSemester : undefined,
+                }
+            ],
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
         });
 
-        return classSessions;
+        const totalRecords = await db.ClassSession.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            include: [
+                {
+                    model: db.Subject,
+                    where: parsedFilters.length > 0 ? nameSubject : undefined,
+                },
+                {
+                    model: db.Semester,
+                    where: parsedFilters.length > 0 ? nameSemester : undefined,
+                }
+            ]
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    nameSubject: item.Subject.name,
+                    descriptionSubject: item.Subject.description,
+                    nameSemester: item.Semester.name,
+                    numOfSessionAWeek: item.numOfSessionAWeek,
+                    capacity: item.capacity,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một ClassSession
-const deleteClassSession = async ({ classSessionId }) => {
+const deleteClassSession = async ({ ids }) => {
     try {
-        // Tìm ClassSession theo ID
-        const classSession = await db.ClassSession.findByPk(classSessionId);
-        if (!classSession) {
-            throw new NotFoundError("ClassSession not found.");
+        const classSession = await db.ClassSession.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (classSession === 0) {
+            throw new NotFoundError("deletedClassSession");
         }
-
-        // Xóa ClassSession
-        await classSession.destroy();
+        return classSession;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -131,7 +232,7 @@ const updateClassSession = async ({
 
         return classSession;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -186,7 +287,7 @@ const createMultipleClassSessions = async (classSessionArray) => {
 
         return classSessions;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -280,7 +381,7 @@ const getUserSpecificClassSession = async ({ userId, classSessionId }) => {
 
         return classSession;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

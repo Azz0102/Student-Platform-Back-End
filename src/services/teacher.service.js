@@ -5,7 +5,7 @@ const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 // Tạo mới một Teacher
-const createTeacher = async ({ name, dateOfBirth }) => {
+const createTeacher = async ({ name, email, dateOfBirth }) => {
     try {
         // Kiểm tra xem teacher có tồn tại không
         const existingTeacher = await db.Teacher.findOne({ where: { name } });
@@ -14,10 +14,10 @@ const createTeacher = async ({ name, dateOfBirth }) => {
         }
 
         // Tạo Teacher mới
-        const teacher = await db.Teacher.create({ name, dateOfBirth });
+        const teacher = await db.Teacher.create({ name, email, dateOfBirth });
         return teacher;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -60,23 +60,26 @@ const listTeachers = async ({ filters, sort, limit, offset }) => {
             pageCount: totalPages
         };
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một Teacher
-const deleteTeacher = async ({ teacherId }) => {
+const deleteTeacher = async ({ ids }) => {
     try {
-        // Tìm Teacher theo ID
-        const teacher = await db.Teacher.findByPk(teacherId);
-        if (!teacher) {
-            throw new NotFoundError("Teacher not found.");
+        const deletedTeacher = await db.Teacher.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (deletedTeacher === 0) {
+            throw new NotFoundError("deletedTeacher");
         }
-
-        // Xóa Teacher
-        await teacher.destroy();
+        return deletedTeacher;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -96,7 +99,7 @@ const updateTeacher = async ({ teacherId, name, dateOfBirth }) => {
         await teacher.save();
         return teacher;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -117,7 +120,7 @@ const createMultipleTeachers = async (teacherArray) => {
         const teachers = await db.Teacher.bulkCreate(teacherArray, { validate: true });
         return teachers;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

@@ -25,12 +25,14 @@ module.exports = {
 
         await queryInterface.bulkInsert("semester", [
             {
+                name: "Hoc Ky I Nam 2024",
                 fromDate: new Date("2024-01-01"),
                 endDate: new Date("2024-05-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
+                name: "Hoc Ky II Nam 2024",
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-12-31"),
                 createdAt: new Date(),
@@ -55,7 +57,7 @@ module.exports = {
                 semesterId: semesterIds[0], // Semester 1
                 fromDate: new Date("2024-01-01"),
                 endDate: new Date("2024-04-30"),
-                numOfSessionAWeek: 3,
+                numOfSessionAWeek: 1,
                 capacity: 30,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -66,7 +68,7 @@ module.exports = {
                 semesterId: semesterIds[1], // Semester 2
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-09-30"),
-                numOfSessionAWeek: 2,
+                numOfSessionAWeek: 1,
                 capacity: 25,
                 createdAt: new Date(),
                 updatedAt: new Date(),

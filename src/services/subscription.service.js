@@ -38,7 +38,7 @@ const createSubscription = async ({ keyStore, endpoint }) => {
 
         return subscription;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

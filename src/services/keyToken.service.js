@@ -31,7 +31,7 @@ class KeyTokenService {
 
             return tokens ? tokens.publicKey : null;
         } catch (error) {
-            return error;
+            return error.message;
         }
     };
 

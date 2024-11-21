@@ -8,7 +8,11 @@ module.exports = (sequelize) => {
             SessionDetails.belongsTo(models.Classroom, { foreignKey: 'classroomId' });
             SessionDetails.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
 
-            SessionDetails.hasMany(models.UserSessionDetails);
+            // SessionDetails.hasMany(models.UserSessionDetails);
+            SessionDetails.hasMany(models.UserSessionDetails, {
+                foreignKey: 'sessionDetailsId',
+                onDelete: 'CASCADE',
+            });
         }
     }
 

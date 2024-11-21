@@ -90,7 +90,7 @@ const createNews = async ({
 
         return news;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -131,29 +131,91 @@ const updateNews = async ({
 
         return news;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
-const getListNews = async ({ limit = 30, offset = 0, search = "" }) => {
+const getListNews = async ({ filters, sort, limit, offset }) => {
     try {
-        const whereClause = search
-            ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
-            : {};
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        const whereConditionsAmphitheater = {};
 
-        const newsList = await db.News.findAll({
-            where: whereClause,
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    if (filter.id == 'owner') {
+                        whereConditionsAmphitheater["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'type') {
+                        whereConditions["type"] = {
+                            [Op.in]: filter.value, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.News.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            include: [
+                {
+                    model: db.User,
+                    where: parsedFilters.length > 0 ? whereConditionsAmphitheater : undefined,
+                }
+            ],
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
             limit,
-            offset,
-            order: [["createdAt", "DESC"]],
+            offset
         });
 
-        return newsList;
+        const totalRecords = await db.News.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined,
+            include: [
+                {
+                    model: db.User,
+                    where: parsedFilters.length > 0 ? whereConditionsAmphitheater : undefined,
+                }
+            ],
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    content: item.content,
+                    owner: item.User.name,
+                    isGeneralSchoolNews: item.isGeneralSchoolNews,
+                    type: item.type,
+                    location: item.location,
+                    time: item.time,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
+
     } catch (error) {
         console.error("Error fetching news list:", error);
         throw error;
@@ -169,11 +231,11 @@ const getListNewsByUser = async ({
     try {
         const whereClause = search
             ? {
-                  [Op.or]: [
-                      { name: { [Op.like]: `%${search}%` } },
-                      { content: { [Op.like]: `%${search}%` } },
-                  ],
-              }
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } },
+                ],
+            }
             : {};
 
         // Fetch user's enrolled class sessions
@@ -204,22 +266,25 @@ const getListNewsByUser = async ({
 
         return newsList;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
-const deleteNews = async ({ newsId }) => {
+const deleteNews = async ({ ids }) => {
     try {
-        // Find the news entry by its ID
-        const news = await db.News.findByPk(newsId);
-
-        if (!news) {
-            throw new NotFoundError("News not found");
+        const news = await db.News.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (news === 0) {
+            throw new NotFoundError("deletedNews");
         }
-        // Delete the news entry
-        await news.destroy();
+        return news;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -255,7 +320,6 @@ const getUserRelatedNews = async ({ userId }) => {
                 {
                     model: db.User,
                     attributes: ["id", "name"],
-                    as: "Author",
                 },
                 {
                     model: db.ClassSession,

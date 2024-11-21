@@ -32,7 +32,7 @@ const classroomList = async (req, res, next) => {
 const classroomDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "Deleted classroom",
-        metadata: await deleteClassroom({ classroomId: req.params.id }),
+        metadata: await deleteClassroom(req.body),
     }).send(res);
 };
 

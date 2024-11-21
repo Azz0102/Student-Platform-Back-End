@@ -32,7 +32,7 @@ router.post("", asyncHandler(newNews)); //grantAccess("createAny", "news")
 router.get("", asyncHandler(newsList)); //grantAccess("readAny", "news")
 router.get("/:id", asyncHandler(newsListByUser)); //grantAccess("readOwn", "news")
 router.patch("/:id", asyncHandler(newsUpdate)); //grantAccess("updateAny", "news")
-router.delete("/:id", asyncHandler(newsDelete)); //grantAccess("deleteAny", "news")
+router.delete("/", asyncHandler(newsDelete)); //grantAccess("deleteAny", "news")
 
 router.get("/user/:id", asyncHandler(getUserRelatedNew));
 

@@ -3,7 +3,10 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
     class Subject extends Model {
         static associate(models) {
-            Subject.hasMany(models.ClassSession, { foreignKey: 'subjectId' });
+            Subject.hasMany(models.ClassSession, {
+                foreignKey: 'subjectId',
+                onDelete: "CASCADE",
+            });
         }
     }
 

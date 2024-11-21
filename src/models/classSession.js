@@ -10,8 +10,14 @@ module.exports = (sequelize) => {
             ClassSession.hasMany(models.Enrollment, { foreignKey: 'classSessionId' });
             ClassSession.belongsTo(models.Subject, { foreignKey: 'subjectId' });
             ClassSession.belongsTo(models.Semester, { foreignKey: 'semesterId' });
-            ClassSession.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
-            ClassSession.hasMany(models.FinalExam, { foreignKey: 'classSessionId' });
+            ClassSession.hasMany(models.SessionDetails, {
+                foreignKey: 'classSessionId',
+                onDelete: "CASCADE",
+            });
+            ClassSession.hasMany(models.FinalExam, {
+                foreignKey: 'classSessionId',
+                onDelete: "CASCADE",
+            });
 
             ClassSession.belongsToMany(models.News, {
                 through: models.NewsClassSession, // Sử dụng models.NewsClassSession
@@ -21,7 +27,10 @@ module.exports = (sequelize) => {
             });
 
 
-            ClassSession.hasMany(models.Grade, { foreignKey: 'classSessionId' });
+            ClassSession.hasMany(models.Grade, {
+                foreignKey: 'classSessionId',
+                onDelete: "CASCADE",
+            });
         }
     }
 
@@ -66,7 +75,7 @@ module.exports = (sequelize) => {
             numOfSessionAWeek: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue: 1,
+                defaultValue: 0,
             },
             capacity: {
                 type: DataTypes.INTEGER,

@@ -20,7 +20,7 @@ const createNote = async ({ userId, content = "", name }) => {
             tags: [],
         };
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -57,7 +57,7 @@ const listNote = async ({ userId, limit = 30, offset = 0, search = "" }) => {
         return formattedNotes;
     } catch (error) {
         console.error(error);
-        return error;
+        return error.message;
     }
 };
 
@@ -74,7 +74,7 @@ const getNoteId = async ({ noteId }) => {
 
         return note;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -123,7 +123,7 @@ const updateNote = async ({ noteId, content, name, tagIds }) => {
         }
         return note;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -139,7 +139,7 @@ const deleteNote = async ({ noteId }) => {
         // Delete the note and associated tags in the join table
         await note.destroy({ force: true });
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

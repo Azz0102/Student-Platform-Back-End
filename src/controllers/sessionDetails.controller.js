@@ -19,16 +19,23 @@ const newSessionDetail = async (req, res, next) => {
 };
 
 const sessionDetailList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
         message: "Get session detail list",
-        metadata: await listSessionDetails(),
+        metadata: await listSessionDetails({
+            classSession: req.query.classSession,
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 
 const sessionDetailDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "Deleted session detail",
-        metadata: await deleteSessionDetail({ sessionDetailId: req.params.id }),
+        metadata: await deleteSessionDetail(req.body),
     }).send(res);
 };
 

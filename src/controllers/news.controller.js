@@ -20,9 +20,15 @@ const newNews = async (req, res, next) => {
 };
 
 const newsList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
-        message: "get list news",
-        metadata: await getListNews(req.body),
+        message: "Get list news",
+        metadata: await getListNews({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 
@@ -43,7 +49,7 @@ const newsUpdate = async (req, res, next) => {
 const newsDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "get list news",
-        metadata: await deleteNews({ newsId: req.params.id }),
+        metadata: await deleteNews(req.body),
     }).send(res);
 };
 

@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.post("/", asyncHandler(newSessionDetail)); // Tạo mới SessionDetail
 router.get("/", asyncHandler(sessionDetailList)); // Liệt kê tất cả SessionDetails
-router.delete("/:id", asyncHandler(sessionDetailDelete)); // Xóa một SessionDetail theo ID
+router.delete("/", asyncHandler(sessionDetailDelete)); // Xóa một SessionDetail theo ID
 router.put("/:id", asyncHandler(sessionDetailUpdate)); // Cập nhật SessionDetail theo ID
 router.post("/multiple", asyncHandler(newMultipleSessionDetails)); // Tạo mới hàng loạt SessionDetails
 

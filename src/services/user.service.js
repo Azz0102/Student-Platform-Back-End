@@ -35,7 +35,7 @@ const handleSendMail = async (val) => {
         await transporter.sendMail(val);
         return true;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -191,7 +191,7 @@ class UserService {
     //             },
     //         };
     //     } catch (error) {
-    //         return error;
+    //         return error.message;
     //     }
     // };
 
@@ -299,7 +299,7 @@ class UserService {
 
     //         return "OK";
     //     } catch (error) {
-    //         return error;
+    //         return error.message;
     //     }
     // };
 

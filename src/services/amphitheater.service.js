@@ -29,7 +29,7 @@ const createAmphitheater = async ({ name, location, latitude, longitude }) => {
 
         return amphitheater;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -42,7 +42,7 @@ const listAmphitheaters = async () => {
 
         return amphitheaters;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -59,7 +59,7 @@ const deleteAmphitheater = async ({ amphitheaterId }) => {
         // Xóa amphitheater
         await amphitheater.destroy();
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -83,7 +83,7 @@ const updateAmphitheater = async ({ amphitheaterId, name, location, latitude, lo
 
         return amphitheater;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -108,7 +108,7 @@ const createMultipleAmphitheaters = async (amphitheaterArray) => {
 
         return amphitheaters;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

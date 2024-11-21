@@ -45,7 +45,7 @@ const saveSchedule = async ({ data }) => {
     } catch (error) { }
 };
 
-const signUp = async ({ name, password = 1, roleId = 2 }) => {
+const signUp = async ({ name, password = "88888888", roleId = 2 }) => {
     try {
         // step1: check name exists?
 
@@ -55,6 +55,8 @@ const signUp = async ({ name, password = 1, roleId = 2 }) => {
             },
         });
         if (checkUser) throw new BadRequestError("Error: User already exists");
+
+        console.log("password", name, password, roleId)
 
         const passwordHash = await bcrypt.hash(password, 10);
         const newUser = await db.User.create({
@@ -116,8 +118,7 @@ const signUpMultipleUsers = async (usersArray) => {
 
         return results;
     } catch (error) {
-        console.error(error);
-        throw new BadRequestError('Error while signing up multiple users');
+        return error.message;
     }
 };
 
@@ -129,7 +130,9 @@ const listUser = async ({ filters, sort, limit, offset }) => {
         const parsedSort = sort ? JSON.parse(sort) : [];
 
         // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
-        const whereConditions = {};
+        const whereConditions = {
+            roleId: 2,
+        };
         if (parsedFilters.length > 0) {
             parsedFilters.forEach((filter) => {
                 if (filter.value) {
@@ -148,7 +151,7 @@ const listUser = async ({ filters, sort, limit, offset }) => {
 
         // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
         const users = await db.User.findAll({
-            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            where: whereConditions, // Chỉ áp dụng where nếu có điều kiện
             order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
             limit,
             offset
@@ -170,7 +173,7 @@ const listUser = async ({ filters, sort, limit, offset }) => {
             pageCount: totalPages
         };
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -185,7 +188,7 @@ const deleteUser = async ({ id }) => {
         }
         return deleteUser;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -204,7 +207,7 @@ const deleteUsers = async ({ ids }) => {
         }
         return deletedUsers;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -224,7 +227,7 @@ const updateUser = async ({ id, updateData }) => {
         // Trả về user đã được cập nhật
         return user;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

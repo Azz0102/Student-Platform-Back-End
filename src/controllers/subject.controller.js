@@ -17,16 +17,22 @@ const newSubject = async (req, res, next) => {
 };
 
 const subjectList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
         message: "Get subject list",
-        metadata: await listSubjects(),
+        metadata: await listSubjects({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 
 const subjectDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "Deleted subject",
-        metadata: await deleteSubject({ subjectId: req.params.id }),
+        metadata: await deleteSubject(req.body),
     }).send(res);
 };
 
