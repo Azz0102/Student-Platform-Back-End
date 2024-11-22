@@ -21,6 +21,18 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                name: "BIO_2021",
+                description: "Biology.",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "HIS_2020",
+                description: "History.",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ]);
 
         await queryInterface.bulkInsert("semester", [
@@ -33,6 +45,12 @@ module.exports = {
             {
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-12-31"),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                fromDate: new Date("2025-01-01"),
+                endDate: new Date("2025-05-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -71,6 +89,39 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                name: "UEH_2020_2",
+                subjectId: subjectIds[2], // Chemistry
+                semesterId: semesterIds[0], // Semester 1
+                fromDate: new Date("2024-01-01"),
+                endDate: new Date("2024-04-30"),
+                numOfSessionAWeek: 4,
+                capacity: 20,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "BIO_2021_1",
+                subjectId: subjectIds[3], // Biology
+                semesterId: semesterIds[0], // Semester 1
+                fromDate: new Date("2024-01-15"),
+                endDate: new Date("2024-05-15"),
+                numOfSessionAWeek: 2,
+                capacity: 35,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "HIS_2020_1",
+                subjectId: subjectIds[4], // History
+                semesterId: semesterIds[1], // Semester 2
+                fromDate: new Date("2024-06-01"),
+                endDate: new Date("2024-10-15"),
+                numOfSessionAWeek: 3,
+                capacity: 40,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ]);
 
         const classSessions = await queryInterface.sequelize.query(
@@ -78,7 +129,6 @@ module.exports = {
         );
 
         const classSessionIds = classSessions[0].map((session) => session.id);
-
     },
 
     async down(queryInterface, Sequelize) {

@@ -52,7 +52,7 @@ const createNews = async ({
             await publishMessage({
                 exchangeName: "coke_studio",
                 bindingKey: "coke_studio",
-                message: content, // { content, title, subscription}
+                message: name, // { content, title, subscription}
                 type,
                 classSessionIds,
                 id: news.id,
@@ -70,18 +70,23 @@ const createNews = async ({
         }
 
         if (isGeneralSchoolNews) {
+            console.log("noti");
+
             const noti = await pushNotiToSystem({
                 senderId: news.id,
                 noti_content: name,
                 type,
+                classSessionIds: [],
             });
+
+            console.log("noti", noti);
 
             // get all subscription
 
             await publishMessage({
                 exchangeName: "coke_studio",
                 bindingKey: "coke_studio",
-                message: content, // { content, title, subscription}
+                message: name, // { content, title, subscription}
                 type,
                 classSessionIds,
                 id: news.id,
