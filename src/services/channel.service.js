@@ -20,9 +20,8 @@ const subscribe = ({ username, channel, data }) => {
                 where: { name: channel },
             });
 
-            const ChannelUser = await db.ChannelUser.create({
-                userId: user.id,
-                channelId: findChannel.id,
+            const [ChannelUser, created] = await db.ChannelUser.findOrCreate({
+                where: { userId: user.id, channelId: findChannel.id },
             });
 
             // const subscription = await db.Subscription.create({

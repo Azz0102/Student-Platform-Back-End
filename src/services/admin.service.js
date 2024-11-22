@@ -1,5 +1,6 @@
 "use strict";
 
+const { Op } = require("sequelize");
 const { BadRequestError } = require("../core/error.response");
 const Scheduler = require("../helpers/schedulingAlgorithm");
 const { getInfoData } = require("../utils/index");
@@ -120,9 +121,122 @@ const signUpMultipleUsers = async (usersArray) => {
     }
 };
 
+// Liệt kê tất cả Sinhvien
+const listUser = async ({ filters, sort, limit, offset }) => {
+    try {
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        if (parsedFilters.length > 0) {
+            parsedFilters.forEach((filter) => {
+                if (filter.value) {
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            });
+        }
+
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const users = await db.User.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
+        });
+
+        const totalRecords = await db.User.count({ where: parsedFilters.length > 0 ? whereConditions : undefined });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: users.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    lastLogin: item.lastLogin,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt
+                }
+            }),
+            pageCount: totalPages
+        };
+    } catch (error) {
+        return error;
+    }
+};
+
+// Delete a user by ID
+const deleteUser = async ({ id }) => {
+    try {
+        const deleteUser = await db.User.destroy({
+            where: { id },
+        });
+        if (!deleteUser) {
+            throw new NotFoundError("deleteUser");
+        }
+        return deleteUser;
+    } catch (error) {
+        return error;
+    }
+};
+
+// Delete multiple users by an array of IDs
+const deleteUsers = async ({ ids }) => {
+    try {
+        const deletedUsers = await db.User.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (deletedUsers === 0) {
+            throw new NotFoundError("deleteUsers");
+        }
+        return deletedUsers;
+    } catch (error) {
+        return error;
+    }
+};
+
+const updateUser = async ({ id, updateData }) => {
+    try {
+        // Tìm user theo id
+        const user = await db.User.findByPk(id);
+
+        // Nếu không tìm thấy user, ném lỗi NotFoundError
+        if (!user) {
+            throw new NotFoundError("User not found");
+        }
+
+        // Cập nhật thông tin user với các trường trong updateData
+        await user.update(updateData);
+
+        // Trả về user đã được cập nhật
+        return user;
+    } catch (error) {
+        return error;
+    }
+};
+
+
 module.exports = {
     schedulingClassSession,
     signUp,
     signUpMultipleUsers,
     saveSchedule,
+    listUser,
+    deleteUser,
+    deleteUsers,
+    updateUser,
+
 };

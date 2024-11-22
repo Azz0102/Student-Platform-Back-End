@@ -4,7 +4,7 @@ const db = require("../models");
 
 const { SuccessResponse } = require("../core/success.response");
 const Mesage = require("../services/mesage.service");
-const path = require('path');
+const path = require("path");
 
 exports.createChat = async (req, res, next) => {
     new SuccessResponse({
@@ -16,7 +16,10 @@ exports.createChat = async (req, res, next) => {
 exports.getChatById = async (req, res, next) => {
     new SuccessResponse({
         message: "Create Chat!",
-        metadata: await Mesage.getChatById({ classSessionId: req.params.id }),
+        metadata: await Mesage.getChatById({
+            classSessionId: req.params.id,
+            refreshToken: req.headers["refreshtoken"],
+        }),
     }).send(res);
 };
 
@@ -53,8 +56,10 @@ exports.dowloadFile = async (req, res, next) => {
 
         // Check if it is an image file
         if ([".jpg", ".jpeg", ".png", ".gif"].includes(extension)) {
-
-            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename="${fileName}"`
+            );
 
             return res.sendFile(filePath, (err) => {
                 if (err) {
@@ -65,7 +70,10 @@ exports.dowloadFile = async (req, res, next) => {
         } else {
             // Other files will be downloaded
 
-            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            res.setHeader(
+                "Content-Disposition",
+                `attachment; filename="${fileName}"`
+            );
 
             return res.download(filePath, fileName, (err) => {
                 if (err) {

@@ -11,7 +11,7 @@ class KeyTokenService {
     }) => {
         try {
             const [tokens, created] = await db.KeyStore.findOrCreate({
-                where: { userId: userId },
+                where: { userId: userId, device: device },
                 defaults: {
                     publicKey: publicKey,
                     privateKey: privateKey,

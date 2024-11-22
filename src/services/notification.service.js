@@ -19,8 +19,10 @@ const pushNotiToSystem = async ({
         const newNoti = await db.Notification.create({
             noti_type: type,
             noti_content,
-            noti_senderId: senderId,
+            noti_sender_id: senderId,
         });
+
+        console.log('noti')
 
         let users;
 

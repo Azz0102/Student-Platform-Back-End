@@ -4,20 +4,32 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.bulkInsert("subjects", [
             {
-                name: "Mathematics",
-                description: "Study of numbers, shapes, and patterns.",
+                name: "INT_2021",
+                description: "Mathematics.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "Physics",
-                description: "Study of matter, energy, and their interactions.",
+                name: "ENU_2020",
+                description: "Physics.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "Chemistry",
-                description: "Study of substances, their properties, and reactions.",
+                name: "UEH_2020",
+                description: "Chemistry.",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "BIO_2021",
+                description: "Biology.",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "HIS_2020",
+                description: "History.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -36,6 +48,12 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                fromDate: new Date("2025-01-01"),
+                endDate: new Date("2025-05-31"),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ]);
 
         const subjects = await queryInterface.sequelize.query(
@@ -50,7 +68,7 @@ module.exports = {
 
         await queryInterface.bulkInsert("class_sessions", [
             {
-                name: "INT_2021",
+                name: "INT_2021_1",
                 subjectId: subjectIds[0], // Mathematics
                 semesterId: semesterIds[0], // Semester 1
                 fromDate: new Date("2024-01-01"),
@@ -61,13 +79,46 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
-                name: "ENU_2020",
+                name: "ENU_2020_1",
                 subjectId: subjectIds[1], // Physics
                 semesterId: semesterIds[1], // Semester 2
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-09-30"),
                 numOfSessionAWeek: 2,
                 capacity: 25,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "UEH_2020_2",
+                subjectId: subjectIds[2], // Chemistry
+                semesterId: semesterIds[0], // Semester 1
+                fromDate: new Date("2024-01-01"),
+                endDate: new Date("2024-04-30"),
+                numOfSessionAWeek: 4,
+                capacity: 20,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "BIO_2021_1",
+                subjectId: subjectIds[3], // Biology
+                semesterId: semesterIds[0], // Semester 1
+                fromDate: new Date("2024-01-15"),
+                endDate: new Date("2024-05-15"),
+                numOfSessionAWeek: 2,
+                capacity: 35,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "HIS_2020_1",
+                subjectId: subjectIds[4], // History
+                semesterId: semesterIds[1], // Semester 2
+                fromDate: new Date("2024-06-01"),
+                endDate: new Date("2024-10-15"),
+                numOfSessionAWeek: 3,
+                capacity: 40,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -78,7 +129,6 @@ module.exports = {
         );
 
         const classSessionIds = classSessions[0].map((session) => session.id);
-
     },
 
     async down(queryInterface, Sequelize) {

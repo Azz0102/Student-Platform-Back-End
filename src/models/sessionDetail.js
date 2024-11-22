@@ -3,10 +3,22 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
     class SessionDetails extends Model {
         static associate(models) {
-            SessionDetails.belongsTo(models.Enrollment, { foreignKey: 'classSessionId' });
-            SessionDetails.belongsTo(models.ClassSession, { foreignKey: 'classSessionId' });
-            SessionDetails.belongsTo(models.Classroom, { foreignKey: 'classroomId' });
-            SessionDetails.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
+            SessionDetails.belongsTo(models.Enrollment, {
+                foreignKey: "classSessionId",
+            });
+            SessionDetails.belongsTo(models.ClassSession, {
+                foreignKey: "classSessionId",
+            });
+            SessionDetails.belongsTo(models.Classroom, {
+                foreignKey: "classroomId",
+            });
+            SessionDetails.belongsTo(models.Teacher, {
+                foreignKey: "teacherId",
+            });
+
+            SessionDetails.hasMany(models.UserSessionDetails, {
+                foreignKey: "sessionDetailsId",
+            });
         }
     }
 

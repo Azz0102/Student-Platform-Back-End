@@ -26,6 +26,7 @@ function createSocketServer(httpServer) {
 
         socket.on("chatMessage", async (message, room) => {
             console.log(typeof room);
+            console.log(message);
             try {
                 const newChat = await createChat(message);
 
