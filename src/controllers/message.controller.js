@@ -54,11 +54,13 @@ exports.dowloadFile = async (req, res, next) => {
         const fileName = path.basename(filePath);
         const extension = path.extname(fileName).toLowerCase();
 
+        const newFilename = encodeURIComponent(fileName);
+
         // Check if it is an image file
         if ([".jpg", ".jpeg", ".png", ".gif"].includes(extension)) {
             res.setHeader(
                 "Content-Disposition",
-                `attachment; filename="${fileName}"`
+                `attachment; filename="${newFilename}"`
             );
 
             return res.sendFile(filePath, (err) => {
@@ -72,10 +74,10 @@ exports.dowloadFile = async (req, res, next) => {
 
             res.setHeader(
                 "Content-Disposition",
-                `attachment; filename="${fileName}"`
+                `attachment; filename="${newFilename}"`
             );
 
-            return res.download(filePath, fileName, (err) => {
+            return res.download(filePath, newFilename, (err) => {
                 if (err) {
                     console.error("Error downloading file:", err);
                     // return res.status(500).send("Error downloading file");
