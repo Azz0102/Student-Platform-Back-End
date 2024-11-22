@@ -22,22 +22,22 @@ jobs:
       uses: SpicyPizza/create-envfile@v2.0
       with:
         envkey_PORT: 3001
-        envkey_NODE_ENV: development
-        envkey_ACCESS_TOKEN: access_token
-        envkey_REFRESH_TOKEN: refresh_token
-        envkey_KEY_PATH: ./localhost+2-key.pem
-        envkey_CERT_PATH: ./localhost+2.pem
-        envkey_SAVE_PATH: /home/ubuntu/Documents/File
-        envkey_DB_HOST: 13.229.104.207
-        envkey_DB_HOST_USER: root
+        envkey_NODE_ENV: "development"
+        envkey_ACCESS_TOKEN: "access_token"
+        envkey_REFRESH_TOKEN: "refresh_token"
+        envkey_KEY_PATH: "./localhost+2-key.pem"
+        envkey_CERT_PATH: "./localhost+2.pem"
+        envkey_SAVE_PATH: "/home/ubuntu/Documents/File"
+        envkey_DB_HOST: "13.229.104.207"
+        envkey_DB_HOST_USER: "root"
         envkey_DB_HOST_PASSWORD: 123456
         envkey_DB_HOST_PORT: 3306
-        envkey_DB_HOST_NAME: DoanBackend
-        envkey_USERNAME_EMAIL: phamducdat171102dta@gmail.com
-        envkey_PASSWORD_EMAIL: ofkknueekbtugqmf
-        envkey_RABBIT_URL: amqp://guest:guest@localhost
-        envkey_NOTIFY_URL: localhost:4000
-        envkey_FRONTEND_URL: localhost:3000
+        envkey_DB_HOST_NAME: "DoanBackend"
+        envkey_USERNAME_EMAIL: "phamducdat171102dta@gmail.com"
+        envkey_PASSWORD_EMAIL: "ofkknueekbtugqmf"
+        envkey_RABBIT_URL: "amqp://guest:guest@localhost"
+        envkey_NOTIFY_URL: "localhost:4000"
+        envkey_FRONTEND_URL: "localhost:3000"
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
