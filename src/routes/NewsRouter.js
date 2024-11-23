@@ -23,7 +23,10 @@ const storage = multer.diskStorage({
         cb(null, `${process.env.SAVE_PATH}/newsAttach/`); // Save files to 'uploads' directory
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`); // Use unique names without spaces
+        // Remove all spaces from the original file name
+        const cleanFileName = file.originalname.replace(/\s+/g, "");
+        const newFilename = encodeURIComponent(cleanFileName);
+        cb(null, `${Date.now()}-${newFilename}`); // Use unique names without spaces
     },
 });
 

@@ -23,7 +23,9 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         // Remove all spaces from the original file name
         const cleanFileName = file.originalname.replace(/\s+/g, "");
-        cb(null, `${Date.now()}-${cleanFileName}`); // Use unique names without spaces
+        const newFilename = encodeURIComponent(cleanFileName);
+
+        cb(null, `${Date.now()}-${newFilename}`); // Use unique names without spaces
     },
 });
 
