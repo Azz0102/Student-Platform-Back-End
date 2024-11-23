@@ -7,7 +7,7 @@ module.exports = {
         await queryInterface.bulkInsert("classrooms", [
             {
                 amphitheaterId: amphitheaterIds[0],
-                name: "Room A101",
+                name: "101",
                 capacity: 30,
                 type: "Practice",
                 createdAt: new Date(),
@@ -15,7 +15,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[1],
-                name: "Room B201",
+                name: "201",
                 capacity: 25,
                 type: "Theory",
                 createdAt: new Date(),
@@ -23,7 +23,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[0],
-                name: "Room A102",
+                name: "102",
                 capacity: 25,
                 type: "Practice",
                 createdAt: new Date(),
@@ -31,7 +31,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[1],
-                name: "Room B202",
+                name: "202",
                 capacity: 35,
                 type: "Theory",
                 createdAt: new Date(),
@@ -39,7 +39,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[0],
-                name: "Room A103",
+                name: "303",
                 capacity: 40,
                 type: "Theory",
                 createdAt: new Date(),
@@ -47,7 +47,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[1],
-                name: "Room B203",
+                name: "210",
                 capacity: 50,
                 type: "Theory",
                 createdAt: new Date(),
@@ -55,7 +55,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[0],
-                name: "Room A104",
+                name: "302",
                 capacity: 25,
                 type: "Theory",
                 createdAt: new Date(),
@@ -63,7 +63,7 @@ module.exports = {
             },
             {
                 amphitheaterId: amphitheaterIds[1],
-                name: "Room B204",
+                name: "208",
                 capacity: 20,
                 type: "Practice",
                 createdAt: new Date(),

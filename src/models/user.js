@@ -24,8 +24,6 @@ module.exports = (sequelize, DataTypes) => {
             });
 
             User.hasMany(models.File, { foreignKey: "userId" });
-
-            User.hasMany(models.UserSessionDetails);
         }
     }
 

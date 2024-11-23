@@ -76,6 +76,7 @@ const listNotiByUser = async ({ userId = 1 }) => {
                 "id",
                 "noti_type",
                 "noti_content",
+                "noti_sender_id",
                 "createdAt",
                 "updatedAt",
             ],

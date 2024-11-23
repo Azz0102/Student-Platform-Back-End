@@ -162,7 +162,7 @@ exports.getUserData = async ({ userId }) => {
                 createdAt: enrollment.createdAt,
                 updatedAt: enrollment.updatedAt,
                 ClassSessionId: enrollment.ClassSessionId,
-                UserId: enrollment.UserId,
+                // UserId: enrollment.UserId,
                 ClassSession: {
                     id: enrollment.ClassSession.id,
                     name: enrollment.ClassSession.name,

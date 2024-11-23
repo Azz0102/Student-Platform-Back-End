@@ -314,23 +314,27 @@ const getSessionDetailsById = async ({ id }) => {
         //     ],
         // });
 
-        const userSessionDetails = await db.SessionDetails.findAll({
+        const userSessionDetails = await db.Enrollment.findAll({
+            where: { userId: id }, // Filter by id
             include: [
+                {
+                    model: db.UserSessionDetails,
+                    include: [
+                        {
+                            model: db.SessionDetails,
+                        },
+                    ],
+                },
                 {
                     model: db.ClassSession,
                     include: [
                         {
-                            model: db.Enrollment,
-                            where: { userId: id }, // Filter by userId
-                        },
-                        {
-                            model: db.Semester, // Include Semester model
-                            attributes: ["id", "fromDate", "endDate"], // Specify required Semester attributes
+                            model: db.Semester,
+                            attributes: ["id", "fromDate", "endDate"],
                         },
                     ],
                 },
             ],
-            attributes: ["id", "dayOfWeek", "startTime", "numOfHour"], // SessionDetails attributes
         });
 
         // const formattedSessions = userSessionDetails.Enrollments.flatMap(
@@ -373,17 +377,17 @@ const getSessionDetailsById = async ({ id }) => {
 
         const formattedSessions = userSessionDetails.flatMap(
             (sessionDetail) => {
-                const sessionDetails = [sessionDetail];
+                const sessionDetails = sessionDetail.UserSessionDetails;
                 const semester = sessionDetail.ClassSession.Semester;
 
                 return sessionDetails.flatMap((detail) => {
                     // Lấy tất cả các ngày cho session dựa vào fromDate, endDate, và dayOfWeek
                     const sessionDates = getSessionDates(
-                        new Date(detail.startTime),
+                        new Date(detail.SessionDetail.startTime),
                         // normalizedStartTime,
                         // new Date(semester.fromDate),
                         new Date(semester.endDate),
-                        detail.dayOfWeek
+                        detail.SessionDetail.dayOfWeek
                     );
 
                     // Map từng ngày thành một session
@@ -391,16 +395,21 @@ const getSessionDetailsById = async ({ id }) => {
                         // Tính thời gian bắt đầu và kết thúc dựa vào startTime và numOfHour
                         const start = new Date(sessionDate);
                         start.setHours(
-                            new Date(detail.startTime).getUTCHours(),
-                            new Date(detail.startTime).getUTCMinutes()
+                            new Date(
+                                detail.SessionDetail.startTime
+                            ).getUTCHours(),
+                            new Date(
+                                detail.SessionDetail.startTime
+                            ).getUTCMinutes()
                         );
 
                         const end = new Date(
-                            start.getTime() + detail.numOfHour * 60 * 60 * 1000
+                            start.getTime() +
+                                detail.SessionDetail.numOfHour * 60 * 60 * 1000
                         );
 
                         return {
-                            id: detail.id,
+                            id: detail.SessionDetail.id,
                             classSessionId: sessionDetail.ClassSession.id,
                             title: sessionDetail.ClassSession.name, // Dùng name của ClassSession làm title
                             start, // Thời gian bắt đầu
