@@ -130,6 +130,31 @@ const listClassrooms = async ({ filters, sort, limit, offset }) => {
     }
 };
 
+const allClassrooms = async () => {
+    try {
+
+        const items = await db.Classroom.findAll({
+            include: [
+                {
+                    model: db.Amphitheater,
+                }
+            ],
+        });
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                }
+            }),
+        };
+
+    } catch (error) {
+        return error.message;
+    }
+};
+
 // Xóa một classroom
 const deleteClassroom = async ({ ids }) => {
     try {
@@ -212,4 +237,6 @@ module.exports = {
     deleteClassroom,
     updateClassroom,
     createMultipleClassrooms,
+    allClassrooms,
+
 };

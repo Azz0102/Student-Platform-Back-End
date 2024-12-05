@@ -7,7 +7,7 @@ module.exports = (sequelize) => {
                 foreignKey: 'teacherId',
                 onDelete: "CASCADE",
             });
-            Teacher.belongsToMany(models.SessionDetails, { through: 'teacher_session', foreignKey: 'teacherId' });
+            Teacher.hasMany(models.SessionDetails, { foreignKey: 'teacherId' });
         }
     }
 

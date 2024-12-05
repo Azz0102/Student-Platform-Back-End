@@ -22,7 +22,7 @@ module.exports = {
             {
                 classSessionId: classSessionIds[1],
                 classroomId: classroomIds[1],
-                startTime: new Date("2024-06-01 10:00:00"),
+                startTime: new Date("2024-01-04 10:00:00"),
                 numOfHour: 3,
                 dayOfWeek: "Wednesday",
                 sessionType: "Practice",

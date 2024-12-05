@@ -1,7 +1,7 @@
 "use strict";
 
 const { Op } = require("sequelize");
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, NotFoundError } = require("../core/error.response");
 const Scheduler = require("../helpers/schedulingAlgorithm");
 const { getInfoData } = require("../utils/index");
 const db = require("../models");
@@ -34,15 +34,123 @@ const schedulingClassSession = async ({
             throw ConflictRequestError("Cannot schedule");
         }
 
-        return schedule;
+        function cleanSchedule(schedule) {
+            const cleanedSchedule = {};
+
+            for (const [day, timeSlots] of Object.entries(schedule)) {
+                cleanedSchedule[day] = {};
+
+                const activeClasses = {}; // Lưu trữ thông tin lớp học đang diễn ra
+
+                for (const [time, classrooms] of Object.entries(timeSlots)) {
+                    cleanedSchedule[day][time] = {};
+
+                    for (const [room, classInfo] of Object.entries(classrooms)) {
+                        if (!classInfo) continue;
+
+                        const { classSessionName, numOfHour } = classInfo.detail;
+
+                        // Kiểm tra lớp học này đã tồn tại và trùng trong khoảng thời gian trước không
+                        if (
+                            activeClasses[classSessionName] &&
+                            activeClasses[classSessionName].endTime > parseTime(time)
+                        ) {
+                            // Nếu lớp học đã xuất hiện và vẫn còn trong khung giờ, bỏ qua
+                            continue;
+                        }
+
+                        // Thêm lớp học mới vào lịch và cập nhật activeClasses
+                        cleanedSchedule[day][time][room] = classInfo;
+                        activeClasses[classSessionName] = {
+                            endTime: parseTime(time) + numOfHour,
+                        };
+                    }
+                }
+            }
+
+            return cleanedSchedule;
+        }
+
+        // Chuyển đổi thời gian từ chuỗi "7am", "8am", v.v. sang số giờ
+        function parseTime(timeString) {
+            const [hour, period] = [parseInt(timeString), timeString.slice(-2)];
+            return period === "pm" && hour !== 12 ? hour + 12 : hour;
+        }
+
+        const cleanScheduleValue = cleanSchedule(schedule);
+
+        const flattened = [];
+        Object.entries(cleanScheduleValue).forEach(([day, slots]) => {
+            Object.entries(slots).forEach(([time, classrooms]) => {
+                Object.entries(classrooms).forEach(([classroomName, details]) => {
+                    if (details) {
+                        flattened.push({
+                            day,
+                            time,
+                            classroomName,
+                            ...details.detail,
+                            teacher: details.teacher.name,
+                            classroomCapacity: details.classroom.capacity,
+                            classroomType: details.classroom.type,
+                            startSlot: details.startSlot,
+                        });
+                    }
+                });
+            });
+        });
+        // return schedule
+        // return [...new Set(flattened.map((item) => item.teacher))]
+        return flattened;
     } catch (error) {
         throw new BadRequestError("Failed to schedule class session");
     }
 };
 
-const saveSchedule = async ({ data }) => {
-    try {
-    } catch (error) { }
+const saveSchedule = async ({ data, id }) => {
+    for (const session of data) {
+        // Kiểm tra xem Classroom, Teacher, ClassSession đã tồn tại chưa
+        const classroom = await db.Classroom.findOne({ where: { name: session.classroomName } });
+        const teacher = await db.Teacher.findOne({ where: { name: session.teacher } });
+        const classSession = await db.ClassSession.findOne({ where: { name: session.classSessionName } });
+
+        if (Number(classSession.semesterId) !== Number(id)) {
+            throw new NotFoundError(`${session.classSessionName} sai Học Kỳ`);
+        }
+
+        // Nếu không tồn tại Classroom, Teacher hoặc ClassSession thì tạo mới
+        if (!classroom || !teacher || !classSession) {
+            console.log(`Skipping session: ${session.classSessionName} because one of its dependencies doesn't exist.`);
+            continue; // Bỏ qua nếu một trong các bản ghi không tồn tại
+        }
+
+        // Kiểm tra xem SessionDetails đã tồn tại chưa
+        const existingSessionDetails = await db.SessionDetails.findOne({
+            where: {
+                classSessionId: classSession.id,
+                classroomId: classroom.id,
+                startTime: new Date(session.startTime),
+                teacherId: teacher.id,
+            }
+        });
+
+        // Nếu đã tồn tại, bỏ qua
+        if (existingSessionDetails) {
+            console.log(`Session ${session.classSessionName} already exists. Skipping.`);
+            continue;
+        }
+
+        // Tạo bản ghi trong bảng SessionDetails nếu không tồn tại
+        await db.SessionDetails.create({
+            classSessionId: classSession.id, // ID của ClassSession đã tạo
+            classroomId: classroom.id,       // ID của Classroom đã tạo
+            startTime: new Date(session.startTime),
+            numOfHour: parseInt(session.numOfHour),
+            dayOfWeek: session.dayOfWeek,
+            sessionType: session.sessionType,
+            capacity: parseInt(session.capacity),
+            teacherId: teacher.id, // ID của Teacher đã tạo
+        });
+    }
 };
 
 const signUp = async ({ name, password = "88888888", roleId = 2 }) => {

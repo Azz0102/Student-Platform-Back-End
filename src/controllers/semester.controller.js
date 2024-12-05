@@ -7,6 +7,7 @@ const {
     deleteSemester,
     updateSemester,
     createMultipleSemesters,
+    semesterDatas,
 } = require("../services/semester.service");
 
 const newSemester = async (req, res, next) => {
@@ -44,10 +45,18 @@ const newSemestersBulk = async (req, res, next) => {
     }).send(res);
 };
 
+const semesterData = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Get semester list",
+        metadata: await semesterDatas({ semesterId: req.params.id }),
+    }).send(res);
+};
+
 module.exports = {
     newSemester,
     semesterList,
     semesterDelete,
     semesterUpdate,
     newSemestersBulk,
+    semesterData,
 };

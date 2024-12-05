@@ -7,6 +7,7 @@ const {
     deleteClassroom,
     updateClassroom,
     createMultipleClassrooms,
+    allClassrooms,
 } = require("../services/classroom.service");
 
 const newClassroom = async (req, res, next) => {
@@ -26,6 +27,13 @@ const classroomList = async (req, res, next) => {
             limit: perPage,
             offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
         }),
+    }).send(res);
+};
+
+const allClassroom = async (req, res, next) => {
+    new SuccessResponse({
+        message: "allClassroom",
+        metadata: await allClassrooms(),
     }).send(res);
 };
 
@@ -56,4 +64,6 @@ module.exports = {
     classroomDelete,
     classroomUpdate,
     newClassroomsBulk,
+    allClassroom,
+
 };

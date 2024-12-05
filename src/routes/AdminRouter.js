@@ -26,7 +26,7 @@ router.post(
     asyncHandler(schedulingClassSessionController)
 );
 
-router.patch(
+router.post(
     "/save-schedule",
     // grantAccess("updateAny", "classSession"),
     asyncHandler(savedSchedule)
