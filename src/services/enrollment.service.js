@@ -22,7 +22,7 @@ exports.createEnrollment = async ({ userId, classSessionId }) => {
         }
         return enrollment;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -41,7 +41,7 @@ exports.deleteEnrollment = async ({ userId, classSessionId }) => {
         }
         return result;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -51,7 +51,7 @@ exports.createManyEnrollments = async (enrollments) => {
         const createdEnrollments = await db.Enrollment.bulkCreate(enrollments);
         return createdEnrollments;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -65,6 +65,6 @@ exports.deleteManyEnrollments = async (enrollmentIds) => {
         });
         return `${result} enrollments deleted successfully`;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };

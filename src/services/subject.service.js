@@ -1,5 +1,6 @@
 "use strict";
 
+const { Op } = require("sequelize");
 const db = require("../models");
 const {
     BadRequestError,
@@ -26,36 +27,82 @@ const createSubject = async ({ name, description }) => {
 
         return subject;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Liệt kê tất cả subjects
-const listSubjects = async () => {
+const listSubjects = async ({ filters, sort, limit, offset }) => {
     try {
-        const subjects = await db.Subject.findAll({
-            order: [["name", "ASC"]], // Sắp xếp theo tên
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+
+        console.log('whereConditions', whereConditions);
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.Subject.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
         });
 
-        return subjects;
+        const totalRecords = await db.Subject.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined,
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    description: item.description,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một subject
-const deleteSubject = async ({ subjectId }) => {
+const deleteSubject = async ({ ids }) => {
     try {
-        // Tìm subject theo ID
-        const subject = await db.Subject.findByPk(subjectId);
-        if (!subject) {
-            throw new NotFoundError("Subject not found.");
+        const subject = await db.Subject.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+        if (subject === 0) {
+            throw new NotFoundError("deletedSubject");
         }
-
-        // Xóa subject
-        await subject.destroy();
+        return subject;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -76,33 +123,31 @@ const updateSubject = async ({ subjectId, name, description }) => {
 
         return subject;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Tạo mới hàng loạt subjects
 const createMultipleSubjects = async (subjectArray) => {
-    try {
-        // Kiểm tra các subject đã tồn tại không
-        const subjectNames = subjectArray.map(subject => subject.name);
-        const existingSubjects = await db.Subject.findAll({
-            where: {
-                name: subjectNames,
-            },
-        });
+    // Lọc ra những chủ đề đã tồn tại
+    const existingSubjects = await db.Subject.findAll({
+        where: { name: subjectArray.map(s => s.name) },
+    });
 
-        if (existingSubjects.length > 0) {
-            const existingNames = existingSubjects.map(subject => subject.name);
-            throw new BadRequestError(`Subject(s) already exists: ${existingNames.join(", ")}`);
-        }
+    const existingNames = existingSubjects.map(s => s.name);
 
-        // Tạo mới hàng loạt subjects
-        const subjects = await db.Subject.bulkCreate(subjectArray, { validate: true });
+    // Lọc ra những chủ đề chưa tồn tại
+    const subjectsToCreate = subjectArray.filter(subject => !existingNames.includes(subject.name));
 
-        return subjects;
-    } catch (error) {
-        return error;
+    // Nếu không có chủ đề nào mới, trả về thông báo
+    if (subjectsToCreate.length === 0) {
+        return { message: "All subjects already exist." };
     }
+
+    // Tạo hàng loạt subject mới
+    const subjects = await db.Subject.bulkCreate(subjectsToCreate, { validate: true });
+
+    return subjects;
 };
 
 module.exports = {

@@ -56,7 +56,7 @@ const pushNotiToSystem = async ({
 
         return newNoti;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -104,7 +104,7 @@ const updateNotiUser = async ({ id }) => {
 
         return;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

@@ -27,7 +27,7 @@ exports.createChat = async ({
         });
         return chat;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -122,7 +122,7 @@ exports.deleteChat = async ({ id }) => {
         }
         return deletedChat;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

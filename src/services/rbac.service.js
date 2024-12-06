@@ -40,7 +40,7 @@ const createResource = async ({
 
         return resource;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -58,7 +58,7 @@ const resourceList = async ({
 
         return resources;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -86,7 +86,7 @@ const updateResource = async ({
 
         return resource;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -101,7 +101,7 @@ const deleteResource = async ({ userId, resourceId }) => {
         // 2. Delete the resource
         await resource.destroy();
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -160,7 +160,7 @@ const createRole = async ({
         }
         return role;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -170,10 +170,10 @@ const roleList = async ({ limit = 30, offset = 0, search = "" }) => {
         const roles = await db.Role.findAll({
             where: search
                 ? {
-                      name: {
-                          [Op.like]: `%${search}%`,
-                      },
-                  }
+                    name: {
+                        [Op.like]: `%${search}%`,
+                    },
+                }
                 : {},
             include: [
                 {
@@ -207,7 +207,7 @@ const roleList = async ({ limit = 30, offset = 0, search = "" }) => {
         return grantList;
     } catch (error) {
         console.error("Error fetching role list:", error);
-        return error;
+        return error.message;
     }
 };
 
@@ -232,7 +232,7 @@ const updateRole = async ({ userId, roleId, name, slug, description }) => {
         // 4. Return the updated role
         return role;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -249,7 +249,7 @@ const deleteRole = async ({ userId, roleId }) => {
         await role.destroy();
         return role;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 module.exports = {

@@ -8,7 +8,7 @@ module.exports = (sequelize) => {
                 onDelete: "CASCADE",
             });
 
-            News.belongsTo(models.User, { foreignKey: "userId", as: "Author" });
+            News.belongsTo(models.User, { foreignKey: "userId" });
 
             News.hasMany(models.Notification, {
                 foreignKey: "noti_senderId",

@@ -5,10 +5,12 @@ module.exports = (sequelize) => {
         static associate(models) {
             Classroom.belongsTo(models.Amphitheater, {
                 foreignKey: "amphitheaterId",
+                onDelete: "CASCADE",
             });
 
             Classroom.hasMany(models.SessionDetails, {
                 foreignKey: "classroomId",
+                onDelete: "CASCADE",
             });
         }
     }

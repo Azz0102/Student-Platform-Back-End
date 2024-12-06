@@ -10,6 +10,10 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
+            name: {
+                type: Sequelize.TEXT,
+                allowNull: false,
+            },
             fromDate: {
                 type: Sequelize.DATE,
                 allowNull: false,

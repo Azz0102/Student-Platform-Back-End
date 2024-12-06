@@ -8,7 +8,8 @@ class ErrorResponse extends Error {
     constructor(message, status) {
         super(message);
         this.status = status;
-        this.now = Date.now();
+        // this.now = Date.now();
+        // this.message = message;
 
         // Log the error use winston
         // myLogger.error(this.message, [
@@ -30,8 +31,8 @@ class ConflictRequestError extends ErrorResponse {
 
 class BadRequestError extends ErrorResponse {
     constructor(
-        message = ReasonPhrases.CONFLICT,
-        statusCode = StatusCodes.FORBIDDEN
+        message,
+        statusCode = StatusCodes.BAD_REQUEST
     ) {
         super(message, statusCode);
     }

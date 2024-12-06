@@ -44,7 +44,7 @@ const createTag = async ({ userId, name, isPermanent = false }) => {
         return tag;
 
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 const listTags = async ({ userId }) => {
@@ -66,7 +66,7 @@ const listTags = async ({ userId }) => {
 
         return newtag;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 const deleteTag = async ({ tagId }) => {
@@ -85,7 +85,7 @@ const deleteTag = async ({ tagId }) => {
         // Delete the tag
         await tag.destroy({ force: true });
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -106,7 +106,7 @@ const updateTag = async ({ tagId, name }) => {
 
         return tag;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 

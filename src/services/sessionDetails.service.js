@@ -1,87 +1,225 @@
 "use strict";
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const db = require("../models");
 const { BadRequestError, NotFoundError } = require("../core/error.response");
 
 // Tạo mới một SessionDetail
 const createSessionDetail = async ({
-    classSessionId,
-    classroomId,
+    nameClassSession,
+    nameClassroom,
+    nameTeacher,
     startTime,
     numOfHour,
-    dayOfWeek,
-    sessionType,
     capacity,
-    teacherId,
 }) => {
     try {
         // Kiểm tra xem classSession có tồn tại không
-        const classSession = await db.ClassSession.findByPk(classSessionId);
+        const classSession = await db.ClassSession.findOne({
+            where: { name: nameClassSession },
+        });
         if (!classSession) {
             throw new NotFoundError("ClassSession not found.");
         }
 
         // Kiểm tra xem classroom có tồn tại không
-        const classroom = await db.Classroom.findByPk(classroomId);
+        const classroom = await db.Classroom.findOne({
+            where: { name: nameClassroom },
+        });
         if (!classroom) {
             throw new NotFoundError("Classroom not found.");
         }
 
         // Kiểm tra xem teacher có tồn tại không
-        const teacher = await db.Teacher.findByPk(teacherId);
+        const teacher = await db.Teacher.findOne({
+            where: { name: nameTeacher },
+        });
         if (!teacher) {
             throw new NotFoundError("Teacher not found.");
         }
 
+        const date = new Date(startTime); // Convert time to Date object
+        const dayIndex = date.getDay(); // Get the day of the week from local time
+
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+
         // Tạo SessionDetail mới
         const sessionDetail = await db.SessionDetails.create({
-            classSessionId,
-            classroomId,
+            classSessionId: classSession.id,
+            classroomId: classroom.id,
+            teacherId: teacher.id,
             startTime,
             numOfHour,
-            dayOfWeek,
-            sessionType,
+            dayOfWeek: daysOfWeek[dayIndex],
+            sessionType: classroom.type,
             capacity,
-            teacherId,
         });
+
+        const classSessionCreat = await db.ClassSession.findOne({
+            where: { id: classSession.id }
+        });
+
+        classSessionCreat.numOfSessionAWeek += 1;
+
+        await classSessionCreat.save();
 
         return sessionDetail;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
-// Liệt kê tất cả SessionDetails
-const listSessionDetails = async () => {
+// Liệt kê tất cả SessionDetails theo classSession
+const listSessionDetails = async ({ classSession, filters, sort, limit, offset }) => {
     try {
-        const sessionDetails = await db.SessionDetails.findAll({
+
+        // 1. Parse filters and sort từ JSON string thành objects nếu tồn tại
+        const parsedFilters = filters ? JSON.parse(filters) : [];
+        const parsedSort = sort ? JSON.parse(sort) : [];
+        // 2. Xây dựng điều kiện `where` từ parsedFilters nếu có
+        const whereConditions = {};
+        const nameClassSession = {
+            name: classSession
+        };
+        const nameClassroom = {};
+        const nameTeacher = {};
+
+        if (parsedFilters.length > 0) {
+            for (const filter of parsedFilters) {
+                if (filter.value) {
+                    // if (filter.id == 'nameClassSession') {
+                    //     nameClassSession["name"] = {
+                    //         [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    //     };
+                    //     continue;
+                    // }
+                    if (filter.id == 'nameClassroom') {
+                        nameClassroom["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'nameTeacher') {
+                        nameTeacher["name"] = {
+                            [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    if (filter.id == 'sessionType') {
+                        whereConditions["sessionType"] = {
+                            [Op.in]: filter.value, // Sử dụng toán tử Sequelize dựa trên operator
+                        };
+                        continue;
+                    }
+                    whereConditions[filter.id] = {
+                        [Op[filter.operator]]: `%${filter.value}%`, // Sử dụng toán tử Sequelize dựa trên operator
+                    };
+                }
+            };
+        }
+
+        // 3. Xây dựng mảng `order` từ parsedSort nếu có
+        const orderConditions = parsedSort.length > 0 ? parsedSort.map((sortItem) => [
+            sortItem.id,
+            sortItem.desc ? "DESC" : "ASC",
+        ]) : null;
+
+        // 4. Thực hiện truy vấn findAll với điều kiện lọc và sắp xếp nếu có
+        const items = await db.SessionDetails.findAll({
+            where: parsedFilters.length > 0 ? whereConditions : undefined, // Chỉ áp dụng where nếu có điều kiện
             include: [
-                { model: db.ClassSession },
-                { model: db.Classroom },
-                { model: db.Teacher },
+                {
+                    model: db.ClassSession,
+                    where: nameClassSession
+                },
+                {
+                    model: db.Classroom,
+                    where: parsedFilters.length > 0 ? nameClassroom : undefined,
+                },
+                {
+                    model: db.Teacher,
+                    where: parsedFilters.length > 0 ? nameTeacher : undefined,
+                },
             ],
-            order: [["startTime", "ASC"]],
+            order: orderConditions || undefined, // Chỉ áp dụng order nếu có điều kiện sắp xếp
+            limit,
+            offset
         });
 
-        return sessionDetails;
+        const totalRecords = await db.SessionDetails.count({
+            where: parsedFilters.length > 0 ? whereConditions : undefined,
+            include: [
+                {
+                    model: db.ClassSession,
+                    where: nameClassSession
+                },
+                {
+                    model: db.Classroom,
+                    where: parsedFilters.length > 0 ? nameClassroom : undefined,
+                },
+                {
+                    model: db.Teacher,
+                    where: parsedFilters.length > 0 ? nameTeacher : undefined,
+                },
+            ],
+        });
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        return {
+            data: items.map((item) => {
+                return {
+                    id: item.id,
+                    nameClassSession: item.ClassSession.name,
+                    nameClassroom: item.Classroom.name,
+                    nameTeacher: item.Teacher.name,
+                    startTime: item.startTime,
+                    numOfHour: item.numOfHour,
+                    dayOfWeek: item.dayOfWeek,
+                    sessionType: item.sessionType,
+                    capacity: item.capacity,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
+                }
+            }),
+            pageCount: totalPages
+        };
+
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Xóa một SessionDetail
-const deleteSessionDetail = async ({ sessionDetailId }) => {
+const deleteSessionDetail = async ({ ids }) => {
     try {
-        // Tìm SessionDetail theo ID
-        const sessionDetail = await db.SessionDetails.findByPk(sessionDetailId);
-        if (!sessionDetail) {
-            throw new NotFoundError("SessionDetail not found.");
+        console.log("ids", ids)
+        const sessionDetailsDe = await db.SessionDetails.findOne({
+            where: { id: ids[0] }
+        });
+        console.log("sessionDetailsDe", sessionDetailsDe)
+        const classSessionCreat = await db.ClassSession.findOne({
+            where: { id: sessionDetailsDe.classSessionId }
+        });
+        console.log("classSessionCreat", classSessionCreat.numOfSessionAWeek)
+
+        classSessionCreat.numOfSessionAWeek -= 1;
+
+        await classSessionCreat.save();
+        const sessionDetails = await db.SessionDetails.destroy({
+            where: {
+                id: {
+                    [Op.in]: ids,
+                },
+            },
+        });
+
+        if (sessionDetails === 0) {
+            throw new NotFoundError("deletedSessionDetails");
         }
 
-        // Xóa SessionDetail
-        await sessionDetail.destroy();
+        return sessionDetails;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -142,55 +280,65 @@ const updateSessionDetail = async ({
 
         return sessionDetail;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
 // Tạo mới hàng loạt SessionDetails
-const createMultipleSessionDetails = async (sessionDetailArray) => {
-    try {
-        const existingSessionDetails = [];
-        for (const detail of sessionDetailArray) {
-            const { classSessionId, classroomId, teacherId } = detail;
+const createMultipleSessionDetails = async (sessionDetailsArray) => {
+    // Kiểm tra từng sessionDetail và tạo session mới
+    for (const session of sessionDetailsArray) {
+        const { nameClassSession, nameClassroom, nameTeacher, startTime, numOfHour, capacity } = session;
 
-            // Kiểm tra các thông tin cần thiết
-            const classSession = await db.ClassSession.findByPk(classSessionId);
-            if (!classSession) {
-                existingSessionDetails.push(
-                    `ClassSession ID ${classSessionId} not found.`
-                );
-            }
-
-            const classroom = await db.Classroom.findByPk(classroomId);
-            if (!classroom) {
-                existingSessionDetails.push(
-                    `Classroom ID ${classroomId} not found.`
-                );
-            }
-
-            const teacher = await db.Teacher.findByPk(teacherId);
-            if (!teacher) {
-                existingSessionDetails.push(
-                    `Teacher ID ${teacherId} not found.`
-                );
-            }
+        // Kiểm tra xem classSession có tồn tại không
+        const classSession = await db.ClassSession.findOne({
+            where: { name: nameClassSession },
+        });
+        if (!classSession) {
+            throw new NotFoundError(`ClassSession ${nameClassSession} not found.`);
         }
 
-        if (existingSessionDetails.length > 0) {
-            throw new BadRequestError(existingSessionDetails.join(", "));
+        // Kiểm tra xem classroom có tồn tại không
+        const classroom = await db.Classroom.findOne({
+            where: { name: nameClassroom },
+        });
+        if (!classroom) {
+            throw new NotFoundError(`Classroom ${nameClassroom} not found.`);
         }
 
-        // Tạo mới hàng loạt SessionDetails
-        const sessionDetails = await db.SessionDetails.bulkCreate(
-            sessionDetailArray,
-            { validate: true }
-        );
+        // Kiểm tra xem teacher có tồn tại không
+        const teacher = await db.Teacher.findOne({
+            where: { name: nameTeacher },
+        });
+        if (!teacher) {
+            throw new NotFoundError(`Teacher ${nameTeacher} not found.`);
+        }
 
-        return sessionDetails;
-    } catch (error) {
-        return error;
+        const date = new Date(startTime); // Convert time to Date object
+        const dayIndex = date.getDay(); // Get the day of the week from local time
+
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        // Tạo SessionDetail mới
+        const sessionDetail = await db.SessionDetails.create({
+            classSessionId: classSession.id,
+            classroomId: classroom.id,
+            teacherId: teacher.id,
+            startTime,
+            numOfHour,
+            dayOfWeek: daysOfWeek[dayIndex],
+            sessionType: classroom.type,
+            capacity,
+        });
+
+        // Cập nhật số buổi học trong tuần của ClassSession
+        classSession.numOfSessionAWeek += 1;
+        await classSession.save();
     }
+
+    return { message: "All session details created successfully." };
 };
+
 
 const getAllUserSessionDetails = async ({ userId }) => {
     try {
@@ -236,7 +384,7 @@ const getAllUserSessionDetails = async ({ userId }) => {
 
         return sessionDetails;
     } catch (error) {
-        return error;
+        return error.message;
     }
 };
 
@@ -263,7 +411,7 @@ const getSessionDates = (fromDate, endDate, dayOfWeek) => {
             fromDate.getUTCDate()
         )
     );
-    currentDate.setHours(0, 0, 0, 0);
+    // currentDate.setHours(0, 0, 0, 0);
 
     // Chuyển đổi dayOfWeek (text) thành số
     const targetDay = getDayOfWeekNumber(dayOfWeek);
@@ -280,40 +428,6 @@ const getSessionDates = (fromDate, endDate, dayOfWeek) => {
 
 const getSessionDetailsById = async ({ id }) => {
     try {
-        // const userSessionDetails = await db.User.findByPk(id, {
-        //     include: [
-        //         {
-        //             model: db.Enrollment,
-        //             include: [
-        //                 {
-        //                     model: db.ClassSession,
-        //                     include: [
-        //                         {
-        //                             model: db.SessionDetails,
-        //                             include: [
-        //                                 {
-        //                                     model: db.Classroom,
-        //                                     include: [
-        //                                         {
-        //                                             model: db.Amphitheater,
-        //                                         },
-        //                                     ],
-        //                                 },
-        //                                 {
-        //                                     model: db.Teacher,
-        //                                 },
-        //                             ],
-        //                         },
-        //                         {
-        //                             model: db.Semester, // Include semester information
-        //                         },
-        //                     ],
-        //                 },
-        //             ],
-        //         },
-        //     ],
-        // });
-
         const userSessionDetails = await db.Enrollment.findAll({
             where: { userId: id }, // Filter by id
             include: [
@@ -336,44 +450,6 @@ const getSessionDetailsById = async ({ id }) => {
                 },
             ],
         });
-
-        // const formattedSessions = userSessionDetails.Enrollments.flatMap(
-        //     (enrollment) => {
-        //         const sessionDetails = enrollment.ClassSession.SessionDetails;
-        //         const semester = enrollment.ClassSession.Semester;
-
-        //         return sessionDetails.flatMap((detail) => {
-        //             // Lấy tất cả các ngày cho session dựa vào fromDate, endDate, và dayOfWeek
-        //             const sessionDates = getSessionDates(
-        //                 new Date(semester.fromDate),
-        //                 new Date(semester.endDate),
-        //                 detail.dayOfWeek
-        //             );
-
-        //             // Map từng ngày thành một session
-        //             return sessionDates.map((sessionDate) => {
-        //                 // Tính thời gian bắt đầu và kết thúc dựa vào startTime và numOfHour
-        //                 const start = new Date(sessionDate);
-        //                 start.setHours(
-        //                     new Date(detail.startTime).getUTCHours(),
-        //                     new Date(detail.startTime).getUTCMinutes()
-        //                 );
-
-        //                 const end = new Date(
-        //                     start.getTime() + detail.numOfHour * 60 * 60 * 1000
-        //                 );
-
-        //                 return {
-        //                     id: detail.id,
-        //                     classSessionId: enrollment.ClassSession.id,
-        //                     title: enrollment.ClassSession.name, // Dùng name của ClassSession làm title
-        //                     start, // Thời gian bắt đầu
-        //                     end, // Thời gian kết thúc
-        //                 };
-        //             });
-        //         });
-        //     }
-        // );
 
         const formattedSessions = userSessionDetails.flatMap(
             (sessionDetail) => {
@@ -405,7 +481,7 @@ const getSessionDetailsById = async ({ id }) => {
 
                         const end = new Date(
                             start.getTime() +
-                                detail.SessionDetail.numOfHour * 60 * 60 * 1000
+                            detail.SessionDetail.numOfHour * 60 * 60 * 1000
                         );
 
                         return {
@@ -495,6 +571,150 @@ const getUserClassSessionDetails = async ({ userId, classSessionId }) => {
     }
 };
 
+const allSessionDetails = async ({ semester }) => {
+    try {
+        const semesters = await db.Semester.findAll({
+            where: { id: semester },
+            include: [
+                {
+                    model: db.ClassSession,
+                    include: [
+                        {
+                            model: db.SessionDetails,
+                            include: [
+                                {
+                                    model: db.Classroom,
+                                    include: [
+                                        {
+                                            model: db.Amphitheater,
+                                        },
+                                    ],
+                                },
+                                {
+                                    model: db.Teacher,
+                                },
+                            ],
+                        }
+                    ]
+                }
+            ]
+
+        });
+
+        const semester0 = semesters[0];
+        const formattedSessions = semester0.ClassSessions.flatMap((ClassSession) => {
+            return ClassSession.SessionDetails.flatMap((session) => {
+                const sessionDates = getSessionDates(
+                    semester0.fromDate,
+                    semester0.endDate,
+                    session.dayOfWeek
+                );
+                // Map từng ngày thành một session
+                return sessionDates.map((item) => {
+                    const start = new Date(
+                        Date.UTC(
+                            item.getUTCFullYear(),
+                            item.getUTCMonth(),
+                            item.getUTCDate(),
+                            new Date(session.startTime).getUTCHours(),
+                            new Date(session.startTime).getUTCMinutes()
+                        )
+                    );
+
+                    const end = new Date(
+                        start.getTime() + session.numOfHour * 60 * 60 * 1000
+                    );
+
+                    return {
+                        resourceId: session.Classroom.name,
+                        classSessionId: ClassSession.id,
+                        title: ClassSession.name,
+                        start,
+                        end,
+                    };
+                });
+            })
+
+        })
+
+        return formattedSessions
+
+    } catch (error) {
+        console.log(error);
+        return error.message;
+    }
+};
+
+function formatLocalTime(utcDate) {
+    // Chuyển đổi UTC date thành múi giờ địa phương
+    const localDate = new Date(utcDate);
+
+    // Lấy giờ, phút và định dạng AM/PM
+    const hours = localDate.getHours();
+    const minutes = localDate.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+
+    // Định dạng giờ và phút dạng 12 giờ
+    const formattedHours = hours % 12 || 12; // Chuyển đổi 0 thành 12
+    const formattedMinutes = minutes.toString().padStart(2, '0'); // Thêm số 0 ở đầu nếu cần
+
+    return `${formattedHours}${ampm}`;
+}
+
+const downSessionDetails = async ({ semester }) => {
+    try {
+        const semesters = await db.Semester.findAll({
+            where: { id: semester },
+            include: [
+                {
+                    model: db.ClassSession,
+                    include: [
+                        {
+                            model: db.SessionDetails,
+                            include: [
+                                {
+                                    model: db.Classroom,
+                                    include: [
+                                        {
+                                            model: db.Amphitheater,
+                                        },
+                                    ],
+                                },
+                                {
+                                    model: db.Teacher,
+                                },
+                            ],
+                        }
+                    ]
+                }
+            ]
+
+        });
+        const result = semesters.flatMap(semester =>
+            semester.ClassSessions.flatMap(classSession =>
+                classSession.SessionDetails.map(sessionDetail => ({
+                    classSessionName: classSession.name,
+                    numOfHour: sessionDetail.numOfHour,
+                    sessionType: sessionDetail.sessionType,
+                    capacity: sessionDetail.capacity,
+                    startTime: formatLocalTime(sessionDetail.startTime),
+                    dayOfWeek: sessionDetail.dayOfWeek,
+                    classroomName: sessionDetail.Classroom.name,
+                    classroomCapacity: sessionDetail.Classroom.capacity,
+                    classroomType: sessionDetail.Classroom.type,
+                    teacherName: sessionDetail.Teacher.name,
+                }))
+            )
+        );
+
+        return result
+
+    } catch (error) {
+        console.log(error);
+        return error.message;
+    }
+};
+
 module.exports = {
     createSessionDetail,
     listSessionDetails,
@@ -504,4 +724,7 @@ module.exports = {
     getAllUserSessionDetails,
     getSessionDetailsById,
     getUserClassSessionDetails,
+    allSessionDetails,
+    downSessionDetails,
+
 };
