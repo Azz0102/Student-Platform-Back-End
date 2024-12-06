@@ -51,6 +51,7 @@ module.exports = {
                 updatedAt: new Date(),
             },
             {
+                name: "Hoc Ky I Nam 2025",
                 fromDate: new Date("2025-01-01"),
                 endDate: new Date("2025-05-31"),
                 createdAt: new Date(),
