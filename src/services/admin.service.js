@@ -154,81 +154,94 @@ const saveSchedule = async ({ data, id }) => {
 };
 
 const signUp = async ({ name, password = "88888888", roleId = 2 }) => {
-    try {
-        // step1: check name exists?
+    // step1: check name exists?
 
-        const checkUser = await db.User.findOne({
-            where: {
-                name,
-            },
-        });
-        if (checkUser) throw new BadRequestError("Error: User already exists");
-
-        console.log("password", name, password, roleId)
-
-        const passwordHash = await bcrypt.hash(password, 10);
-        const newUser = await db.User.create({
+    const checkUser = await db.User.findOne({
+        where: {
             name,
-            passwordHash,
-            roleId,
+        },
+    });
+    if (checkUser) throw new BadRequestError("Error: User already exists");
+
+    console.log("password", name, password, roleId)
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const newUser = await db.User.create({
+        name,
+        passwordHash,
+        roleId,
+    });
+
+    if (newUser) {
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
+
+        console.log({ privateKey, publicKey }); // save collection KeyStore
+
+        // create token pair
+        const tokens = await createTokenPair(
+            { userId: newUser.id, name },
+            publicKey,
+            privateKey
+        );
+
+        console.log("Create token success::", tokens);
+
+        const keyStore = await KeyTokenService.createKeyToken({
+            userId: newUser.id,
+            publicKey,
+            privateKey,
+            refreshToken: tokens.refreshToken,
         });
 
-        if (newUser) {
-            const privateKey = crypto.randomBytes(64).toString("hex");
-            const publicKey = crypto.randomBytes(64).toString("hex");
-
-            console.log({ privateKey, publicKey }); // save collection KeyStore
-
-            // create token pair
-            const tokens = await createTokenPair(
-                { userId: newUser.id, name },
-                publicKey,
-                privateKey
-            );
-
-            console.log("Create token success::", tokens);
-
-            const keyStore = await KeyTokenService.createKeyToken({
-                userId: newUser.id,
-                publicKey,
-                privateKey,
-                refreshToken: tokens.refreshToken,
-            });
-
-            if (!keyStore) {
-                throw new BadRequestError("Error: KeyStore Error");
-            }
-
-            return {
-                tokens,
-            };
+        if (!keyStore) {
+            throw new BadRequestError("Error: KeyStore Error");
         }
-        throw new BadRequestError("Signup error");
-    } catch (error) {
-        return error.message;
+
+        return {
+            tokens,
+        };
     }
+    throw new BadRequestError("Signup error");
 };
 
 const signUpMultipleUsers = async (usersArray) => {
-    try {
-        // Mã hóa mật khẩu cho từng người dùng
-        const userData = await Promise.all(usersArray.map(async (user) => {
-            const passwordHash = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
-            return {
-                name: user.name,
-                passwordHash,
-                roleId: user.roleId,
-            };
-        }));
+    // Lấy danh sách tên người dùng từ mảng đầu vào
+    const usernames = usersArray.map(user => user.name);
 
-        // Sử dụng bulkCreate để thêm tất cả người dùng
-        const results = await db.User.bulkCreate(userData);
+    // Kiểm tra những người dùng đã tồn tại trong cơ sở dữ liệu
+    const existingUsers = await db.User.findAll({
+        where: {
+            name: usernames,
+        },
+        attributes: ["name"],
+    });
 
-        return results;
-    } catch (error) {
-        return error.message;
+    // Tạo danh sách tên người dùng đã tồn tại
+    const existingUsernames = existingUsers.map(user => user.name);
+
+    // Lọc ra những người dùng chưa tồn tại
+    const newUsers = usersArray.filter(user => !existingUsernames.includes(user.name));
+
+    // Mã hóa mật khẩu và gán `roleId` mặc định nếu không có
+    const userData = await Promise.all(newUsers.map(async (user) => {
+        const passwordHash = await bcrypt.hash(user.password, 10); // Mã hóa mật khẩu
+        return {
+            name: user.name,
+            passwordHash,
+            roleId: user.roleId || 2, // Gán giá trị mặc định là 2 nếu không có
+        };
+    }));
+
+    // Nếu không có người dùng mới, trả về thông báo
+    if (userData.length === 0) {
+        return { message: "All users already exist in the database." };
     }
+
+    // Thêm những người dùng mới vào cơ sở dữ liệu
+    const results = await db.User.bulkCreate(userData);
 };
+
 
 // Liệt kê tất cả Sinhvien
 const listUser = async ({ filters, sort, limit, offset }) => {

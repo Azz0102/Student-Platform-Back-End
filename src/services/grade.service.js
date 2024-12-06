@@ -184,9 +184,69 @@ const gradeDeletes = async ({ ids }) => {
     }
 };
 
+const newGradesBulk = async (gradesArray) => {
+    const type = {
+        "Thành phần": 10,
+        "Giữa kỳ": 30,
+        "Cuối kỳ": 60,
+    };
+
+    const grades = await Promise.all(gradesArray.map(async (gradeData) => {
+        const { name, value, nameClassSession, nameUser } = gradeData;
+
+        const classSession = await db.ClassSession.findOne({
+            where: { name: nameClassSession },
+        });
+        if (!classSession) {
+            throw new BadRequestError("Error: ClassSession not found.");
+        }
+
+        const user = await db.User.findOne({
+            where: { name: nameUser },
+        });
+        if (!user) {
+            throw new BadRequestError("Error: User not found.");
+        }
+
+        const enrollment = await db.Enrollment.findOne({
+            where: {
+                userId: user.id,
+                classSessionId: classSession.id,
+            },
+        });
+        if (!enrollment) {
+            throw new BadRequestError("Error: User not added to ClassSession.");
+        }
+
+        const existingGrade = await db.Grade.findOne({
+            where: {
+                name,
+                userId: user.id
+            },
+        });
+
+        if (existingGrade) {
+            throw new BadRequestError("Grade already exists.");
+        }
+
+        return {
+            name,
+            type: type[name],
+            value,
+            classSessionId: classSession.id,
+            userId: user.id,
+        };
+    }));
+    // Sử dụng bulkCreate để tạo tất cả grades
+    const createdGrades = await db.Grade.bulkCreate(grades);
+    return createdGrades;
+};
+
+
 module.exports = {
     newGrades,
     gradeLists,
     gradeDeletes,
+    newGradesBulk,
 
 };

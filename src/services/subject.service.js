@@ -129,27 +129,25 @@ const updateSubject = async ({ subjectId, name, description }) => {
 
 // Tạo mới hàng loạt subjects
 const createMultipleSubjects = async (subjectArray) => {
-    try {
-        // Kiểm tra các subject đã tồn tại không
-        const subjectNames = subjectArray.map(subject => subject.name);
-        const existingSubjects = await db.Subject.findAll({
-            where: {
-                name: subjectNames,
-            },
-        });
+    // Lọc ra những chủ đề đã tồn tại
+    const existingSubjects = await db.Subject.findAll({
+        where: { name: subjectArray.map(s => s.name) },
+    });
 
-        if (existingSubjects.length > 0) {
-            const existingNames = existingSubjects.map(subject => subject.name);
-            throw new BadRequestError(`Subject(s) already exists: ${existingNames.join(", ")}`);
-        }
+    const existingNames = existingSubjects.map(s => s.name);
 
-        // Tạo mới hàng loạt subjects
-        const subjects = await db.Subject.bulkCreate(subjectArray, { validate: true });
+    // Lọc ra những chủ đề chưa tồn tại
+    const subjectsToCreate = subjectArray.filter(subject => !existingNames.includes(subject.name));
 
-        return subjects;
-    } catch (error) {
-        return error.message;
+    // Nếu không có chủ đề nào mới, trả về thông báo
+    if (subjectsToCreate.length === 0) {
+        return { message: "All subjects already exist." };
     }
+
+    // Tạo hàng loạt subject mới
+    const subjects = await db.Subject.bulkCreate(subjectsToCreate, { validate: true });
+
+    return subjects;
 };
 
 module.exports = {

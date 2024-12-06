@@ -8,6 +8,7 @@ const {
     updateClassSession,
     createMultipleClassSessions,
     getUserSpecificClassSession,
+    listClassSessionsdat,
 } = require("../services/classSession.service");
 
 const newClassSession = async (req, res, next) => {
@@ -27,6 +28,13 @@ const classSessionList = async (req, res, next) => {
             limit: perPage,
             offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
         }),
+    }).send(res);
+};
+
+const classSessionListss = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Get ClassSession list",
+        metadata: await listClassSessionsdat(),
     }).send(res);
 };
 
@@ -65,4 +73,5 @@ module.exports = {
     classSessionUpdate,
     newClassSessionsBulk,
     userGetSpecificClassSession,
+    classSessionListss
 };

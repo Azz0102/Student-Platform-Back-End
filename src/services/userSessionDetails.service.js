@@ -13,57 +13,51 @@ const userSessionDetailsCres = async ({
     nameUser,
     sessionDetailsId,
 }) => {
-    try {
-        // Kiểm tra xem user có tồn tại không
-        const user = await db.User.findOne({
-            where: { name: nameUser },
-        });
-        if (!user) {
-            throw new NotFoundError("User not found.");
-        }
-
-        // Kiểm tra xem sessionDetails có tồn tại không
-        const sessionDetails = await db.SessionDetails.findOne({
-            where: { id: sessionDetailsId },
-            include: [
-                {
-                    model: db.ClassSession,
-                }
-            ]
-        });
-        if (!sessionDetails) {
-            throw new NotFoundError("SessionDetails not found.");
-        }
-
-        // Kiểm tra xem enrollment có tồn tại không
-        const enrollmentss = await db.Enrollment.findOne({
-            where: {
-                userId: user.id,
-                classSessionId: sessionDetails.ClassSession.id
-            },
-        });
-        let enrollmentId;
-
-        if (!enrollmentss) {
-            const enrollment = await createEnrollment({
-                userId: user.id,
-                classSessionId: sessionDetails.ClassSession.id
-            })
-            enrollmentId = enrollment.id
-        }
-        enrollmentId = enrollmentss.id;
-
-        // Tạo SessionDetail mới
-        const sessionDetail = await db.UserSessionDetails.create({
-            enrollmentId,
-            sessionDetailsId
-        });
-
-
-        return sessionDetail;
-    } catch (error) {
-        return error.message;
+    // Kiểm tra xem user có tồn tại không
+    const user = await db.User.findOne({
+        where: { name: nameUser },
+    });
+    if (!user) {
+        throw new NotFoundError("User not found.");
     }
+
+    // Kiểm tra xem sessionDetails có tồn tại không
+    const sessionDetails = await db.SessionDetails.findOne({
+        where: { id: sessionDetailsId },
+        include: [
+            {
+                model: db.ClassSession,
+            }
+        ]
+    });
+    if (!sessionDetails) {
+        throw new NotFoundError("SessionDetails not found.");
+    }
+
+    // Kiểm tra xem enrollment có tồn tại không
+    const enrollmentss = await db.Enrollment.findOne({
+        where: {
+            userId: user.id,
+            classSessionId: sessionDetails.ClassSession.id
+        },
+    });
+    let enrollmentId;
+
+    if (!enrollmentss) {
+        const enrollment = await createEnrollment({
+            userId: user.id,
+            classSessionId: sessionDetails.ClassSession.id
+        })
+        enrollmentId = enrollment.id
+    }
+    enrollmentId = enrollmentss.id;
+
+    // Tạo SessionDetail mới
+    const sessionDetail = await db.UserSessionDetails.create({
+        enrollmentId,
+        sessionDetailsId
+    });
+
 };
 
 // Liệt kê tất cả userSessionDetails
@@ -186,8 +180,69 @@ const userSessionDetailsDeletes = async ({ ids }) => {
     }
 };
 
+const createMultipleUserSessionDetails = async (dataArray) => {
+    try {
+        // Lặp qua từng phần tử trong dataArray
+        for (const data of dataArray) {
+            const { nameUser, sessionDetailsId } = data;
+
+            // Kiểm tra xem user có tồn tại không
+            const user = await db.User.findOne({
+                where: { name: nameUser },
+            });
+            if (!user) {
+                throw new NotFoundError(`User ${nameUser} not found.`);
+            }
+
+            // Kiểm tra xem sessionDetails có tồn tại không
+            const sessionDetails = await db.SessionDetails.findOne({
+                where: { id: sessionDetailsId },
+                include: [
+                    {
+                        model: db.ClassSession,
+                    }
+                ]
+            });
+            if (!sessionDetails) {
+                throw new NotFoundError(`SessionDetails ${sessionDetailsId} not found.`);
+            }
+
+            // Kiểm tra xem enrollment có tồn tại không
+            const enrollment = await db.Enrollment.findOne({
+                where: {
+                    userId: user.id,
+                    classSessionId: sessionDetails.ClassSession.id
+                },
+            });
+
+            let enrollmentId;
+
+            if (!enrollment) {
+                const newEnrollment = await createEnrollment({
+                    userId: user.id,
+                    classSessionId: sessionDetails.ClassSession.id
+                });
+                enrollmentId = newEnrollment.id;
+            } else {
+                enrollmentId = enrollment.id;
+            }
+
+            // Tạo UserSessionDetails mới
+            const sessionDetail = await db.UserSessionDetails.create({
+                enrollmentId,
+                sessionDetailsId
+            });
+        }
+    } catch (error) {
+        return error.message;
+    }
+};
+
+
 module.exports = {
     userSessionDetailsCres,
     userSessionDetailsLists,
-    userSessionDetailsDeletes
+    userSessionDetailsDeletes,
+    createMultipleUserSessionDetails,
+
 };

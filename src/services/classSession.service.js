@@ -38,8 +38,6 @@ const createClassSession = async ({
                 name: name,
                 subjectId: subject.id,
                 semesterId: semester.id,
-                fromDate,
-                endDate,
                 capacity,
             },
         });
@@ -58,9 +56,6 @@ const createClassSession = async ({
             numOfSessionAWeek,
             capacity,
         });
-
-
-
         return classSession;
     } catch (error) {
         return error.message;
@@ -167,6 +162,12 @@ const listClassSessions = async ({ filters, sort, limit, offset }) => {
     }
 };
 
+const listClassSessionsdat = async () => {
+    const classSession = await db.ClassSession.findAll();
+    return classSession;
+
+};
+
 // Xóa một ClassSession
 const deleteClassSession = async ({ ids }) => {
     try {
@@ -237,59 +238,53 @@ const updateClassSession = async ({
 };
 
 // Tạo mới hàng loạt ClassSessions
-const createMultipleClassSessions = async (classSessionArray) => {
-    try {
-        // Kiểm tra xem các subject và semester có tồn tại không
-        for (const session of classSessionArray) {
-            const subject = await db.Subject.findByPk(session.subjectId);
-            if (!subject) {
-                throw new NotFoundError(
-                    `Subject with ID ${session.subjectId} not found.`
-                );
-            }
+const createMultipleClassSessions = async (classSessionsArray) => {
+    // Kiểm tra và tạo từng class session
+    for (const session of classSessionsArray) {
+        const { name, nameSubject, nameSemester, fromDate, endDate, numOfSessionAWeek, capacity } = session;
 
-            const semester = await db.Semester.findByPk(session.semesterId);
-            if (!semester) {
-                throw new NotFoundError(
-                    `Semester with ID ${session.semesterId} not found.`
-                );
-            }
+        // Kiểm tra xem subject có tồn tại không
+        const subject = await db.Subject.findOne({
+            where: { name: nameSubject },
+        });
+        if (!subject) {
+            throw new BadRequestError(`Subject ${nameSubject} not found.`);
         }
 
-        // Kiểm tra các ClassSession đã tồn tại không
-        const existingClassSessions = await Promise.all(
-            classSessionArray.map(async (session) => {
-                return await db.ClassSession.findOne({
-                    where: {
-                        subjectId: session.subjectId,
-                        semesterId: session.semesterId,
-                        fromDate: session.fromDate,
-                        endDate: session.endDate,
-                    },
-                });
-            })
-        );
-
-        const duplicates = existingClassSessions.filter(Boolean);
-        if (duplicates.length > 0) {
-            throw new BadRequestError(
-                `ClassSession(s) already exists with subjectId: ${duplicates
-                    .map((s) => s.subjectId)
-                    .join(", ")}`
-            );
+        // Kiểm tra xem semester có tồn tại không
+        const semester = await db.Semester.findOne({
+            where: { name: nameSemester },
+        });
+        if (!semester) {
+            throw new BadRequestError(`Semester ${nameSemester} not found.`);
         }
 
-        // Tạo mới hàng loạt ClassSessions
-        const classSessions = await db.ClassSession.bulkCreate(
-            classSessionArray,
-            { validate: true }
-        );
+        // Kiểm tra xem classSession đã tồn tại chưa
+        const existingClassSession = await db.ClassSession.findOne({
+            where: {
+                name,
+                subjectId: subject.id,
+                semesterId: semester.id,
+                capacity,
+            },
+        });
+        if (existingClassSession) {
+            throw new BadRequestError("ClassSession already exists.");
+        }
 
-        return classSessions;
-    } catch (error) {
-        return error.message;
+        // Tạo ClassSession mới
+        const classSession = await db.ClassSession.create({
+            name,
+            subjectId: subject.id,
+            semesterId: semester.id,
+            fromDate,
+            endDate,
+            numOfSessionAWeek,
+            capacity,
+        });
     }
 };
+
 
 const getUserSpecificClassSession = async ({ userId, classSessionId }) => {
     try {
@@ -392,4 +387,5 @@ module.exports = {
     updateClassSession,
     createMultipleClassSessions,
     getUserSpecificClassSession,
+    listClassSessionsdat,
 };

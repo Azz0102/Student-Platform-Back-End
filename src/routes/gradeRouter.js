@@ -9,6 +9,6 @@ router.post("/", asyncHandler(gradeController.newGrade)); // Tạo mới một g
 router.get("/", asyncHandler(gradeController.gradeList)); // Liệt kê tất cả grade
 router.delete("/", asyncHandler(gradeController.gradeDelete)); // Xóa một grade
 // router.put("/:id", asyncHandler(subjectController.subjectUpdate)); // Cập nhật grade
-// router.post("/bulk", asyncHandler(subjectController.newSubjectsBulk)); // Tạo mới hàng loạt grade
+router.post("/bulk", asyncHandler(gradeController.newGradesBulks)); // Tạo mới hàng loạt grade
 
 module.exports = router;

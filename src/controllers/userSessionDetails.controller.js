@@ -3,7 +3,8 @@
 const {
     userSessionDetailsLists,
     userSessionDetailsDeletes,
-    userSessionDetailsCres
+    userSessionDetailsCres,
+    createMultipleUserSessionDetails
 } = require("../services/userSessionDetails.service");
 const { SuccessResponse } = require("../core/success.response");
 
@@ -35,8 +36,16 @@ const userSessionDetailsDelete = async (req, res, next) => {
     }).send(res);
 };
 
+const createMultipleUserSessionDetail = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Created session detail",
+        metadata: await createMultipleUserSessionDetails(req.body),
+    }).send(res);
+};
+
 module.exports = {
     userSessionDetailsCre,
     userSessionDetailsList,
-    userSessionDetailsDelete
+    userSessionDetailsDelete,
+    createMultipleUserSessionDetail
 }

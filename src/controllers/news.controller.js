@@ -13,9 +13,40 @@ const { jwtDecode } = require("jwt-decode");
 const path = require('path');
 
 const newNews = async (req, res, next) => {
+    console.log("req", req.files)
+    const userId = jwtDecode(req.headers["refreshtoken"]).userId;
+    // const userId = 3;
+
+    let fileIds = [];
+
+    const list = req.files.map((item) => {
+        return {
+            name: item.filename
+        }
+    })
+
+    const filePromises = list.map(async (item) => {
+        const file = await db.File.create({
+            userId: userId,
+            name: item.name,
+        });
+        return file.id;
+    });
+    // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
+    fileIds = await Promise.all(filePromises);
+
+
+
     new SuccessResponse({
         message: "created news",
-        metadata: await createNews(req.body),
+        metadata: await createNews({
+            userId,
+            fileIds,
+            classSessionIds: req.body.classSessionIds.map((item) => {
+                return item.id;
+            }),
+            ...req.body
+        }),
     }).send(res);
 };
 

@@ -4,7 +4,8 @@ const { SuccessResponse } = require("../core/success.response");
 const {
     gradeLists,
     gradeDeletes,
-    newGrades
+    newGrades,
+    newGradesBulk
 } = require("../services/grade.service");
 
 const newGrade = async (req, res, next) => {
@@ -42,15 +43,17 @@ const gradeDelete = async (req, res, next) => {
 //     }).send(res);
 // };
 
-// const newSubjectsBulk = async (req, res, next) => {
-//     new SuccessResponse({
-//         message: "Created multiple subjects",
-//         metadata: await createMultipleSubjects(req.body),
-//     }).send(res);
-// };
+const newGradesBulks = async (req, res, next) => {
+    new SuccessResponse({
+        message: "Created multiple subjects",
+        metadata: await newGradesBulk(req.body),
+    }).send(res);
+};
 
 module.exports = {
     newGrade,
     gradeList,
-    gradeDelete
+    gradeDelete,
+    newGradesBulks,
+
 };

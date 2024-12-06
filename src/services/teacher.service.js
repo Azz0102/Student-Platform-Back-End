@@ -12,7 +12,6 @@ const createTeacher = async ({ name, email, dateOfBirth }) => {
         if (existingTeacher) {
             throw new BadRequestError("Teacher already exists.");
         }
-
         // Tạo Teacher mới
         const teacher = await db.Teacher.create({ name, email, dateOfBirth });
         return teacher;

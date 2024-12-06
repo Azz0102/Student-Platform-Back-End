@@ -10,8 +10,6 @@ const createSessionDetail = async ({
     nameTeacher,
     startTime,
     numOfHour,
-    dayOfWeek,
-    sessionType,
     capacity,
 }) => {
     try {
@@ -39,6 +37,12 @@ const createSessionDetail = async ({
             throw new NotFoundError("Teacher not found.");
         }
 
+        const date = new Date(startTime); // Convert time to Date object
+        const dayIndex = date.getDay(); // Get the day of the week from local time
+
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+
         // Tạo SessionDetail mới
         const sessionDetail = await db.SessionDetails.create({
             classSessionId: classSession.id,
@@ -46,8 +50,8 @@ const createSessionDetail = async ({
             teacherId: teacher.id,
             startTime,
             numOfHour,
-            dayOfWeek,
-            sessionType,
+            dayOfWeek: daysOfWeek[dayIndex],
+            sessionType: classroom.type,
             capacity,
         });
 
@@ -281,50 +285,60 @@ const updateSessionDetail = async ({
 };
 
 // Tạo mới hàng loạt SessionDetails
-const createMultipleSessionDetails = async (sessionDetailArray) => {
-    try {
-        const existingSessionDetails = [];
-        for (const detail of sessionDetailArray) {
-            const { classSessionId, classroomId, teacherId } = detail;
+const createMultipleSessionDetails = async (sessionDetailsArray) => {
+    // Kiểm tra từng sessionDetail và tạo session mới
+    for (const session of sessionDetailsArray) {
+        const { nameClassSession, nameClassroom, nameTeacher, startTime, numOfHour, capacity } = session;
 
-            // Kiểm tra các thông tin cần thiết
-            const classSession = await db.ClassSession.findByPk(classSessionId);
-            if (!classSession) {
-                existingSessionDetails.push(
-                    `ClassSession ID ${classSessionId} not found.`
-                );
-            }
-
-            const classroom = await db.Classroom.findByPk(classroomId);
-            if (!classroom) {
-                existingSessionDetails.push(
-                    `Classroom ID ${classroomId} not found.`
-                );
-            }
-
-            const teacher = await db.Teacher.findByPk(teacherId);
-            if (!teacher) {
-                existingSessionDetails.push(
-                    `Teacher ID ${teacherId} not found.`
-                );
-            }
+        // Kiểm tra xem classSession có tồn tại không
+        const classSession = await db.ClassSession.findOne({
+            where: { name: nameClassSession },
+        });
+        if (!classSession) {
+            throw new NotFoundError(`ClassSession ${nameClassSession} not found.`);
         }
 
-        if (existingSessionDetails.length > 0) {
-            throw new BadRequestError(existingSessionDetails.join(", "));
+        // Kiểm tra xem classroom có tồn tại không
+        const classroom = await db.Classroom.findOne({
+            where: { name: nameClassroom },
+        });
+        if (!classroom) {
+            throw new NotFoundError(`Classroom ${nameClassroom} not found.`);
         }
 
-        // Tạo mới hàng loạt SessionDetails
-        const sessionDetails = await db.SessionDetails.bulkCreate(
-            sessionDetailArray,
-            { validate: true }
-        );
+        // Kiểm tra xem teacher có tồn tại không
+        const teacher = await db.Teacher.findOne({
+            where: { name: nameTeacher },
+        });
+        if (!teacher) {
+            throw new NotFoundError(`Teacher ${nameTeacher} not found.`);
+        }
 
-        return sessionDetails;
-    } catch (error) {
-        return error.message;
+        const date = new Date(startTime); // Convert time to Date object
+        const dayIndex = date.getDay(); // Get the day of the week from local time
+
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+        // Tạo SessionDetail mới
+        const sessionDetail = await db.SessionDetails.create({
+            classSessionId: classSession.id,
+            classroomId: classroom.id,
+            teacherId: teacher.id,
+            startTime,
+            numOfHour,
+            dayOfWeek: daysOfWeek[dayIndex],
+            sessionType: classroom.type,
+            capacity,
+        });
+
+        // Cập nhật số buổi học trong tuần của ClassSession
+        classSession.numOfSessionAWeek += 1;
+        await classSession.save();
     }
+
+    return { message: "All session details created successfully." };
 };
+
 
 const getAllUserSessionDetails = async ({ userId }) => {
     try {

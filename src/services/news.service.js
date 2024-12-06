@@ -17,6 +17,8 @@ const createNews = async ({
     type = "EVENT-002",
 }) => {
     try {
+        console.log('classSessionIds', classSessionIds);
+
         // Validate user existence
         const user = await db.User.findByPk(userId);
         if (!user) {
@@ -34,8 +36,34 @@ const createNews = async ({
             type,
         });
 
-        // Create associations with class sessions if provided
-        if (classSessionIds.length > 0) {
+        // Create associations with class sessions if provid
+        if (fileIds.length > 0) {
+            const newsFile = fileIds.map((fileId) => ({
+                newsId: news.id,
+                fileId,
+            }));
+            await db.NewsFile.bulkCreate(newsFile);
+        }
+
+        if (isGeneralSchoolNews) {
+            console.log("phamducdat")
+            const noti = await pushNotiToSystem({
+                senderId: news.id,
+                noti_content: name,
+                type,
+            });
+
+            // get all subscription
+
+            await publishMessage({
+                exchangeName: "coke_studio",
+                bindingKey: "coke_studio",
+                message: content, // { content, title, subscription}
+                type,
+                classSessionIds,
+                id: news.id,
+            });
+        } else {
             const newsClassSessions = classSessionIds.map((classSessionId) => ({
                 newsId: news.id,
                 classSessionId,
@@ -57,37 +85,7 @@ const createNews = async ({
                 classSessionIds,
                 id: news.id,
             });
-
-            // emit classSession for noti
-        } // Create associations with class sessions if provided
-
-        if (fileIds.length > 0) {
-            const newsFile = fileIds.map((fileId) => ({
-                newsId: news.id,
-                fileId,
-            }));
-            await db.NewsFile.bulkCreate(newsFile);
         }
-
-        if (isGeneralSchoolNews) {
-            const noti = await pushNotiToSystem({
-                senderId: news.id,
-                noti_content: name,
-                type,
-            });
-
-            // get all subscription
-
-            await publishMessage({
-                exchangeName: "coke_studio",
-                bindingKey: "coke_studio",
-                message: content, // { content, title, subscription}
-                type,
-                classSessionIds,
-                id: news.id,
-            });
-        }
-
         return news;
     } catch (error) {
         return error.message;

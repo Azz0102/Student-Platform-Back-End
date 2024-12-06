@@ -207,23 +207,50 @@ const updateClassroom = async ({ classroomId, amphitheaterId, name, capacity }) 
 // Tạo mới hàng loạt classrooms
 const createMultipleClassrooms = async (classroomArray) => {
     try {
-        // Kiểm tra các classroom đã tồn tại không
-        const classroomNames = classroomArray.map(classroom => classroom.name);
-        const amphitheaterId = classroomArray[0].amphitheaterId; // Giả sử amphitheaterId là giống nhau cho tất cả
-        const existingClassrooms = await db.Classroom.findAll({
-            where: {
-                name: classroomNames,
-                amphitheaterId,
-            },
+        // Lấy danh sách tên amphitheater từ danh sách lớp học
+        const amphitheaterNames = [...new Set(classroomArray.map(c => c.nameAmphitheater))];
+
+        // Kiểm tra sự tồn tại của các amphitheater
+        const amphitheaters = await db.Amphitheater.findAll({
+            where: { name: amphitheaterNames },
         });
 
-        if (existingClassrooms.length > 0) {
-            const existingNames = existingClassrooms.map(classroom => classroom.name);
-            throw new BadRequestError(`Classroom(s) already exists: ${existingNames.join(", ")}`);
+        const amphitheaterMap = amphitheaters.reduce((acc, amphitheater) => {
+            acc[amphitheater.name] = amphitheater.id;
+            return acc;
+        }, {});
+
+        // Lọc ra những lớp học không có amphitheater tồn tại
+        const invalidClassrooms = classroomArray.filter(classroom => !amphitheaterMap[classroom.nameAmphitheater]);
+
+        if (invalidClassrooms.length > 0) {
+            const invalidNames = invalidClassrooms.map(c => c.name);
+            throw new NotFoundError(`Amphitheater(s) not found for classrooms: ${invalidNames.join(", ")}`);
         }
 
-        // Tạo mới hàng loạt classrooms
-        const classrooms = await db.Classroom.bulkCreate(classroomArray, { validate: true });
+        // Lọc ra những lớp học đã tồn tại
+        const existingClassrooms = await db.Classroom.findAll({
+            where: { name: classroomArray.map(c => c.name) },
+        });
+
+        const existingNames = existingClassrooms.map(c => c.name);
+        const classroomsToCreate = classroomArray.filter(classroom => !existingNames.includes(classroom.name));
+
+        // Nếu không có lớp học nào mới, trả về thông báo
+        if (classroomsToCreate.length === 0) {
+            return { message: "All classrooms already exist." };
+        }
+
+        // Tạo hàng loạt lớp học mới
+        const classrooms = await db.Classroom.bulkCreate(
+            classroomsToCreate.map(classroom => ({
+                amphitheaterId: amphitheaterMap[classroom.nameAmphitheater],
+                type: classroom.type,
+                name: classroom.name,
+                capacity: classroom.capacity,
+            })),
+            { validate: true }
+        );
 
         return classrooms;
     } catch (error) {
