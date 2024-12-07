@@ -50,7 +50,7 @@ module.exports = (sequelize) => {
                 allowNull: false,
             },
             content: {
-                type: DataTypes.TEXT,
+                type: DataTypes.TEXT('long'),
                 allowNull: false,
                 comment: "Content is in HTML format",
             },

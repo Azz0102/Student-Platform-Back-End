@@ -25,7 +25,7 @@ module.exports = {
                 allowNull: false,
             },
             content: {
-                type: Sequelize.TEXT,
+                type: Sequelize.TEXT('long'),
                 allowNull: false,
                 comment: "Content is in Markdown format",
             },

@@ -31,12 +31,8 @@ const transporter = nodemailer.createTransport({
 });
 
 const handleSendMail = async (val) => {
-    try {
-        await transporter.sendMail(val);
-        return true;
-    } catch (error) {
-        return error.message;
-    }
+    await transporter.sendMail(val);
+    return true;
 };
 
 class UserService {

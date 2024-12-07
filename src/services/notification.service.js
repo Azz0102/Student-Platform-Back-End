@@ -14,98 +14,85 @@ const pushNotiToSystem = async ({
     noti_content,
     classSessionIds,
 }) => {
-    try {
-        // Create the notification
-        const newNoti = await db.Notification.create({
-            noti_type: type,
-            noti_content,
-            noti_sender_id: senderId,
+    // Create the notification
+    const newNoti = await db.Notification.create({
+        noti_type: type,
+        noti_content,
+        noti_sender_id: senderId,
+    });
+
+    console.log('noti')
+
+    let users;
+
+    if (classSessionIds && classSessionIds.length > 0) {
+        // Find unique users enrolled in the specified class sessions
+        users = await db.User.findAll({
+            include: {
+                model: db.Enrollment,
+                where: { classSessionId: classSessionIds },
+            },
+            attributes: ["id"],
+            group: ["User.id"], // Ensures no duplicate users
         });
-
-        console.log('noti')
-
-        let users;
-
-        if (classSessionIds && classSessionIds.length > 0) {
-            // Find unique users enrolled in the specified class sessions
-            users = await db.User.findAll({
-                include: {
-                    model: db.Enrollment,
-                    where: { classSessionId: classSessionIds },
-                },
-                attributes: ["id"],
-                group: ["User.id"], // Ensures no duplicate users
-            });
-        } else {
-            // Get all users for other notification types
-            users = await db.User.findAll({ attributes: ["id"] });
-        }
-
-        // Prepare NotiUser entries
-        const notiUserEntries = users.map((user) => ({
-            userId: user.id,
-            notiId: newNoti.id,
-            read: false, // By default, mark the notification as unread
-        }));
-
-        // Bulk create NotiUser entries
-        await db.NotiUser.bulkCreate(notiUserEntries);
-
-        // Push the notification to the system
-        pushNoti(newNoti, notiUserEntries);
-
-        return newNoti;
-    } catch (error) {
-        return error.message;
+    } else {
+        // Get all users for other notification types
+        users = await db.User.findAll({ attributes: ["id"] });
     }
+
+    // Prepare NotiUser entries
+    const notiUserEntries = users.map((user) => ({
+        userId: user.id,
+        notiId: newNoti.id,
+        read: false, // By default, mark the notification as unread
+    }));
+
+    // Bulk create NotiUser entries
+    await db.NotiUser.bulkCreate(notiUserEntries);
+
+    // Push the notification to the system
+    pushNoti(newNoti, notiUserEntries);
+
+    return newNoti;
 };
 
 const listNotiByUser = async ({ userId = 1 }) => {
-    try {
-        const notifications = await db.Notification.findAll({
-            include: [
-                {
-                    model: db.NotiUser,
-                    as: "NotiUsers", // Use the correct alias as per the association definition
-                    where: { userId },
-                    attributes: ["isRead", "id"], // Correct the field name to 'read' if it matches your schema
-                    required: true,
-                },
-            ],
-            attributes: [
-                "id",
-                "noti_type",
-                "noti_content",
-                "noti_sender_id",
-                "createdAt",
-                "updatedAt",
-            ],
-            order: [["createdAt", "DESC"]], // Order by newest notifications first
-        });
+    const notifications = await db.Notification.findAll({
+        include: [
+            {
+                model: db.NotiUser,
+                as: "NotiUsers", // Use the correct alias as per the association definition
+                where: { userId },
+                attributes: ["isRead", "id"], // Correct the field name to 'read' if it matches your schema
+                required: true,
+            },
+        ],
+        attributes: [
+            "id",
+            "noti_type",
+            "noti_content",
+            "noti_sender_id",
+            "createdAt",
+            "updatedAt",
+        ],
+        order: [["createdAt", "DESC"]], // Order by newest notifications first
+    });
 
-        return notifications;
-    } catch (error) {
-        console.error("Error fetching user notifications: ", error);
-        throw error;
-    }
+    return notifications;
 };
 
 const updateNotiUser = async ({ id }) => {
-    try {
-        // Update the NotiUser record
-        const [updatedCount] = await db.NotiUser.update(
-            { isRead: true }, // New value for isRead
-            {
-                where: {
-                    id: id, // Condition to find the specific NotiUser
-                },
-            }
-        );
+    // Update the NotiUser record
+    const [updatedCount] = await db.NotiUser.update(
+        { isRead: true }, // New value for isRead
+        {
+            where: {
+                id: id, // Condition to find the specific NotiUser
+            },
+        }
+    );
 
-        return;
-    } catch (error) {
-        return error.message;
-    }
+    return;
 };
 
 const publishMessage = async ({
