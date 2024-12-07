@@ -35,14 +35,20 @@ const newNews = async (req, res, next) => {
     // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
     fileIds = await Promise.all(filePromises);
 
+    console.log("classSessionIds", req.body)
 
+    const classSessionIds = req.body.classSessionIds;
+    if (classSessionIds === "undefined") {
+        console.log("phamducdat", typeof classSessionIds)
+
+    }
 
     new SuccessResponse({
         message: "created news",
         metadata: await createNews({
             userId,
             fileIds,
-            classSessionIds: req.body.classSessionIds.map((item) => {
+            classSessionIds: (req.body.classSessionIds == "undefined" || !req.body.classSessionIds) ? [] : req.body.classSessionIds.map((item) => {
                 return item.id;
             }),
             ...req.body

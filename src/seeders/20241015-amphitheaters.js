@@ -19,6 +19,30 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                name: "GĐ3",
+                location: "8 Tôn Thất Thuyết",
+                latitude: 10.762500,
+                longitude: 106.662000,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "E3",
+                location: "144 Xuân Thuỷ",
+                latitude: 10.762622,
+                longitude: 106.660172,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: "E5",
+                location: "144 Xuân Thuỷ",
+                latitude: 10.762622,
+                longitude: 106.660172,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         ]);
     },
 

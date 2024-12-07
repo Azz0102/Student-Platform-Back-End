@@ -9,30 +9,26 @@ class KeyTokenService {
         refreshToken,
         device,
     }) => {
-        try {
-            const [tokens, created] = await db.KeyStore.findOrCreate({
-                where: { userId: userId, device: device },
-                defaults: {
-                    publicKey: publicKey,
-                    privateKey: privateKey,
-                    refreshToken: refreshToken,
-                    device: device,
-                },
+        const [tokens, created] = await db.KeyStore.findOrCreate({
+            where: { userId: userId, device: device },
+            defaults: {
+                publicKey: publicKey,
+                privateKey: privateKey,
+                refreshToken: refreshToken,
+                device: device,
+            },
+        });
+
+        if (!created) {
+            await tokens.update({
+                publicKey: publicKey,
+                privateKey: privateKey,
+                refreshToken: refreshToken,
+                device: device,
             });
-
-            if (!created) {
-                await tokens.update({
-                    publicKey: publicKey,
-                    privateKey: privateKey,
-                    refreshToken: refreshToken,
-                    device: device,
-                });
-            }
-
-            return tokens ? tokens.publicKey : null;
-        } catch (error) {
-            return error.message;
         }
+
+        return tokens ? tokens.publicKey : null;
     };
 
     static findByUserId = async (userId) => {

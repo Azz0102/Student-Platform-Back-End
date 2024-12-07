@@ -52,12 +52,12 @@ module.exports = {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
-            {
-                enrollmentId: 4,
-                sessionDetailsId: 8,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
+            // {
+            //     enrollmentId: 4,
+            //     sessionDetailsId: 8,
+            //     createdAt: new Date(),
+            //     updatedAt: new Date(),
+            // },
             {
                 enrollmentId: 4,
                 sessionDetailsId: 2,

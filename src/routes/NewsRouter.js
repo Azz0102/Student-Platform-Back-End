@@ -39,7 +39,10 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+});
 router.post("", upload.array("files"), asyncHandler(newNews)); //grantAccess("createAny", "news")
 router.get("", asyncHandler(newsList)); //grantAccess("readAny", "news")
 router.get("/:id", asyncHandler(newsListByUser)); //grantAccess("readOwn", "news")

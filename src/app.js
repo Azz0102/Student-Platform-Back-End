@@ -11,6 +11,8 @@ const multer = require("multer");
 
 require("dotenv").config();
 
+app.use(express.json({ limit: '10mb' }));
+
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());

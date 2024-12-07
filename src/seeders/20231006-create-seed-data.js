@@ -4,59 +4,53 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.bulkInsert("subjects", [
             {
-                name: "INT",
-                description: "Mathematics.",
+                name: "Giải Tích 1",
+                description: "Môn học về các khái niệm cơ bản trong toán học, bao gồm giới hạn, đạo hàm và tích phân.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "FIXED",
-                description: "Physics.",
+                name: "Cơ Học",
+                description: "Môn học nghiên cứu về các lực và chuyển động của vật thể.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "UEH",
-                description: "Chemistry.",
+                name: "Hóa Học Đại Cương",
+                description: "Môn học giới thiệu các nguyên lý cơ bản về cấu trúc phân tử và các phản ứng hóa học.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "BIO_2021",
-                description: "Biology.",
+                name: "Sinh Học Đại Cương",
+                description: "Môn học nghiên cứu về các khái niệm cơ bản trong sinh học, bao gồm di truyền học, sinh lý học và sinh thái học.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "HIS_2020",
-                description: "History.",
+                name: "Lịch Sử Thế Giới",
+                description: "Môn học nghiên cứu về các sự kiện quan trọng trong lịch sử thế giới từ cổ đại đến hiện đại.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
-        ]);
+        ]
+        );
 
         await queryInterface.bulkInsert("semester", [
             {
-                name: "Hoc Ky I Nam 2024",
+                name: "Học Kỳ I 2023-2024",
                 fromDate: new Date("2024-01-01"),
                 endDate: new Date("2024-05-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "Hoc Ky II Nam 2024",
+                name: "Học Kỳ II 2023-2024",
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-12-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            },
-            {
-                name: "Hoc Ky I Nam 2025",
-                fromDate: new Date("2025-01-01"),
-                endDate: new Date("2025-05-31"),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
+            }
         ]);
 
         const subjects = await queryInterface.sequelize.query(
@@ -72,8 +66,8 @@ module.exports = {
         // Tạo danh sách các lớp học (INT2001 - INT2080)
         const dynamicClassSessions = Array.from({ length: 80 }, (_, i) => ({
             name: `INT${2001 + i}`, // Tạo tên từ INT2001 đến INT2080
-            subjectId: subjectIds[0], // Mathematics
-            semesterId: semesterIds[1], // Semester 1
+            subjectId: subjectIds[i % 4], // Mathematics
+            semesterId: semesterIds[1], // Semester 2
             fromDate: new Date("2024-01-01"),
             endDate: new Date("2024-04-30"),
             numOfSessionAWeek: 1,
@@ -90,9 +84,9 @@ module.exports = {
             "FIXED_L2",
             "FIXED_T1",
             "FIXED_T2",
-        ].map((name) => ({
+        ].map((name, i) => ({
             name,
-            subjectId: subjectIds[1], // Physics
+            subjectId: subjectIds[i % 4], // Physics
             semesterId: semesterIds[1], // Semester 2
             fromDate: new Date("2024-06-01"),
             endDate: new Date("2024-09-30"),
@@ -103,8 +97,8 @@ module.exports = {
         }));
 
         const list = [
-            "LIST",
-            "LIST2",
+            "INT1001",
+            "INT1002",
         ].map((name) => ({
             name,
             subjectId: subjectIds[1], // Physics
