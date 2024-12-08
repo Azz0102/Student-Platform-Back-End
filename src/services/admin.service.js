@@ -1,7 +1,7 @@
 "use strict";
 
 const { Op } = require("sequelize");
-const { BadRequestError, NotFoundError } = require("../core/error.response");
+const { BadRequestError, NotFoundError, ConflictRequestError } = require("../core/error.response");
 const Scheduler = require("../helpers/schedulingAlgorithm");
 const { getInfoData } = require("../utils/index");
 const db = require("../models");
@@ -30,7 +30,7 @@ const schedulingClassSession = async ({
     const { schedule, unscheduledSessions } = scheduler.generateSchedule();
 
     if (unscheduledSessions.length !== 0) {
-        throw ConflictRequestError("Cannot schedule");
+        throw new ConflictRequestError("Cannot schedule");
     }
 
     function cleanSchedule(schedule) {
