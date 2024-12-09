@@ -16,7 +16,7 @@ const createNews = async ({
     fileIds = [],
     type = "EVENT-002",
 }) => {
-    console.log("classSessionIds", typeof classSessionIds);
+    console.log("classSessionIds", classSessionIds);
 
     // Validate user existence
     const user = await db.User.findByPk(userId);

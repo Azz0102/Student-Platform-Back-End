@@ -50,7 +50,7 @@ const newNews = async (req, res, next) => {
                 req.body.classSessionIds == "undefined" ||
                 !req.body.classSessionIds
                     ? []
-                    : JSON.parse(req.body.classSessionIds).map((item) => {
+                    : classSessionIds.map((item) => {
                           return item.id;
                       }),
             ...req.body,
