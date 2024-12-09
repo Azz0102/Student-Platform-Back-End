@@ -7,7 +7,7 @@ const subjectController = require("../controllers/subject.controller");
 
 router.post("/", asyncHandler(subjectController.newSubject)); // Tạo mới một subject
 router.get("/", asyncHandler(subjectController.subjectList)); // Liệt kê tất cả subjects
-router.delete("/:id", asyncHandler(subjectController.subjectDelete)); // Xóa một subject
+router.delete("/", asyncHandler(subjectController.subjectDelete)); // Xóa một subject
 router.put("/:id", asyncHandler(subjectController.subjectUpdate)); // Cập nhật subject
 router.post("/bulk", asyncHandler(subjectController.newSubjectsBulk)); // Tạo mới hàng loạt subjects
 

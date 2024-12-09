@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
                     key: "id",
                 },
                 onUpdate: "CASCADE",
-                onDelete: "SET NULL",
+                onDelete: "CASCADE",
             },
             value: {
                 type: DataTypes.TEXT,

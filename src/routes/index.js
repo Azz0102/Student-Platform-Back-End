@@ -17,6 +17,9 @@ const SessionDetailsRouter = require("./sessionDetailsRouter");
 const EnrollmentRouter = require("./enrollmentRouter");
 const NotiRouter = require("./NotiRouter");
 const SubscriptionRouter = require("./SubscriptionRouter");
+const GradeRouter = require("./gradeRouter");
+const UserSessionDetailsRouter = require("./UserSessionDetailsRouter");
+
 
 const routes = (app) => {
     app.use("/api/user", UserRouter);
@@ -34,9 +37,11 @@ const routes = (app) => {
     app.use("/api/classroom", ClassroomRouter);
     app.use("/api/subject", SubjectRouter);
     app.use("/api/semester", SemesterRouter);
-    app.use("/api/class_session", ClassSessionRouter);
+    app.use("/api/class-session", ClassSessionRouter);
     app.use("/api/teacher", TeacherRouter);
     app.use("/api/session_details", SessionDetailsRouter);
+    app.use("/api/grade", GradeRouter);
+    app.use("/api/user_session_details", UserSessionDetailsRouter);
 
     app.use("/api/enrollment", EnrollmentRouter);
     app.use("/api/subscription", SubscriptionRouter);

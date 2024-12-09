@@ -8,7 +8,7 @@ module.exports = (sequelize) => {
                 onDelete: "CASCADE",
             });
 
-            News.belongsTo(models.User, { foreignKey: "userId", as: "Author" });
+            News.belongsTo(models.User, { foreignKey: "userId" });
 
             News.hasMany(models.Notification, {
                 foreignKey: "noti_senderId",
@@ -50,7 +50,7 @@ module.exports = (sequelize) => {
                 allowNull: false,
             },
             content: {
-                type: DataTypes.TEXT,
+                type: DataTypes.TEXT('long'),
                 allowNull: false,
                 comment: "Content is in HTML format",
             },

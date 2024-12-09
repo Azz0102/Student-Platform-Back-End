@@ -18,7 +18,7 @@ module.exports = {
                     key: "id",
                 },
                 onUpdate: "CASCADE",
-                onDelete: "SET NULL",
+                onDelete: "CASCADE",
             },
             semester_id: {
                 type: Sequelize.INTEGER,
@@ -28,7 +28,7 @@ module.exports = {
                     key: "id",
                 },
                 onUpdate: "CASCADE",
-                onDelete: "SET NULL",
+                onDelete: "CASCADE",
             },
             value: {
                 type: Sequelize.INTEGER,

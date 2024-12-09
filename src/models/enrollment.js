@@ -3,16 +3,19 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
     class Enrollment extends Model {
         static associate(models) {
-            Enrollment.belongsTo(models.User, { foreignKey: "userId" });
+            Enrollment.belongsTo(models.User, {
+                foreignKey: "userId",
+                onDelete: "CASCADE",
+            });
             Enrollment.belongsTo(models.ClassSession, {
                 foreignKey: "classSessionId",
+                onDelete: "CASCADE",
             });
             Enrollment.hasMany(models.Message);
-            Enrollment.hasMany(models.SessionDetails, {
-                foreignKey: "classSessionId",
-            });
+            // Enrollment.hasMany(models.SessionDetails, { foreignKey: 'classSessionId' });
             Enrollment.hasMany(models.UserSessionDetails, {
-                foreignKey: "enrollmentId",
+                foreignKey: 'enrollmentId',
+                onDelete: 'CASCADE',
             });
         }
     }

@@ -4,56 +4,53 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.bulkInsert("subjects", [
             {
-                name: "INT_2021",
-                description: "Mathematics.",
+                name: "Giải Tích 1",
+                description: "Môn học về các khái niệm cơ bản trong toán học, bao gồm giới hạn, đạo hàm và tích phân.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "ENU_2020",
-                description: "Physics.",
+                name: "Cơ Học",
+                description: "Môn học nghiên cứu về các lực và chuyển động của vật thể.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "UEH_2020",
-                description: "Chemistry.",
+                name: "Hóa Học Đại Cương",
+                description: "Môn học giới thiệu các nguyên lý cơ bản về cấu trúc phân tử và các phản ứng hóa học.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "BIO_2021",
-                description: "Biology.",
+                name: "Sinh Học Đại Cương",
+                description: "Môn học nghiên cứu về các khái niệm cơ bản trong sinh học, bao gồm di truyền học, sinh lý học và sinh thái học.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
-                name: "HIS_2020",
-                description: "History.",
+                name: "Lịch Sử Thế Giới",
+                description: "Môn học nghiên cứu về các sự kiện quan trọng trong lịch sử thế giới từ cổ đại đến hiện đại.",
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
-        ]);
+        ]
+        );
 
         await queryInterface.bulkInsert("semester", [
             {
+                name: "Học Kỳ I 2023-2024",
                 fromDate: new Date("2024-01-01"),
                 endDate: new Date("2024-05-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
+                name: "Học Kỳ II 2023-2024",
                 fromDate: new Date("2024-06-01"),
                 endDate: new Date("2024-12-31"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
-            },
-            {
-                fromDate: new Date("2025-01-01"),
-                endDate: new Date("2025-05-31"),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
+            }
         ]);
 
         const subjects = await queryInterface.sequelize.query(
@@ -66,69 +63,59 @@ module.exports = {
         const subjectIds = subjects[0].map((subject) => subject.id);
         const semesterIds = semesters[0].map((semester) => semester.id);
 
-        await queryInterface.bulkInsert("class_sessions", [
-            {
-                name: "INT_2021_1",
-                subjectId: subjectIds[0], // Mathematics
-                semesterId: semesterIds[0], // Semester 1
-                fromDate: new Date("2024-01-01"),
-                endDate: new Date("2024-04-30"),
-                numOfSessionAWeek: 3,
-                capacity: 30,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-            {
-                name: "ENU_2020_1",
-                subjectId: subjectIds[1], // Physics
-                semesterId: semesterIds[1], // Semester 2
-                fromDate: new Date("2024-06-01"),
-                endDate: new Date("2024-09-30"),
-                numOfSessionAWeek: 2,
-                capacity: 25,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-            {
-                name: "UEH_2020_2",
-                subjectId: subjectIds[2], // Chemistry
-                semesterId: semesterIds[0], // Semester 1
-                fromDate: new Date("2024-01-01"),
-                endDate: new Date("2024-04-30"),
-                numOfSessionAWeek: 4,
-                capacity: 20,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-            {
-                name: "BIO_2021_1",
-                subjectId: subjectIds[3], // Biology
-                semesterId: semesterIds[0], // Semester 1
-                fromDate: new Date("2024-01-15"),
-                endDate: new Date("2024-05-15"),
-                numOfSessionAWeek: 2,
-                capacity: 35,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-            {
-                name: "HIS_2020_1",
-                subjectId: subjectIds[4], // History
-                semesterId: semesterIds[1], // Semester 2
-                fromDate: new Date("2024-06-01"),
-                endDate: new Date("2024-10-15"),
-                numOfSessionAWeek: 3,
-                capacity: 40,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-        ]);
+        // Tạo danh sách các lớp học (INT2001 - INT2080)
+        const dynamicClassSessions = Array.from({ length: 80 }, (_, i) => ({
+            name: `INT${2001 + i}`, // Tạo tên từ INT2001 đến INT2080
+            subjectId: subjectIds[i % 4], // Mathematics
+            semesterId: semesterIds[1], // Semester 2
+            fromDate: new Date("2024-01-01"),
+            endDate: new Date("2024-04-30"),
+            numOfSessionAWeek: 1,
+            capacity: 30,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
 
-        const classSessions = await queryInterface.sequelize.query(
-            `SELECT id FROM class_sessions;`
-        );
+        // Thêm các lớp học FIXED
+        const fixedClassSessions = [
+            "FIXED_TL1",
+            "FIXED_TL2",
+            "FIXED_L1",
+            "FIXED_L2",
+            "FIXED_T1",
+            "FIXED_T2",
+        ].map((name, i) => ({
+            name,
+            subjectId: subjectIds[i % 4], // Physics
+            semesterId: semesterIds[1], // Semester 2
+            fromDate: new Date("2024-06-01"),
+            endDate: new Date("2024-09-30"),
+            numOfSessionAWeek: 1,
+            capacity: 25,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
 
-        const classSessionIds = classSessions[0].map((session) => session.id);
+        const list = [
+            "INT1001",
+            "INT1002",
+        ].map((name) => ({
+            name,
+            subjectId: subjectIds[1], // Physics
+            semesterId: semesterIds[0], // Semester 1
+            fromDate: new Date("2024-06-01"),
+            endDate: new Date("2024-09-30"),
+            numOfSessionAWeek: 1,
+            capacity: 25,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
+
+        // Gộp tất cả lớp học
+        const allClassSessions = [...list, ...dynamicClassSessions, ...fixedClassSessions];
+
+        // Chèn dữ liệu vào bảng class_sessions
+        await queryInterface.bulkInsert("class_sessions", allClassSessions);
     },
 
     async down(queryInterface, Sequelize) {

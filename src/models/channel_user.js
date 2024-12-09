@@ -24,6 +24,7 @@ module.exports = (sequelize) => {
                     model: "users",
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
             channelId: {
                 type: DataTypes.INTEGER,

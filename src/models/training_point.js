@@ -2,7 +2,7 @@ const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
     class TrainingPoint extends Model {
-        static associate(models) {}
+        static associate(models) { }
     }
 
     TrainingPoint.init(
@@ -22,7 +22,7 @@ module.exports = (sequelize) => {
                     key: "id",
                 },
                 onUpdate: "CASCADE",
-                onDelete: "SET NULL",
+                onDelete: "CASCADE",
             },
             semesterId: {
                 type: DataTypes.INTEGER,
@@ -32,7 +32,7 @@ module.exports = (sequelize) => {
                     key: "id",
                 },
                 onUpdate: "CASCADE",
-                onDelete: "SET NULL",
+                onDelete: "CASCADE",
             },
             value: {
                 type: DataTypes.INTEGER,

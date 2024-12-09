@@ -6,10 +6,12 @@ module.exports = (sequelize) => {
             NewsClassSession.belongsTo(models.News, {
                 foreignKey: 'newsId',
                 as: 'news', // Tên alias để truy cập
+                onDelete: "CASCADE",
             });
             NewsClassSession.belongsTo(models.ClassSession, {
                 foreignKey: 'classSessionId',
                 as: 'classSession', // Tên alias để truy cập
+                onDelete: "CASCADE",
             });
         }
     }

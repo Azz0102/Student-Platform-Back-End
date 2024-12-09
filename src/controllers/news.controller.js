@@ -13,16 +13,59 @@ const { jwtDecode } = require("jwt-decode");
 const path = require('path');
 
 const newNews = async (req, res, next) => {
+    console.log("req", req.files)
+    const userId = jwtDecode(req.headers["refreshtoken"]).userId;
+    // const userId = 3;
+
+    let fileIds = [];
+
+    const list = req.files.map((item) => {
+        return {
+            name: item.filename
+        }
+    })
+
+    const filePromises = list.map(async (item) => {
+        const file = await db.File.create({
+            userId: userId,
+            name: item.name,
+        });
+        return file.id;
+    });
+    // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
+    fileIds = await Promise.all(filePromises);
+
+    console.log("classSessionIds", req.body)
+
+    const classSessionIds = req.body.classSessionIds;
+    if (classSessionIds === "undefined") {
+        console.log("phamducdat", typeof classSessionIds)
+
+    }
+
     new SuccessResponse({
         message: "created news",
-        metadata: await createNews(req.body),
+        metadata: await createNews({
+            userId,
+            fileIds,
+            classSessionIds: (req.body.classSessionIds == "undefined" || !req.body.classSessionIds) ? [] : req.body.classSessionIds.map((item) => {
+                return item.id;
+            }),
+            ...req.body
+        }),
     }).send(res);
 };
 
 const newsList = async (req, res, next) => {
+    const perPage = parseInt(req.query.perPage) || 10
     new SuccessResponse({
-        message: "get list news",
-        metadata: await getListNews(req.body),
+        message: "Get list news",
+        metadata: await getListNews({
+            filters: req.query.filters || "[]",
+            sort: req.query.sort || "[]",
+            limit: perPage,
+            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+        }),
     }).send(res);
 };
 
@@ -43,7 +86,7 @@ const newsUpdate = async (req, res, next) => {
 const newsDelete = async (req, res, next) => {
     new SuccessResponse({
         message: "get list news",
-        metadata: await deleteNews({ newsId: req.params.id }),
+        metadata: await deleteNews(req.body),
     }).send(res);
 };
 

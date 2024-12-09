@@ -16,11 +16,20 @@ const { authenticationV2 } = require("../auth/authUtils");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { grantAccess } = require("../middleware/rbac");
 const multer = require("multer");
+const path = require('path');
+const fs = require('fs');
 
 // router.use(authenticationV2);
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, `${process.env.SAVE_PATH}/newsAttach/`); // Save files to 'uploads' directory
+        const savePath = path.join(process.env.SAVE_PATH, 'newsAttach');
+
+        // Kiểm tra và tạo thư mục nếu chưa tồn tại
+        if (!fs.existsSync(savePath)) {
+            fs.mkdirSync(savePath, { recursive: true });
+        }
+
+        cb(null, savePath);
     },
     filename: (req, file, cb) => {
         // Remove all spaces from the original file name
@@ -30,12 +39,15 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage });
-router.post("", asyncHandler(newNews)); //grantAccess("createAny", "news")
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+});
+router.post("", upload.array("files"), asyncHandler(newNews)); //grantAccess("createAny", "news")
 router.get("", asyncHandler(newsList)); //grantAccess("readAny", "news")
 router.get("/:id", asyncHandler(newsListByUser)); //grantAccess("readOwn", "news")
 router.patch("/:id", asyncHandler(newsUpdate)); //grantAccess("updateAny", "news")
-router.delete("/:id", asyncHandler(newsDelete)); //grantAccess("deleteAny", "news")
+router.delete("/", asyncHandler(newsDelete)); //grantAccess("deleteAny", "news")
 
 router.get("/user/:id", asyncHandler(getUserRelatedNew));
 

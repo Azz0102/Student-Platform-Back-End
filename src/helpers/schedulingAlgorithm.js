@@ -75,6 +75,23 @@ module.exports = class Scheduler {
                 }
             }
         }
+
+        // Pre-schedule constantSessionsFixedTimeLocation
+        for (let session of this.constantSessionsFixedTimeLocation) {
+            const startSlot = this.timeSlots.indexOf(session.detail.startTime);
+            if (
+                startSlot !== -1 &&
+                this.endsBeforeOrAt8PM(startSlot, session.detail.numOfHour)
+            ) {
+                for (let i = 0; i < session.detail.numOfHour; i++) {
+                    const slot = this.timeSlots[startSlot + i];
+                    schedule[session.detail.dayOfWeek][slot][
+                        session.classroom.name
+                    ] = session;
+                }
+            }
+        }
+
         return schedule;
     }
 
@@ -269,20 +286,7 @@ module.exports = class Scheduler {
         this.colorGraph();
         this.assignClassrooms();
 
-        // Schedule constant sessions with fixed time and location
-        for (let session of this.constantSessionsFixedTimeLocation) {
-            if (
-                this.endsBeforeOrAt8PM(
-                    this.timeSlots.indexOf(session.detail.startTime),
-                    session.detail.numOfHour
-                )
-            ) {
-                this.scheduleSession(session, session.detail.dayOfWeek);
-            } else {
-                this.unscheduledSessions.push(session);
-            }
-        }
-
+        // Fixed time and location sessions are already scheduled during initialization.
         return {
             schedule: this.schedule,
             unscheduledSessions: this.unscheduledSessions,

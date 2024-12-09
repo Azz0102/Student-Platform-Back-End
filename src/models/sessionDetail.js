@@ -16,8 +16,10 @@ module.exports = (sequelize) => {
                 foreignKey: "teacherId",
             });
 
+            // SessionDetails.hasMany(models.UserSessionDetails);
             SessionDetails.hasMany(models.UserSessionDetails, {
-                foreignKey: "sessionDetailsId",
+                foreignKey: 'sessionDetailsId',
+                onDelete: 'CASCADE',
             });
         }
     }

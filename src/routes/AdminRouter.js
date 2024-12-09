@@ -3,7 +3,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-    schedulingClassSession,
+    schedulingClassSessionController,
     signUpController,
     signUpMultipleUsersController,
     publish,
@@ -21,14 +21,14 @@ const { authenticationV2 } = require("../auth/authUtils");
 
 router.post(
     "/scheduling",
-    grantAccess("readAny", "classSession"),
-    grantAccess("readAny", "classRoom"),
-    asyncHandler(schedulingClassSession)
+    // grantAccess("readAny", "classSession"),
+    // grantAccess("readAny", "classRoom"),
+    asyncHandler(schedulingClassSessionController)
 );
 
-router.patch(
+router.post(
     "/save-schedule",
-    grantAccess("updateAny", "classSession"),
+    // grantAccess("updateAny", "classSession"),
     asyncHandler(savedSchedule)
 );
 
