@@ -21,11 +21,11 @@ const pushNotiToSystem = async ({
         noti_sender_id: senderId,
     });
 
-    console.log('noti')
-
     let users;
 
-    if (classSessionIds && classSessionIds.length > 0) {
+    if (classSessionIds != "undefined") {
+        console.log("noti");
+
         // Find unique users enrolled in the specified class sessions
         users = await db.User.findAll({
             include: {
@@ -36,6 +36,8 @@ const pushNotiToSystem = async ({
             group: ["User.id"], // Ensures no duplicate users
         });
     } else {
+        console.log("noti1");
+
         // Get all users for other notification types
         users = await db.User.findAll({ attributes: ["id"] });
     }
@@ -111,8 +113,9 @@ const publishMessage = async ({
         }
 
         let userIds;
+        console.log("classSessionIds", classSessionIds);
 
-        if (classSessionIds && classSessionIds.length > 0) {
+        if (classSessionIds != "undefined") {
             // Get unique userIds enrolled in specified class sessions and part of the specified channel
             const enrolledUsersInChannel = await db.Enrollment.findAll({
                 attributes: [
@@ -124,16 +127,21 @@ const publishMessage = async ({
                 where: { classSessionId: { [Op.in]: classSessionIds } },
                 include: [
                     {
-                        model: db.ChannelUser,
+                        model: db.User, // Ensure this relationship exists
                         required: true,
                         include: [
                             {
-                                model: db.Channel,
-                                where: { name: channelName },
-                                attributes: [],
+                                model: db.ChannelUser, // Ensure User has ChannelUser association
+                                required: true,
+                                include: [
+                                    {
+                                        model: db.Channel,
+                                        where: { name: channelName },
+                                        attributes: [],
+                                    },
+                                ],
                             },
                         ],
-                        attributes: [],
                     },
                 ],
                 raw: true,
@@ -180,7 +188,7 @@ const publishMessage = async ({
             raw: false,
         });
 
-        console.log("subscriptions", subscriptions[0].KeyStore.User);
+        // console.log("subscriptions", subscriptions[0].KeyStore.User);
 
         const newMessage = {
             type,
