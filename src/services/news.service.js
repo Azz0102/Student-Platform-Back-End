@@ -44,7 +44,7 @@ const createNews = async ({
         await db.NewsFile.bulkCreate(newsFile);
     }
 
-    if (isGeneralSchoolNews) {
+    if (isGeneralSchoolNews == "true") {
         console.log("phamducdat");
         const noti = await pushNotiToSystem({
             senderId: news.id,

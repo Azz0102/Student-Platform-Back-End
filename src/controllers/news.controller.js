@@ -35,8 +35,8 @@ const newNews = async (req, res, next) => {
     // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
     fileIds = await Promise.all(filePromises);
 
-    const classSessionIds = req.body.classSessionIds;
-    console.log("classSessionIds", classSessionIds[0].id);
+    const classSessionIds = JSON.parse(req.body.classSessionIds);
+    console.log("classSessionIds", classSessionIds);
     if (classSessionIds === "undefined") {
         console.log("phamducdat", typeof classSessionIds);
     }
