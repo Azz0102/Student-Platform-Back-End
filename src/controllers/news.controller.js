@@ -10,10 +10,10 @@ const {
 } = require("../services/news.service");
 const db = require("../models");
 const { jwtDecode } = require("jwt-decode");
-const path = require('path');
+const path = require("path");
 
 const newNews = async (req, res, next) => {
-    console.log("req", req.files)
+    console.log("req", req.files);
     const userId = jwtDecode(req.headers["refreshtoken"]).userId;
     // const userId = 3;
 
@@ -21,9 +21,9 @@ const newNews = async (req, res, next) => {
 
     const list = req.files.map((item) => {
         return {
-            name: item.filename
-        }
-    })
+            name: item.filename,
+        };
+    });
 
     const filePromises = list.map(async (item) => {
         const file = await db.File.create({
@@ -35,12 +35,10 @@ const newNews = async (req, res, next) => {
     // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
     fileIds = await Promise.all(filePromises);
 
-    console.log("classSessionIds", req.body)
-
     const classSessionIds = req.body.classSessionIds;
+    console.log("classSessionIds", classSessionIds[0].id);
     if (classSessionIds === "undefined") {
-        console.log("phamducdat", typeof classSessionIds)
-
+        console.log("phamducdat", typeof classSessionIds);
     }
 
     new SuccessResponse({
@@ -48,23 +46,30 @@ const newNews = async (req, res, next) => {
         metadata: await createNews({
             userId,
             fileIds,
-            classSessionIds: (req.body.classSessionIds == "undefined" || !req.body.classSessionIds) ? [] : req.body.classSessionIds.map((item) => {
-                return item.id;
-            }),
-            ...req.body
+            classSessionIds:
+                req.body.classSessionIds == "undefined" ||
+                !req.body.classSessionIds
+                    ? []
+                    : JSON.parse(req.body.classSessionIds).map((item) => {
+                          return item.id;
+                      }),
+            ...req.body,
         }),
     }).send(res);
 };
 
 const newsList = async (req, res, next) => {
-    const perPage = parseInt(req.query.perPage) || 10
+    const perPage = parseInt(req.query.perPage) || 10;
     new SuccessResponse({
         message: "Get list news",
         metadata: await getListNews({
             filters: req.query.filters || "[]",
             sort: req.query.sort || "[]",
             limit: perPage,
-            offset: parseInt(req.query.page) > 0 ? (parseInt(req.query.page) - 1) * perPage : 0,
+            offset:
+                parseInt(req.query.page) > 0
+                    ? (parseInt(req.query.page) - 1) * perPage
+                    : 0,
         }),
     }).send(res);
 };
