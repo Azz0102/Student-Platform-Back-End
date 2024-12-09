@@ -35,11 +35,11 @@ const newNews = async (req, res, next) => {
     // Chờ tất cả các promise hoàn thành và lưu lại các id vào mảng
     fileIds = await Promise.all(filePromises);
 
-    const classSessionIds = JSON.parse(req.body.classSessionIds);
-    console.log("classSessionIds", classSessionIds);
+    let classSessionIds;
+
     if (classSessionIds === "undefined") {
         console.log("phamducdat", typeof classSessionIds);
-    }
+    } else classSessionIds = JSON.parse(req.body.classSessionIds);
 
     new SuccessResponse({
         message: "created news",
