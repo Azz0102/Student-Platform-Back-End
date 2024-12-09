@@ -44,6 +44,7 @@ const newNews = async (req, res, next) => {
     new SuccessResponse({
         message: "created news",
         metadata: await createNews({
+            ...req.body,
             userId,
             fileIds,
             classSessionIds:
@@ -53,7 +54,6 @@ const newNews = async (req, res, next) => {
                     : classSessionIds.map((item) => {
                           return item.id;
                       }),
-            ...req.body,
         }),
     }).send(res);
 };
