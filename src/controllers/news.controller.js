@@ -37,7 +37,7 @@ const newNews = async (req, res, next) => {
 
     let classSessionIds;
 
-    if (classSessionIds === "undefined") {
+    if (req.body.classSessionIds == "undefined" || !req.body.classSessionIds) {
         console.log("phamducdat", typeof classSessionIds);
     } else classSessionIds = JSON.parse(req.body.classSessionIds);
 
