@@ -36,7 +36,7 @@ jobs:
         envkey_USERNAME_EMAIL: "phamducdat171102dta@gmail.com"
         envkey_PASSWORD_EMAIL: "ofkknueekbtugqmf"
         envkey_RABBIT_URL: "amqp://guest:guest@54.169.144.11"
-        envkey_NOTIFY_URL: "18.139.110.128"
+        envkey_NOTIFY_URL: "18.139.110.128:4000"
         envkey_FRONTEND_URL: "doan-front-end-641k.vercel.app"
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
