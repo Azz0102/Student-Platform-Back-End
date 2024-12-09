@@ -125,25 +125,25 @@ const publishMessage = async ({
                     ],
                 ],
                 where: { classSessionId: { [Op.in]: classSessionIds } },
-                include: [
-                    {
-                        model: db.User, // Ensure this relationship exists
-                        required: true,
-                        include: [
-                            {
-                                model: db.ChannelUser, // Ensure User has ChannelUser association
-                                required: true,
-                                include: [
-                                    {
-                                        model: db.Channel,
-                                        where: { name: channelName },
-                                        attributes: [],
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                // include: [
+                //     {
+                //         model: db.User, // Ensure this relationship exists
+                //         required: true,
+                //         include: [
+                //             {
+                //                 model: db.ChannelUser, // Ensure User has ChannelUser association
+                //                 required: true,
+                //                 include: [
+                //                     {
+                //                         model: db.Channel,
+                //                         where: { name: channelName },
+                //                         attributes: [],
+                //                     },
+                //                 ],
+                //             },
+                //         ],
+                //     },
+                // ],
                 raw: true,
             });
             userIds = enrolledUsersInChannel.map((e) => e.userId);
