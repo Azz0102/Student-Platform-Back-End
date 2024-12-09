@@ -23,7 +23,7 @@ const pushNotiToSystem = async ({
 
     let users;
 
-    if (classSessionIds != "undefined") {
+    if (classSessionIds.length > 0) {
         console.log("noti");
 
         // Find unique users enrolled in the specified class sessions
@@ -115,7 +115,7 @@ const publishMessage = async ({
         let userIds;
         console.log("classSessionIds", classSessionIds);
 
-        if (classSessionIds != "undefined") {
+        if (classSessionIds.length > 0) {
             // Get unique userIds enrolled in specified class sessions and part of the specified channel
             const enrolledUsersInChannel = await db.Enrollment.findAll({
                 attributes: [
