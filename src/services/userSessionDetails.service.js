@@ -43,21 +43,26 @@ const userSessionDetailsCres = async ({
     });
     let enrollmentId;
 
+    console.log("PHAMDUCDAT", enrollmentss);
+
     if (!enrollmentss) {
         const enrollment = await createEnrollment({
             userId: user.id,
             classSessionId: sessionDetails.ClassSession.id
         })
         enrollmentId = enrollment.id
+    } else {
+        enrollmentId = enrollmentss.id;
     }
-    enrollmentId = enrollmentss.id;
+
+    console.log("enrollmentId", enrollmentId);
 
     // Tạo SessionDetail mới
     const sessionDetail = await db.UserSessionDetails.create({
-        enrollmentId,
-        sessionDetailsId
+        enrollmentId: enrollmentId,
+        sessionDetailsId: sessionDetailsId
     });
-
+    return sessionDetail;
 };
 
 // Liệt kê tất cả userSessionDetails
@@ -158,6 +163,11 @@ const userSessionDetailsLists = async ({ id, filters, sort, limit, offset }) => 
 };
 
 const userSessionDetailsDeletes = async ({ ids }) => {
+
+    const userSessionDetail = await db.UserSessionDetails.findOne({
+        where: { id: ids[0] },
+    });
+
     const userSessionDetails = await db.UserSessionDetails.destroy({
         where: {
             id: {
@@ -165,6 +175,21 @@ const userSessionDetailsDeletes = async ({ ids }) => {
             },
         },
     });
+
+    const enrollmentId = userSessionDetail.enrollmentId;
+
+    const remainingDetails = await db.UserSessionDetails.findAll({
+        where: { enrollmentId },
+    });
+
+    console.log("PhamDDIDDDDDD", remainingDetails.length, enrollmentId)
+
+    if (remainingDetails.length === 0) {
+        // Nếu không còn UserSessionDetails nào, xóa Enrollment
+        await db.Enrollment.destroy({
+            where: { id: enrollmentId },
+        });
+    }
     if (userSessionDetails === 0) {
         throw new NotFoundError("deletedUserSessionDetails");
     }
