@@ -70,6 +70,8 @@ const createNews = async ({
         }));
         await db.NewsClassSession.bulkCreate(newsClassSessions);
 
+        console.log('here');
+
         await pushNotiToSystem({
             senderId: news.id,
             noti_content: name,

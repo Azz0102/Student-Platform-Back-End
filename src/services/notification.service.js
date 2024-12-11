@@ -24,17 +24,24 @@ const pushNotiToSystem = async ({
     let users;
 
     if (classSessionIds.length > 0) {
-        console.log("noti");
-
         // Find unique users enrolled in the specified class sessions
-        users = await db.User.findAll({
-            include: {
-                model: db.Enrollment,
-                where: { classSessionId: classSessionIds },
+        users = await db.Enrollment.findAll({
+            attributes: [[fn("DISTINCT", col("userId")), "userId"]],
+            where: {
+                classSessionId: {
+                    [Op.in]: classSessionIds,
+                },
             },
-            attributes: ["id"],
-            group: ["User.id"], // Ensures no duplicate users
+            include: [
+                {
+                    model: db.User,
+                    attributes: ["id", "name"], // Include user details
+                },
+            ],
+            raw: true, // Optional: To return plain objects
         });
+
+        console.log("users", users);
     } else {
         console.log("noti1");
 
@@ -44,7 +51,7 @@ const pushNotiToSystem = async ({
 
     // Prepare NotiUser entries
     const notiUserEntries = users.map((user) => ({
-        userId: user.id,
+        userId: user.userId,
         notiId: newNoti.id,
         read: false, // By default, mark the notification as unread
     }));
@@ -118,33 +125,19 @@ const publishMessage = async ({
         if (classSessionIds.length > 0) {
             // Get unique userIds enrolled in specified class sessions and part of the specified channel
             const enrolledUsersInChannel = await db.Enrollment.findAll({
-                attributes: [
-                    [
-                        db.Sequelize.fn("DISTINCT", db.Sequelize.col("userId")),
-                        "userId",
-                    ],
+                attributes: [[fn("DISTINCT", col("userId")), "userId"]],
+                where: {
+                    classSessionId: {
+                        [Op.in]: classSessionIds,
+                    },
+                },
+                include: [
+                    {
+                        model: db.User,
+                        attributes: ["id", "name"], // Include user details
+                    },
                 ],
-                where: { classSessionId: { [Op.in]: classSessionIds } },
-                // include: [
-                //     {
-                //         model: db.User, // Ensure this relationship exists
-                //         required: true,
-                //         include: [
-                //             {
-                //                 model: db.ChannelUser, // Ensure User has ChannelUser association
-                //                 required: true,
-                //                 include: [
-                //                     {
-                //                         model: db.Channel,
-                //                         where: { name: channelName },
-                //                         attributes: [],
-                //                     },
-                //                 ],
-                //             },
-                //         ],
-                //     },
-                // ],
-                raw: true,
+                raw: true, // Optional: To return plain objects
             });
             userIds = enrolledUsersInChannel.map((e) => e.userId);
         } else {
