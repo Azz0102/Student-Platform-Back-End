@@ -23,6 +23,8 @@ const pushNotiToSystem = async ({
 
     let users;
 
+    let notiUserEntries;
+
     if (classSessionIds.length > 0) {
         // Find unique users enrolled in the specified class sessions
         users = await db.Enrollment.findAll({
@@ -41,20 +43,25 @@ const pushNotiToSystem = async ({
             raw: true, // Optional: To return plain objects
         });
 
+        // Prepare NotiUser entries
+        notiUserEntries = users.map((user) => ({
+            userId: user.userId,
+            notiId: newNoti.id,
+            read: false, // By default, mark the notification as unread
+        }));
         console.log("users", users);
     } else {
         console.log("noti1");
 
         // Get all users for other notification types
         users = await db.User.findAll({ attributes: ["id"] });
+        // Prepare NotiUser entries
+        notiUserEntries = users.map((user) => ({
+            userId: user.id,
+            notiId: newNoti.id,
+            read: false, // By default, mark the notification as unread
+        }));
     }
-
-    // Prepare NotiUser entries
-    const notiUserEntries = users.map((user) => ({
-        userId: user.userId,
-        notiId: newNoti.id,
-        read: false, // By default, mark the notification as unread
-    }));
 
     // Bulk create NotiUser entries
     await db.NotiUser.bulkCreate(notiUserEntries);
