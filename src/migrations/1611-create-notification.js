@@ -27,6 +27,7 @@ module.exports = {
                     model: "news", // Assuming 'news' table exists
                     key: "id",
                 },
+                onDelete: "CASCADE",
             },
             noti_content: {
                 type: Sequelize.TEXT,

@@ -13,6 +13,7 @@ module.exports = (sequelize) => {
             News.hasMany(models.Notification, {
                 foreignKey: "noti_senderId",
                 as: "notifications",
+                onDelete: "CASCADE",
             });
             News.belongsToMany(models.ClassSession, {
                 through: models.NewsClassSession,
