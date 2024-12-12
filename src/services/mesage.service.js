@@ -28,7 +28,7 @@ exports.createChat = async ({
 };
 
 exports.getChatById = async ({ classSessionId, refreshToken }) => {
-    console.log('ref', refreshToken);
+    console.log("ref", refreshToken);
     const classSession = await db.ClassSession.findByPk(classSessionId, {
         attributes: ["id", "name"],
     });
@@ -41,11 +41,10 @@ exports.getChatById = async ({ classSessionId, refreshToken }) => {
         where: { refreshToken: refreshToken },
     });
 
-    console.log('keyStore', keyStore);
-
+    console.log("keyStore", keyStore);
 
     const enrollment = await db.Enrollment.findOne({
-        where: { userId: keyStore.userId },
+        where: { userId: keyStore.userId, classSessionId: classSessionId },
     });
 
     // Step 1: Get all enrollments for the class session
